@@ -47,10 +47,6 @@ components/
 │   ├── Header/
 │   ├── Footer/
 │   └── Navigation/
-├── portfolio/         # Component chuyên biệt cho portfolio
-│   ├── ProjectCard/
-│   ├── SkillSection/
-│   └── Timeline/
 ├── common/            # Component dùng chung
 │   ├── Loading/
 │   ├── ErrorBoundary/
