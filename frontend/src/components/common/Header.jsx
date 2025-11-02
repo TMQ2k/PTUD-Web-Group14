@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MdPersonOutline } from "react-icons/md";
 import { IoLogoPolymer } from "react-icons/io";
-import { FaSearch } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 const categories = [
@@ -42,42 +42,39 @@ const Header = () => {
         {/* Menu chính */}
         <nav className="hidden md:flex items-center space-x-8">
           {categories.map((cat, index) => (
-            <div key={index} className="relative group">
-              <button
-                onMouseEnter={() => setActiveMenu(index)}
-                onMouseLeave={() => setActiveMenu(null)}
-                className="flex items-center gap-1 font-medium text-gray-700 hover:text-blue-600 transition-colors"
-              >
+            <div
+              key={index}
+              className="relative group"
+              onMouseEnter={() => setActiveMenu(index)}
+              onMouseLeave={() => setActiveMenu(null)}
+            >
+              <button className="flex items-center gap-1 font-medium text-gray-700 hover:text-blue-600 transition-colors">
                 {cat.name}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                  stroke="currentColor"
-                  className="w-4 h-4"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6 9l6 6 6-6"
-                  />
-                </svg>
+                <FaChevronDown
+                  className={`w-3 h-3 mt-1 transition-transform duration-300 ${
+                    activeMenu === index ? "rotate-180" : "rotate-0"
+                  }`}
+                />
               </button>
               {activeMenu === index && (
-                <div className="absolute left-0 top-full mt-2 bg-white border rounded-lg shadow-lg w-56">
-                  <ul className="py-2">
-                    {cat.children.map((sub, i) => (
-                      <li key={i}>
-                        <a
-                          href="#"
-                          className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                        >
-                          {sub.name}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                <div
+                  className="absolute left-0 top-full pt-2"
+                  onMouseEnter={() => setActiveMenu(index)}
+                >
+                  <div className="bg-white border rounded-lg shadow-lg w-56">
+                    <ul className="py-2">
+                      {cat.children.map((sub, i) => (
+                        <li key={i}>
+                          <a
+                            href="#"
+                            className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          >
+                            {sub.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               )}
             </div>
