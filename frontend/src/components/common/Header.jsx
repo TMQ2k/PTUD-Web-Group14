@@ -4,7 +4,7 @@ import { FaSearch, FaChevronDown, FaRegHeart } from "react-icons/fa";
 import { MdPersonOutline } from "react-icons/md";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import CategorySlider from "./CategorySlider";
+import CategorySlider from "../layouts/CategorySlider";
 
 export default function Header() {
   const [showCats, setShowCats] = useState(false);

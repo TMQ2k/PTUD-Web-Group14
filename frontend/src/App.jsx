@@ -8,7 +8,8 @@ import {
 import MainLayouts from "./components/layouts/MainLayouts";
 import Home from "./pages/Home";
 import LoadingScreen from "./components/layouts/LoadingScreen";
-
+import RegisterForm from "./components/common/RegisterForm";
+import LoginForm from "./components/common/LoginForm";
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
   const [showLoading, setShowLoading] = useState(true);
@@ -31,6 +32,8 @@ const App = () => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<MainLayouts />}>
+        <Route path="register" element={<RegisterForm />} />
+        <Route path="login" element={<LoginForm />} />
         <Route index element={<Home />} />
       </Route>
     )
