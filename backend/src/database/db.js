@@ -19,3 +19,14 @@ pool.connect()
   .catch(err => console.error("❌ Connection error:", err.stack));
 
 export default pool;
+
+async function checkTable() {
+  const res = await pool.query(`
+    SELECT table_name
+    FROM information_schema.tables
+    WHERE table_schema = 'public';
+  `);
+  console.log(res.rows);
+}
+
+checkTable();
