@@ -2,7 +2,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import pool from "./src/db.js";
+import pool from "./src/database/db.js";
 
 dotenv.config();
 
