@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-
-/**
- * LoginUI – Giao diện đăng nhập (UI-only)
- * - Màu chủ đạo: bg-gradient-to-r from-blue-600 to-indigo-500
- * - Trường: Email, Mật khẩu, "Nhớ tôi"
- * - reCAPTCHA placeholder để gắn sau
- * - Có mô phỏng trạng thái: đăng nhập thành công, email chưa xác thực
- */
+import { Link } from "react-router-dom";
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -145,7 +138,9 @@ const LoginForm = () => {
 
             <div className="text-sm text-gray-600 text-center">
               Chưa có tài khoản?{" "}
-              <span className="text-indigo-600">Đăng ký ngay</span>
+              <Link to="/register" className="text-indigo-600 hover:underline">
+                Đăng ký ngay
+              </Link>
             </div>
           </form>
         </div>
