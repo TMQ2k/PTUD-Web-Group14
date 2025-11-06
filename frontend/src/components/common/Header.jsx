@@ -12,11 +12,14 @@ import { MdPersonOutline, MdOutlineShoppingCart } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
-import { Navigate } from "react-router-dom";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
 
 export default function Header() {
   const [showCats, setShowCats] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
 
   // TODO: Thay thế bằng Redux/Context API của bạn
@@ -40,6 +43,8 @@ export default function Header() {
       if (e.key === "Escape") {
         setShowCats(false);
         setShowUserMenu(false);
+        setShowLoginModal(false);
+        setShowRegisterModal(false);
       }
     };
     document.addEventListener("keydown", onKey);
@@ -63,8 +68,19 @@ export default function Header() {
     setIsLoggedIn(false);
     setUser(null);
     setShowUserMenu(false);
-    navigate("/login");
-    // TODO: Thêm logic logout (clear Redux store, redirect, etc.)
+    // Refresh page để cập nhật UI
+    window.location.reload();
+  };
+
+  // Handle switch between login/register modals
+  const handleSwitchToRegister = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
   };
 
   return (
@@ -125,20 +141,20 @@ export default function Header() {
           {!isLoggedIn ? (
             // Hiển thị nút đăng nhập/đăng ký khi chưa login
             <>
-              <Link
-                to="/login"
+              <button
+                onClick={() => setShowLoginModal(true)}
                 className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 <MdPersonOutline className="w-5 h-5" />
                 Đăng nhập
-              </Link>
+              </button>
 
-              <Link
-                to="/register"
+              <button
+                onClick={() => setShowRegisterModal(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium bg-linear-to-r from-blue-400 to-purple-600 hover:from-blue-500 hover:to-purple-700 transition-colors"
               >
                 Đăng ký
-              </Link>
+              </button>
             </>
           ) : (
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
@@ -260,6 +276,20 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ===== Login Modal ===== */}
+      <LoginForm
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={handleSwitchToRegister}
+      />
+
+      {/* ===== Register Modal ===== */}
+      <RegisterForm
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
     </header>
   );
 }
