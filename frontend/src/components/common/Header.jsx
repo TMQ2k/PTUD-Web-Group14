@@ -5,10 +5,10 @@ import {
   FaChevronDown,
   FaRegHeart,
   FaUser,
-  FaCog,
   FaSignOutAlt,
 } from "react-icons/fa";
-import { MdPersonOutline, MdOutlineShoppingCart } from "react-icons/md";
+import { MdPersonOutline } from "react-icons/md";
+import { Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
@@ -160,17 +160,12 @@ export default function Header() {
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
             <>
               <Link
-                to="/cart"
-                className="relative p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                aria-label="Giỏ hàng"
+                to="/guide"
+                className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
+             hover:opacity-80 transition-all text-[16px]"
               >
-                <MdOutlineShoppingCart className="w-6 h-6 text-blue-600" />
-                {/* Badge số lượng sản phẩm (optional) */}
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  3
-                </span>
+                Cách thao tác trên website
               </Link>
-
               <div className="relative user-menu-container">
                 <button
                   type="button"
