@@ -46,3 +46,14 @@ BEGIN
       AND status = TRUE;  -- chỉ cho phép user active
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION increase_product_price(p_product_id INT)
+RETURNS VOID AS $$
+BEGIN
+    UPDATE products
+    SET current_price = current_price + step_price
+    WHERE product_id = p_product_id
+      AND is_active = TRUE;
+END;
+$$ LANGUAGE plpgsql;
