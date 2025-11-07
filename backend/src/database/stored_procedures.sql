@@ -182,3 +182,21 @@ BEGIN
     RETURN new_product_id;
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_get_products_by_seller(p_seller_id INT)
+RETURNS TABLE (
+    product_id INT,
+    name VARCHAR,
+    current_price NUMERIC,
+    is_active BOOLEAN,
+    created_at TIMESTAMP,
+    end_time TIMESTAMP
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT product_id, name, current_price, is_active, created_at, end_time
+    FROM products
+    WHERE seller_id = p_seller_id
+    ORDER BY created_at DESC;
+END;
+$$ LANGUAGE plpgsql;
