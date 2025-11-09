@@ -6,7 +6,12 @@ import userController from "./src/controller/userController.js";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000", // hoặc domain frontend của bạn
+  })
+);
+
 app.use(express.json());
 
 // Test route
