@@ -1,5 +1,3 @@
-
-
 CREATE OR REPLACE FUNCTION fnc_register_user(
     p_username VARCHAR,
     p_password_hashed TEXT,
@@ -198,5 +196,46 @@ BEGIN
     FROM products
     WHERE seller_id = p_seller_id
     ORDER BY created_at DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_change_password(
+    p_username VARCHAR,
+    p_old_password_hashed TEXT,
+    p_new_password_hashed TEXT,
+    p_confirm_password_hashed TEXT
+)
+RETURNS TEXT AS $$
+DECLARE
+    v_user_id INTEGER;
+BEGIN
+    -- 1️⃣ Kiểm tra user có tồn tại và mật khẩu cũ đúng không
+    SELECT user_id INTO v_user_id
+    FROM users
+    WHERE username = p_username
+      AND password_hashed = p_old_password_hashed
+      AND status = TRUE;
+
+    IF v_user_id IS NULL THEN
+        RETURN 'Invalid username or old password';
+    END IF;
+
+    -- 2️⃣ Kiểm tra mật khẩu mới và xác nhận mật khẩu có trùng nhau không
+    IF p_new_password_hashed <> p_confirm_password_hashed THEN
+        RETURN 'New password and confirmation do not match';
+    END IF;
+
+    -- 3️⃣ Kiểm tra xem mật khẩu mới có khác mật khẩu cũ không
+    IF p_new_password_hashed = p_old_password_hashed THEN
+        RETURN 'New password cannot be the same as old password';
+    END IF;
+
+    -- 4️⃣ Cập nhật mật khẩu mới
+    UPDATE users
+    SET password_hashed = p_new_password_hashed,
+        is_created = CURRENT_TIMESTAMP
+    WHERE user_id = v_user_id;
+
+    RETURN 'Password changed successfully';
 END;
 $$ LANGUAGE plpgsql;
