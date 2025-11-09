@@ -7,7 +7,9 @@ CREATE OR REPLACE FUNCTION fnc_register_user(
 RETURNS TEXT AS $$
 DECLARE
     v_count INT;
+    new_user_id INT;
 BEGIN
+    -- Kiểm tra username đã tồn tại chưa
     SELECT COUNT(*) INTO v_count
     FROM users
     WHERE username = p_username;
@@ -16,17 +18,22 @@ BEGIN
         RETURN 'Username already exists';
     END IF;
 
+    -- Kiểm tra role hợp lệ
     IF NOT (p_role IN ('guest', 'bidder', 'seller', 'admin')) THEN
         RETURN 'Invalid role';
     END IF;
 
+    -- Thêm user mới và lấy ID vừa tạo
     INSERT INTO users(username, password_hashed, email, role)
-    VALUES (p_username, p_password_hashed, p_email, p_role);
+    VALUES (p_username, p_password_hashed, p_email, p_role)
+    RETURNING id INTO new_user_id;
 
- 	INSERT INTO users_info(user_id) VALUES (new_user_id);
-    RETURN new_user_id;
+    -- Tạo bản ghi trong bảng users_info tương ứng
+    INSERT INTO users_info(user_id) VALUES (new_user_id);
+	INSERT INTO users_rating(user_id, rating_plus, rating_minus) VALUES (new_user_id, 0, 0);
 
-    RETURN 'User registered successfully';
+    -- Trả về thông báo hoặc ID
+    RETURN 'User registered successfully with ID: ' || new_user_id;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -239,3 +246,32 @@ BEGIN
     RETURN 'Password changed successfully';
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_user_profile(
+    p_user_id INT
+)
+RETURNS TABLE(
+    user_id INT,
+    username VARCHAR,
+    email VARCHAR,
+    role VARCHAR,
+    status BOOLEAN,
+    is_created TIMESTAMP,
+    verified BOOLEAN
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.user_id,
+        u.username,
+        u.email,
+        u.role,
+        u.status,
+        u.is_created,
+        u.verified
+    FROM users u
+    WHERE u.user_id = p_user_id
+      AND u.status = TRUE; -- chỉ trả user active
+END;
+$$ LANGUAGE plpgsql;
+
