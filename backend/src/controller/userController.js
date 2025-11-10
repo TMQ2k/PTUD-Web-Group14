@@ -1,5 +1,10 @@
 import express from "express";
-import { register, login, getUserProfile } from "../service/userService.js";
+import {
+  register,
+  login,
+  getUserProfile,
+  verifyOTP,
+} from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -28,25 +33,70 @@ router.post("/register", async (req, res) => {
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log("🔹 [POST /login] Nhận yêu cầu đăng nhập:", { username });
 
-    console.log("📥 Login request received:", { username });
+    // Gọi hàm login từ service
+    const result = await login(username, password);
 
-    const { token } = await login(username, password);
-
-    console.log("✅ Login success for:", username);
-
-    res.status(200).json({
+    // Trả về dạng chuẩn REST
+    return res.status(200).json({
       code: 200,
-      message: "Login successful",
-      data: { token }, // gồm { token, user }
+      message: "Đăng nhập thành công",
+      data: {
+        token: result.token,
+      },
     });
   } catch (err) {
-    console.error("❌ Error in /login route:", err);
+    console.error("❌ [POST /login] Lỗi:", err.message);
 
-    res.status(401).json({
-      code: 401,
-      message: err.message || "Login failed",
+    // Phân biệt lỗi xác thực hay lỗi hệ thống
+    if (
+      err.message === "User not found" ||
+      err.message === "Invalid credentials"
+    ) {
+      return res.status(401).json({
+        code: 401,
+        message: "Sai tên đăng nhập hoặc mật khẩu",
+        data: null,
+      });
+    }
+
+    // Lỗi khác (DB, server,...)
+    return res.status(500).json({
+      code: 500,
+      message: "Đã xảy ra lỗi trong quá trình đăng nhập",
       data: null,
+      error: err.message,
+    });
+  }
+});
+
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { username, otp } = req.body;
+    console.log("🔹 [POST /verify-otp] Nhận yêu cầu xác thực OTP:", {
+      username,
+      otp,
+    });
+
+    // Gọi hàm verifyOTP trong service
+    const result = await verifyOTP(username, otp);
+
+    console.log("✅ [POST /verify-otp] Kết quả xác thực OTP:", result);
+
+    return res.status(200).json({
+      code: 200,
+      message: "Xác thực OTP thành công",
+      data: result ? { token: result.token } : null, // chỉ trả về token
+    });
+  } catch (err) {
+    console.error("❌ [POST /verify-otp] Lỗi:", err.message);
+
+    return res.status(400).json({
+      code: 400,
+      message: "Xác thực OTP thất bại",
+      data: null,
+      error: err.message, // có thể bỏ nếu không muốn show chi tiết
     });
   }
 });

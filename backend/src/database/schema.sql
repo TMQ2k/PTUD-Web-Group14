@@ -70,3 +70,10 @@ CREATE TABLE product_images (
     image_url TEXT NOT NULL
 );
 
+
+CREATE TABLE user_otp (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+    otp_code VARCHAR(6) NOT NULL,
+    expires_at TIMESTAMP NOT NULL
+);
