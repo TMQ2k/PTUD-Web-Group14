@@ -14,28 +14,23 @@ import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../store/userSlice";
+import { authStorage } from "../../utils/auth";
 
 export default function Header() {
+  const dispatch = useDispatch();
   const [showCats, setShowCats] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
 
+  const { isLoggedIn, userData } = useSelector((state) => state.user);
+
   // TODO: Thay thế bằng Redux/Context API của bạn
   // Ví dụ giả lập user đã đăng nhập
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
-
-  // Giả lập user data - Thay bằng logic thực tế từ Redux/Context
-  useEffect(() => {
-    // Kiểm tra localStorage hoặc Redux store
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    }
-  }, []);
 
   // Đóng overlay bằng ESC
   useEffect(() => {
@@ -64,12 +59,13 @@ export default function Header() {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    setUser(null);
+    // Không cần xóa localStorage vì không dùng nữa
+    authStorage.removeToken();
+    dispatch(logout());
     setShowUserMenu(false);
-    // Refresh page để cập nhật UI
-    window.location.reload();
+    // KHÔNG cần window.location.reload() - UI tự động cập nhật
+    // Optional: Redirect về trang chủ sau logout
+    navigate("/");
   };
 
   // Handle switch between login/register modals
@@ -175,11 +171,11 @@ export default function Header() {
                 >
                   <img
                     src={
-                      user?.avatar ||
+                      userData?.avatar ||
                       "https://ui-avatars.com/api/?name=" +
-                        (user?.name || "User")
+                        (userData?.name || "User")
                     }
-                    alt={user?.name || "User"}
+                    alt={userData?.name || "User"}
                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
                   />
                   <FaChevronDown
@@ -202,10 +198,10 @@ export default function Header() {
                       {/* User Info */}
                       <div className="px-4 py-3 border-b border-gray-100">
                         <p className="font-semibold text-gray-800">
-                          {user?.name || "User"}
+                          {userData?.name || "User"}
                         </p>
                         <p className="text-sm text-gray-500 truncate">
-                          {user?.email || "user@example.com"}
+                          {userData?.email || "user@example.com"}
                         </p>
                       </div>
 
@@ -219,6 +215,18 @@ export default function Header() {
                           <FaUser className="w-4 h-4 text-blue-600" />
                           <span>Trang cá nhân</span>
                         </Link>
+
+                        {userData?.role === "seller" && (
+                          // Upload Product
+                          <Link
+                            to="/upload-product"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <IoLogoPolymer className="w-4 h-4 text-blue-600" />
+                            <span>Đăng sản phẩm</span>
+                          </Link>
+                        )}
 
                         <button
                           onClick={handleLogout}

@@ -1,34 +1,33 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
-
-/**
- * RegisterForm – Modal đăng ký với 3 bước: form → otp → done
- * - Màu chủ đạo: bg-gradient-to-r from-blue-400 to-purple-600
- * - Auto refresh sau khi xác thực OTP thành công
- */
+import { userApi } from "../../api/user.api";
+import { useDispatch } from "react-redux";
+import { registerSuccess } from "../../store/userSlice";
+import { authStorage } from "../../utils/auth";
 
 const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
+  const dispatch = useDispatch();
   const [step, setStep] = useState("form");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const emailRef = useRef("");
+  const user = useRef({});
 
-  const handleRegisterSubmit = (e) => {
+  const handleRegisterSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const fullName = formData.get("fullName");
-    const address = formData.get("address");
+    const username = formData.get("username");
     const email = formData.get("email");
     const password = formData.get("password");
+    const confirmPassword = formData.get("confirmPassword");
 
-    if (!fullName || !address || !email || !password) {
+    if (!username || !email || !password || !confirmPassword) {
       setError("Vui lòng điền đầy đủ thông tin.");
       setLoading(false);
       return;
@@ -40,17 +39,37 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
       return;
     }
 
-    emailRef.current = email;
-
-    // Giả lập gửi OTP
-    setTimeout(() => {
-      setMessage("Đã gửi OTP tới email của bạn.");
-      setStep("otp");
+    if (password !== confirmPassword) {
+      setError("Mật khẩu và xác nhận mật khẩu không khớp.");
       setLoading(false);
-    }, 600);
+      return;
+    }
+
+    try {
+      console.log("🔄 Đang đăng ký user...");
+
+      // ✅ BƯỚC 1: Gọi API đăng ký
+      await userApi.register({ username, email, password });
+
+      console.log("✅ Đăng ký thành công! OTP đã được gửi tới email.");
+
+      // ✅ BƯỚC 2: Lưu thông tin user để dùng khi verify OTP
+      user.current = { username, email, password };
+
+      // ✅ BƯỚC 3: Hiển thị form OTP
+      setMessage("Đăng ký thành công! Vui lòng kiểm tra email để nhận mã OTP.");
+      setStep("otp");
+    } catch (error) {
+      console.error("❌ Đăng ký thất bại:", error);
+      setError(
+        error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleOtpSubmit = (e) => {
+  const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setMessage("");
@@ -59,26 +78,88 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
     const formData = new FormData(e.currentTarget);
     const otp = formData.get("otp");
 
+    console.log("🔄 Đang verify OTP:", otp);
+
     if (!otp || String(otp).length !== 6) {
       setError("OTP phải gồm 6 chữ số.");
       setLoading(false);
       return;
     }
 
-    // Giả lập xác thực OTP thành công
-    setTimeout(() => {
-      // Lưu user vào localStorage
-      const mockUser = {
-        name: emailRef.current.split("@")[0],
-        email: emailRef.current,
-        avatar: null,
-      };
-      localStorage.setItem("user", JSON.stringify(mockUser));
+    try {
+      // ✅ BƯỚC 1: Gọi API verify OTP
+      const verifyResponse = await userApi.verifyOtp({
+        email: user.current.email,
+        otp,
+      });
 
-      // Đóng modal và refresh
-      onClose();
-      window.location.reload();
-    }, 600);
+      console.log("📦 Response verify OTP:", verifyResponse);
+
+      // ✅ BƯỚC 2: Lấy token từ response
+      const token = verifyResponse.data?.token;
+
+      if (!token) {
+        throw new Error("Backend không trả về token sau khi verify");
+      }
+
+      console.log("✅ Xác thực OTP thành công! Token:", token);
+
+      // ✅ BƯỚC 3: Lưu token vào localStorage
+      authStorage.setToken(token);
+
+      // ✅ BƯỚC 4: Lấy thông tin user (hoặc dùng data từ verify response)
+      let userData;
+
+      if (verifyResponse.data?.user) {
+        // Backend trả user luôn trong verify response
+        userData = verifyResponse.data.user;
+        console.log("✅ User data từ verify response:", userData);
+      } else {
+        // Gọi API getProfile để lấy user
+        try {
+          const profileResponse = await userApi.getProfile();
+          userData = profileResponse.data;
+          console.log("✅ User data từ /profile:", userData);
+        } catch (profileError) {
+          console.warn(
+            "⚠️ Không lấy được profile, dùng data tạm:",
+            profileError
+          );
+          // Fallback: Dùng data từ form
+          userData = {
+            name: user.current.username,
+            email: user.current.email,
+            role: "buyer",
+          };
+        }
+      }
+
+      // ✅ BƯỚC 5: Lưu vào Redux
+      dispatch(
+        registerSuccess({
+          id: userData.id,
+          name: userData.username || userData.name,
+          email: userData.email,
+          role: userData.role || "buyer",
+          avatar: userData.avatar || null,
+        })
+      );
+
+      setMessage("Xác thực OTP thành công! Đang đăng nhập...");
+
+      // ✅ BƯỚC 6: Đóng modal
+      setTimeout(() => {
+        onClose();
+      }, 1000);
+    } catch (error) {
+      console.error("❌ Xác thực OTP thất bại:", error);
+      setError(
+        error.response?.data?.message ||
+          "Xác thực OTP thất bại. Vui lòng thử lại."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -126,23 +207,12 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
             >
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Họ tên
+                  Username
                 </label>
                 <input
-                  name="fullName"
+                  name="username"
                   className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="Nguyễn Văn A"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Địa chỉ
-                </label>
-                <input
-                  name="address"
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  placeholder="123 Đường ABC, Quận XYZ"
+                  placeholder="Nhập tên người dùng"
                 />
               </div>
 
@@ -169,6 +239,35 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
+                    className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? (
+                      <FaEyeSlash className="w-5 h-5" />
+                    ) : (
+                      <FaEye className="w-5 h-5" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Mật khẩu tối thiểu 8 ký tự, sẽ được mã hoá bằng{" "}
+                  <b>bcrypt/scrypt</b> ở server.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Xác nhận mật khẩu
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="confirmPassword"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
                     placeholder="••••••••"
                   />
@@ -237,15 +336,16 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
             <form onSubmit={handleOtpSubmit} className="bg-white p-6 space-y-4">
               <p className="text-sm text-gray-700">
                 Nhập mã OTP đã gửi tới{" "}
-                <span className="font-medium">{emailRef.current}</span>.
+                <span className="font-medium">{user.current.email}</span>.
               </p>
               <input
                 name="otp"
+                type="text"
                 maxLength={6}
-                pattern="\\d{6}"
                 inputMode="numeric"
                 placeholder="123456"
-                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                autoFocus
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-xl font-semibold tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
 
               {error && (
