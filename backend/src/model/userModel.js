@@ -1,5 +1,3 @@
-import React from "react";
-
 export class User {
   constructor(user_id, username, email, role) {
     this.user_id = user_id;

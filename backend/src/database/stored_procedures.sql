@@ -26,7 +26,7 @@ BEGIN
     -- Thêm user mới và lấy ID vừa tạo
     INSERT INTO users(username, password_hashed, email, role)
     VALUES (p_username, p_password_hashed, p_email, p_role)
-    RETURNING id INTO new_user_id;
+    RETURNING user_id INTO new_user_id;
 
     -- Tạo bản ghi trong bảng users_info tương ứng
     INSERT INTO users_info(user_id) VALUES (new_user_id);
@@ -53,7 +53,8 @@ BEGIN
     FROM users
     WHERE username = p_username
       AND password_hashed = p_password_hashed
-      AND status = TRUE;  -- chỉ cho phép user active
+      AND status = TRUE
+      AND verified = TRUE;  -- chỉ cho phép user active
 END;
 $$ LANGUAGE plpgsql;
 

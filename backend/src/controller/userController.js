@@ -5,6 +5,8 @@ import {
   login,
   getUserProfile,
   verifyOTP,
+  updateUserInfoService,
+  deleteUserService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -182,28 +184,58 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-export default router;
-
-router.get("/profile", authenticate, async (req, res) => {
+router.put("/update-info", authenticate, async (req, res) => {
   try {
-    console.log("📥 /profile request received for user ID:", req.user.id);
+    const userId = req.user.id; // ✅ lấy từ token
+    const userData = req.body;
 
-    const user = await getUserProfile(req.user.id); // req.user.id từ JWT
+    const updatedUser = await updateUserInfoService(userId, userData);
 
-    console.log("✅ User profile retrieved:", user);
+    if (!updatedUser) {
+      throw new Error("Không tìm thấy user hoặc cập nhật thất bại.");
+    }
 
     res.status(200).json({
       code: 200,
-      message: "User profile retrieved successfully",
-      data: user,
+      message: "Cập nhật thông tin thành công",
+      data: updatedUser,
     });
   } catch (err) {
-    console.error("❌ Error in /profile route:", err);
-
-    res.status(404).json({
-      code: 404,
-      message: err.message || "User not found",
-      data: null,
+    console.error("❌ [PUT /update-info] Lỗi:", err.message);
+    res.status(500).json({
+      code: 500,
+      message: "Cập nhật thông tin thất bại",
+      error: err.message,
     });
   }
 });
+
+// DELETE /api/users/:id  (Admin only)
+router.delete("/:id", authenticate, authorize("admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = Number(id);
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({ code: 400, message: "Invalid user id" });
+    }
+
+    await deleteUserService(userId);
+    return res.status(200).json({
+      code: 200,
+      message: "User deleted successfully",
+      data: { user_id: userId },
+    });
+  } catch (err) {
+    console.error("❌ [DELETE /:id] Lỗi:", err.message);
+    if (err.message === "User not found") {
+      return res.status(404).json({ code: 404, message: "User not found" });
+    }
+    return res.status(500).json({
+      code: 500,
+      message: "Delete user failed",
+      error: err.message,
+    });
+  }
+});
+
+export default router;
