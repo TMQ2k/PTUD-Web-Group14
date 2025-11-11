@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Route,
   createBrowserRouter,
@@ -7,18 +7,97 @@ import {
 } from "react-router-dom";
 import MainLayouts from "./components/layouts/MainLayouts";
 import Home from "./pages/Home";
-
+import LoadingScreen from "./components/layouts/LoadingScreen";
+import RegisterForm from "./components/common/RegisterForm";
+import LoginForm from "./components/common/LoginForm";
+import UserInformation from "./pages/UserInformation";
+import { useDispatch } from "react-redux";
+import { authStorage } from "./utils/auth";
+import { loginSuccess, logout } from "./store/userSlice";
+import { userApi } from "./api/user.api";
 const App = () => {
+  // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
+  const [showLoading, setShowLoading] = useState(true);
+  const [exiting, setExiting] = useState(false);
+  const dispatch = useDispatch();
+
+  const loadDuration = 1600;
+  const exitDuration = 7000;
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = authStorage.getToken();
+
+      // Không có token → Skip
+      if (!token) {
+        console.log("ℹ️ Không có token, user chưa đăng nhập");
+        return;
+      }
+
+      console.log("🔄 Đang khôi phục thông tin user từ token...");
+
+      try {
+        // Gọi API /profile với token
+        const response = await userApi.getProfile();
+        const userData = response.data;
+
+        console.log("✅ Khôi phục thành công:", userData);
+
+        // Lưu vào Redux
+        dispatch(
+          loginSuccess({
+            id: userData.id,
+            name: userData.username,
+            email: userData.email,
+            role: userData.role,
+            avatar: userData.avatar || null,
+          })
+        );
+      } catch (error) {
+        console.error("❌ Token không hợp lệ:", error);
+
+        // Token hết hạn hoặc không hợp lệ → Xóa
+        authStorage.removeToken();
+        dispatch(logout());
+      }
+    };
+
+    initAuth();
+  }, [dispatch]);
+
+  useEffect(() => {
+    const t1 = setTimeout(() => setExiting(true), loadDuration);
+    return () => clearTimeout(t1);
+  }, []);
+
+  useEffect(() => {
+    if (!exiting) return;
+    const t2 = setTimeout(() => setShowLoading(false), exitDuration);
+    return () => clearTimeout(t2);
+  }, [exiting]);
+
   const router = createBrowserRouter(
     createRoutesFromElements(
       <Route path="/" element={<MainLayouts />}>
-        {/* Define your routes here */}
+        <Route path="register" element={<RegisterForm />} />
+        <Route path="login" element={<LoginForm />} />
         <Route index element={<Home />} />
+        <Route path="profile" element={<UserInformation />} />
       </Route>
     )
   );
 
-  return <RouterProvider router={router} />;
+  return (
+    <>
+      {/* Render nội dung chính NGAY LẬP TỨC để khi overlay fade thì UI đã sẵn sàng */}
+      <RouterProvider router={router} />
+
+      {/* Overlay loading nằm trên cùng, mờ dần khi exit */}
+      {showLoading && (
+        <LoadingScreen exiting={exiting} duration={exitDuration} />
+      )}
+    </>
+  );
 };
 
 export default App;

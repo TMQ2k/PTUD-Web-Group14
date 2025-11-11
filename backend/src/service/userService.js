@@ -22,9 +22,30 @@ const generateOTP = () => {
 };
 
 export const register = async (username, password, email, role = "guest") => {
+  // ✅ BƯỚC 1: Kiểm tra username đã tồn tại chưa
+  const existingUsername = await pool.query(
+    "SELECT user_id FROM users WHERE username = $1",
+    [username]
+  );
+
+  if (existingUsername.rows.length > 0) {
+    throw new Error("Username đã được sử dụng. Vui lòng chọn username khác.");
+  }
+
+  // ✅ BƯỚC 2: Kiểm tra email đã tồn tại chưa
+  const existingEmail = await pool.query(
+    "SELECT user_id FROM users WHERE email = $1",
+    [email]
+  );
+
+  if (existingEmail.rows.length > 0) {
+    throw new Error("Email đã được sử dụng. Vui lòng chọn email khác.");
+  }
+
+  // ✅ BƯỚC 3: Hash password
   const hashed = await bcrypt.hash(password, 10);
 
-  // 1️⃣ Tạo user
+  // ✅ BƯỚC 4: Tạo user
   const result = await pool.query(
     "INSERT INTO users (username, password_hashed, email, role) VALUES ($1, $2, $3, $4) RETURNING *",
     [username, hashed, email, role]
@@ -39,8 +60,15 @@ export const register = async (username, password, email, role = "guest") => {
     [user.user_id, otp, expiresAt]
   );
 
-  // 3️⃣ Gửi email OTP
-  await sendOTPEmail(email, otp);
+  // 3️⃣ Gửi email OTP KHÔNG ĐỢI (async)
+  sendOTPEmail(email, otp).catch((err) => {
+    console.error(
+      "⚠️ Lỗi gửi email OTP (không ảnh hưởng response):",
+      err.message
+    );
+  });
+
+  console.log(`🔑 OTP cho ${email}: ${otp}`); // Log để test
 
   return `User created. OTP sent to ${email}`;
 };
@@ -67,7 +95,16 @@ export const login = async (username, password) => {
       [user.user_id, otp, expires]
     );
 
-    await sendOTPEmail(user.email, otp);
+    // ✅ Gửi email KHÔNG ĐỢI (async) để tránh timeout
+    sendOTPEmail(user.email, otp).catch((err) => {
+      console.error(
+        "⚠️ Lỗi gửi email OTP (không ảnh hưởng response):",
+        err.message
+      );
+    });
+
+    console.log(`🔑 OTP cho ${user.email}: ${otp}`); // Log để test
+
     return {
       message: "OTP sent to your email. Please verify before logging in.",
     };
@@ -84,24 +121,43 @@ export const login = async (username, password) => {
 };
 
 // 🟢 Xác thực OTP
-export const verifyOTP = async (username, otp) => {
+export const verifyOTP = async (identifier, otp) => {
+  // ✅ Tìm user theo USERNAME hoặc EMAIL
   const result = await pool.query(
-    `SELECT u.user_id, u.email, o.otp_code, o.expires_at
+    `SELECT u.user_id, u.email, u.username, o.otp_code, o.expires_at
      FROM users u
      JOIN user_otp o ON u.user_id = o.user_id
-     WHERE u.username = $1`,
-    [username]
+     WHERE u.username = $1 OR u.email = $1`,
+    [identifier]
   );
 
   const data = result.rows[0];
+
+  // Debug log
+  console.log("🔍 [verifyOTP] Tìm kiếm OTP với identifier:", identifier);
+  console.log(
+    "🔍 [verifyOTP] Kết quả:",
+    data ? `Found user ${data.username}` : "No data"
+  );
+
   if (!data) throw new Error("No OTP found for user");
-  if (data.otp_code !== otp) throw new Error("Invalid OTP");
-  if (new Date() > data.expires_at) throw new Error("OTP expired");
+  if (data.otp_code !== otp) {
+    console.log(
+      `❌ [verifyOTP] OTP không khớp. Nhận: ${otp}, DB: ${data.otp_code}`
+    );
+    throw new Error("Invalid OTP");
+  }
+  if (new Date() > data.expires_at) {
+    console.log(`❌ [verifyOTP] OTP đã hết hạn. Expires: ${data.expires_at}`);
+    throw new Error("OTP expired");
+  }
 
   // ✅ Cập nhật verified = true
   await pool.query("UPDATE users SET verified = TRUE WHERE user_id = $1", [
     data.user_id,
   ]);
+
+  console.log(`✅ [verifyOTP] User ${data.username} đã verify thành công`);
 
   return { message: "Email verified successfully!" };
 };
