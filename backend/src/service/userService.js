@@ -5,6 +5,9 @@ import {
   registerUser,
   loginUser,
   getUserProfile as getUserProfileRepo,
+  updateUserInfo,
+  findUserByUsername,
+  deleteUser as deleteUserRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -22,42 +25,55 @@ const generateOTP = () => {
 };
 
 export const register = async (username, password, email, role = "guest") => {
-  // ✅ BƯỚC 1: Kiểm tra username đã tồn tại chưa
+  // (Giữ lại validation ở service để báo lỗi sớm và user-friendly)
   const existingUsername = await pool.query(
-    "SELECT user_id FROM users WHERE username = $1",
+    "SELECT 1 FROM users WHERE username = $1",
     [username]
   );
-
   if (existingUsername.rows.length > 0) {
     throw new Error("Username đã được sử dụng. Vui lòng chọn username khác.");
   }
 
-  // ✅ BƯỚC 2: Kiểm tra email đã tồn tại chưa
   const existingEmail = await pool.query(
-    "SELECT user_id FROM users WHERE email = $1",
+    "SELECT 1 FROM users WHERE email = $1",
     [email]
   );
-
   if (existingEmail.rows.length > 0) {
     throw new Error("Email đã được sử dụng. Vui lòng chọn email khác.");
   }
 
-  // ✅ BƯỚC 3: Hash password
+  // Hash password và gọi repo để đăng ký qua hàm DB (tạo users_info & users_rating)
   const hashed = await bcrypt.hash(password, 10);
+  const registerMessage = await registerUser(username, hashed, email, role);
 
-  // ✅ BƯỚC 4: Tạo user
-  const result = await pool.query(
-    "INSERT INTO users (username, password_hashed, email, role) VALUES ($1, $2, $3, $4) RETURNING *",
-    [username, hashed, email, role]
-  );
-  const user = result.rows[0];
+  // Kỳ vọng: "User registered successfully with ID: <id>"
+  if (!registerMessage || typeof registerMessage !== "string") {
+    throw new Error("Đăng ký thất bại: Không nhận được thông báo từ hệ thống.");
+  }
+  if (registerMessage.toLowerCase().startsWith("error:")) {
+    throw new Error(registerMessage);
+  }
+
+  // Lấy user_id để tạo OTP: ưu tiên parse từ message, fallback truy vấn theo username
+  let userIdMatch = registerMessage.match(/id:\s*(\d+)/i);
+  let userId = userIdMatch ? Number(userIdMatch[1]) : null;
+  if (!userId || Number.isNaN(userId)) {
+    const lookup = await pool.query(
+      "SELECT user_id FROM users WHERE username = $1",
+      [username]
+    );
+    userId = lookup.rows?.[0]?.user_id;
+  }
+  if (!userId) {
+    throw new Error("Đăng ký thành công nhưng không xác định được user_id.");
+  }
 
   // 2️⃣ Tạo OTP & lưu
   const otp = generateOTP();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 phút
   await pool.query(
     "INSERT INTO user_otp (user_id, otp_code, expires_at) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET otp_code = $2, expires_at = $3",
-    [user.user_id, otp, expiresAt]
+    [userId, otp, expiresAt]
   );
 
   // 3️⃣ Gửi email OTP KHÔNG ĐỢI (async)
@@ -75,11 +91,8 @@ export const register = async (username, password, email, role = "guest") => {
 
 // ⚙️ Login + kiểm tra verified
 export const login = async (username, password) => {
-  const userRes = await pool.query(
-    "SELECT * FROM users WHERE username = $1 AND status = TRUE",
-    [username]
-  );
-  const user = userRes.rows[0];
+  // Lấy đủ thông tin user (bao gồm password_hashed) để kiểm tra mật khẩu
+  const user = await findUserByUsername(username);
   if (!user) throw new Error("User not found");
 
   const match = await bcrypt.compare(password, user.password_hashed);
@@ -111,13 +124,17 @@ export const login = async (username, password) => {
   }
 
   // ✅ Nếu đã verified → tạo JWT
+  // Sau khi xác thực mật khẩu + verified, dùng hàm loginUser để trả dữ liệu chuẩn (lọc field)
+  const loginRow = await loginUser(username, user.password_hashed);
+  if (!loginRow) throw new Error("Login function returned null.");
+
   const token = jwt.sign(
-    { id: user.user_id, username: user.username, role: user.role },
+    { id: loginRow.user_id, username: loginRow.username, role: loginRow.role },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
 
-  return { token, user };
+  return { token, user: loginRow };
 };
 
 // 🟢 Xác thực OTP
@@ -165,4 +182,38 @@ export const getUserProfile = async (user_id) => {
   const user = await getUserProfileRepo(user_id);
   if (!user) throw new Error("User not found");
   return user;
+};
+
+// 🟢 Cập nhật thông tin người dùng
+export const updateUserInfoService = async (user_id, userData) => {
+  // Gọi hàm trong repo
+  const success = await updateUserInfo(user_id, userData);
+
+  if (!success) {
+    throw new Error("Không tìm thấy user hoặc cập nhật thất bại.");
+  }
+
+  // Sau khi cập nhật thành công → lấy lại thông tin mới nhất từ DB
+  const updatedUser = await pool.query(
+    `SELECT user_id, first_name, last_name, phone_number, birthdate, gender, address, avatar_url 
+     FROM users_info 
+     WHERE user_id = $1`,
+    [user_id]
+  );
+
+  return updatedUser.rows[0];
+};
+
+// 🗑️ Xóa người dùng (admin)
+export const deleteUserService = async (user_id) => {
+  // Kiểm tra tồn tại
+  const exists = await pool.query("SELECT 1 FROM users WHERE user_id=$1", [
+    user_id,
+  ]);
+  if (exists.rows.length === 0) {
+    throw new Error("User not found");
+  }
+
+  await deleteUserRepo(user_id);
+  return true;
 };
