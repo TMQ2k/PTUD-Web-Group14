@@ -24,7 +24,7 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const register = async (username, password, email, role = "guest") => {
+export const register = async (username, password, email, role = "bidder") => {
   // (Giữ lại validation ở service để báo lỗi sớm và user-friendly)
   const existingUsername = await pool.query(
     "SELECT 1 FROM users WHERE username = $1",
