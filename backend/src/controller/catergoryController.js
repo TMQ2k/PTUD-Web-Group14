@@ -1,7 +1,7 @@
 import express from "express";
 import { getAllCategories } from "../service/categoryService.js";
 const router = express.Router();
-router.get("/categories", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const categories = await getAllCategories();
         return res.status(200).json({
