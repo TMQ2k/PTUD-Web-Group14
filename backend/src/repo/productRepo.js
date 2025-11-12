@@ -6,7 +6,7 @@ export const getAllProducts = async () => {
 
 //Find latest products with the that are still active
 export const getTopCurrentProducts = async (limit = 5) => {
-    const result = await pool.query("SELECT * FROM products WHERE is_active = true ORDER BY end_time DESC LIMIT $1", [limit]);
+    const result = await pool.query("SELECT * FROM products WHERE is_active = true ORDER BY end_time ASC LIMIT $1", [limit]);
     return result.rows.map(row => ({
         product_id: row.product_id,
         name: row.name,
