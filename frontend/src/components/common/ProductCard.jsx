@@ -1,0 +1,176 @@
+import React, { useEffect, useState } from "react";
+import { Clock, Tag, User, Heart } from "lucide-react";
+
+const ProductCard = ({
+  image,
+  name,
+  currentPrice,
+  highestBidder,
+  buyNowPrice,
+  postedDate,
+  remainingTime,
+  bidCount,
+  onBuyNow,
+}) => {
+  const [timeLeft, setTimeLeft] = useState(remainingTime);
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  useEffect(() => {
+    const parseTime = (timeStr) => {
+      if (typeof timeStr === "number") return timeStr;
+      const [h, m, s] = timeStr.split(":").map(Number);
+      return h * 3600 + m * 60 + s;
+    };
+
+    let timeInSeconds = parseTime(remainingTime);
+
+    const timer = setInterval(() => {
+      if (timeInSeconds > 0) {
+        timeInSeconds -= 1;
+        const hours = Math.floor(timeInSeconds / 3600)
+          .toString()
+          .padStart(2, "0");
+        const minutes = Math.floor((timeInSeconds % 3600) / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (timeInSeconds % 60).toString().padStart(2, "0");
+        setTimeLeft(`${hours}:${minutes}:${seconds}`);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [remainingTime]);
+
+  return (
+    <div className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
+      {/* Ảnh sản phẩm với overlay gradient */}
+      <div className="relative w-full h-45 overflow-hidden bg-linear-to-br from-gray-100 to-gray-50">
+        <img
+          src={image}
+          alt={name}
+          className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+        />
+
+        {/* Gradient overlay khi hover */}
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Nút yêu thích */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFavorite(!isFavorite);
+          }}
+          className="absolute top-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-10"
+          aria-label="Yêu thích"
+        >
+          <Heart
+            className={`w-5 h-5 transition-colors ${
+              isFavorite
+                ? "fill-red-500 stroke-red-500"
+                : "stroke-gray-600 hover:stroke-red-500"
+            }`}
+          />
+        </button>
+
+        {/* Thời gian còn lại */}
+        <div
+          className={`absolute top-3 right-3 flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md ${
+            timeLeft < "00:10:00"
+              ? "bg-red-500/95 text-white animate-pulse"
+              : "bg-white/95 text-gray-800"
+          }`}
+        >
+          <Clock className="w-4 h-4" />
+          <span>{timeLeft}</span>
+        </div>
+
+        {/* Badge "Mua ngay" nếu có */}
+        {buyNowPrice && (
+          <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+            🔥 Mua ngay: {buyNowPrice}₫
+          </div>
+        )}
+      </div>
+
+      {/* Nội dung */}
+      <div className="p-4 space-y-3">
+        {/* Tên sản phẩm */}
+        <h3 className="text-base font-bold text-gray-900 leading-tight line-clamp-2 group-hover:text-transparent group-hover:bg-linear-to-r group-hover:from-blue-400 group-hover:to-purple-600 group-hover:bg-clip-text cursor-pointer transition-all duration-300 min-h-10">
+          {name}
+        </h3>
+
+        {/* Giá hiện tại - Nổi bật */}
+        <div className="bg-linear-to-br from-blue-50 to-purple-50 rounded-xl p-3 border border-blue-100">
+          <p className="text-xs text-gray-600 font-medium mb-1">
+            Giá đấu hiện tại
+          </p>
+          <p className="text-2xl font-bold bg-linear-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+            {currentPrice}₫
+          </p>
+        </div>
+
+        {/* Info grid - 2 cột rõ ràng */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Người đấu cao nhất */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1.5">
+              <User className="w-4 h-4 text-blue-500" />
+              <span className="text-xs text-gray-600 font-medium">
+                Cao nhất
+              </span>
+            </div>
+            <p className="text-sm font-bold text-gray-900 truncate">
+              {highestBidder
+                ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
+                : "Chưa có"}
+            </p>
+          </div>
+
+          {/* Số lượt đấu */}
+          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Tag className="w-4 h-4 text-purple-500" />
+              <span className="text-xs text-gray-600 font-medium">
+                Lượt đấu
+              </span>
+            </div>
+            <p className="text-sm font-bold text-gray-900">{bidCount} lượt</p>
+          </div>
+        </div>
+
+        {/* Ngày đăng */}
+        <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-lg px-3 py-2 border border-blue-200">
+          <div className="flex items-center gap-2 text-sm">
+            <Clock className="w-4 h-4 text-blue-500" />
+            <span className="text-gray-700 font-medium">
+              Đăng ngày: <strong className="text-blue-600">{postedDate}</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 pt-2">
+          {buyNowPrice ? (
+            <>
+              <button
+                onClick={onBuyNow}
+                className="flex-1 py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
+              >
+                Đấu giá
+              </button>
+              <button className="px-5 py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
+                Mua ngay
+              </button>
+            </>
+          ) : (
+            <button className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base">
+              Tham gia đấu giá
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ProductCard;

@@ -3,11 +3,33 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
 import electronicsIm from "../../assets/electronics.jpg";
 
+const DEFAULT_COLORS = [
+  "bg-gradient-to-r from-slate-100 to-gray-200",
+  "bg-gradient-to-r from-gray-100 to-gray-300",
+  "bg-gradient-to-r from-stone-100 to-stone-300",
+  "bg-gradient-to-r from-zinc-100 to-neutral-200",
+  "bg-gradient-to-r from-amber-100 to-amber-200",
+  "bg-gradient-to-r from-rose-100 to-rose-200",
+  "bg-gradient-to-r from-orange-100 to-orange-200",
+  "bg-gradient-to-r from-yellow-100 to-yellow-200",
+  "bg-gradient-to-r from-lime-100 to-lime-200",
+  "bg-gradient-to-r from-green-100 to-emerald-200",
+  "bg-gradient-to-r from-cyan-100 to-sky-200",
+  "bg-gradient-to-r from-blue-100 to-indigo-200",
+  "bg-gradient-to-r from-indigo-100 to-violet-200",
+  "bg-gradient-to-r from-purple-100 to-fuchsia-200",
+  "bg-gradient-to-r from-pink-100 to-rose-200",
+  "bg-gradient-to-r from-teal-100 to-emerald-200",
+  "bg-gradient-to-r from-neutral-100 to-neutral-300",
+  "bg-gradient-to-r from-slate-200 to-gray-300",
+  "bg-gradient-to-r from-stone-200 to-gray-300",
+  "bg-gradient-to-r from-zinc-200 to-neutral-300",
+];
+
 const SAMPLE_CATEGORIES = [
   {
     id: "electronics",
     name: "Điện tử",
-    color: "bg-[#B99676]",
     image: electronicsIm,
     children: [
       { id: "phones", name: "Điện thoại di động" },
@@ -17,7 +39,6 @@ const SAMPLE_CATEGORIES = [
   {
     id: "fashion",
     name: "Thời trang",
-    color: "bg-[#EABFD0]",
     image: "https://via.placeholder.com/120x120.png?text=F",
     children: [
       { id: "shoes", name: "Giày" },
@@ -27,7 +48,6 @@ const SAMPLE_CATEGORIES = [
   {
     id: "home",
     name: "Nhà cửa & Đời sống",
-    color: "bg-[#B8DBFF]",
     image: "https://via.placeholder.com/120x120.png?text=H",
     children: [
       { id: "furniture", name: "Nội thất" },
@@ -37,7 +57,6 @@ const SAMPLE_CATEGORIES = [
   {
     id: "sport",
     name: "Thể thao & Du lịch",
-    color: "bg-[#F6E27A]",
     image: "https://via.placeholder.com/120x120.png?text=S",
     children: [
       { id: "gears", name: "Dụng cụ thể thao" },
@@ -46,12 +65,12 @@ const SAMPLE_CATEGORIES = [
   },
 ];
 
-export default function CategorySlider({
+const CategorySlider = ({
   data = SAMPLE_CATEGORIES,
   title = "Categories",
   onSelectCategory, // (parent, child?) => void
   onClose,
-}) {
+}) => {
   const [activeParent, setActiveParent] = useState(null); // id cấp 1
   const [pageIndex, setPageIndex] = useState(0); // 0: cấp 1, 1: cấp 2
 
@@ -66,6 +85,10 @@ export default function CategorySlider({
     outRight: { x: 24, opacity: 0, transition: { duration: 0.18 } },
     inRight: { x: 24, opacity: 0 },
     outLeft: { x: -24, opacity: 0, transition: { duration: 0.18 } },
+  };
+
+  const randomColor = () => {
+    return DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
   };
 
   return (
@@ -125,7 +148,7 @@ export default function CategorySlider({
                       setPageIndex(1);
                       onSelectCategory?.(cat);
                     }}
-                    className={`relative flex items-center justify-between w-full h-28 rounded-xl ${cat.color} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
+                    className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
                   >
                     <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
                       {cat.name}
@@ -158,7 +181,7 @@ export default function CategorySlider({
                   <button
                     key={child.id}
                     onClick={() => onSelectCategory?.(parent, child)}
-                    className={`relative flex items-center justify-between w-full h-28 rounded-xl ${parent.color} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
+                    className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
                   >
                     <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
                       {child.name}
@@ -175,4 +198,6 @@ export default function CategorySlider({
       </div>
     </section>
   );
-}
+};
+
+export default CategorySlider;
