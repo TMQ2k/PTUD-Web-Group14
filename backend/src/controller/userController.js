@@ -238,4 +238,24 @@ router.delete("/:id", authenticate, authorize("admin"), async (req, res) => {
   }
 });
 
+router.get("/profile", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy user_id từ token
+    const userProfile = await getUserProfile(userId);
+
+    res.status(200).json({
+      code: 200,
+      message: "Lấy thông tin user thành công",
+      data: userProfile,
+    });
+  } catch (err) {
+    console.error("❌ [GET /profile] Lỗi:", err.message);
+    res.status(500).json({
+      code: 500,
+      message: "Lấy thông tin user thất bại",
+      error: err.message,
+    });
+  }
+});
+
 export default router;

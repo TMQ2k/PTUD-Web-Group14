@@ -37,13 +37,6 @@ export const loginUser = async (username, password_hashed) => {
 
 // repo/userRepo.js
 // repo/userRepo.js
-export const getUserProfile = async (user_id) => {
-  const result = await pool.query("SELECT * FROM fnc_user_profile($1)", [
-    user_id,
-  ]);
-  return result.rows[0] || null;
-};
-
 export const updateUserInfo = async (
   userId,
   {
@@ -94,5 +87,12 @@ export const findUserByUsername = async (username) => {
     "SELECT * FROM users WHERE username = $1 AND status = TRUE",
     [username]
   );
+  return result.rows[0] || null;
+};
+
+export const getUserProfile = async (userId) => {
+  const result = await pool.query("SELECT * FROM fnc_user_profile($1)", [
+    userId,
+  ]);
   return result.rows[0] || null;
 };
