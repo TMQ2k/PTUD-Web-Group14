@@ -1,13 +1,14 @@
 import express, { json } from 'express';
 import {
     getHighestPricedProducts,
-    getTopCurrentProducts
+    getTopCurrentProducts,
+    getProductsByCategory
 } from '../service/productService.js';
 
 const router = express.Router();
-router.get('/top-current', async (req, res) => {
+router.get('/top-current/:limit', async (req, res) => {
     try {
-        const limit =  5;
+        const limit = parseInt(req.params.limit) || 5;
         const products = await getTopCurrentProducts(limit);
         return res.status(200).json({
             code: 200,
@@ -24,9 +25,9 @@ router.get('/top-current', async (req, res) => {
     }
 });
 
-router.get('/highest-priced', async (req, res) => {
+router.get('/highest-priced/:limit', async (req, res) => {
     try {
-        const limit = 5;
+        const limit = parseInt(req.params.limit) || 5;
         const products = await getHighestPricedProducts(limit);
         return res.status(200).json({
             code: 200,
@@ -43,6 +44,25 @@ router.get('/highest-priced', async (req, res) => {
         });
     }
 
+});
+
+router.get('/:categoryId', async (req, res) => {
+    try {
+        const categoryId = parseInt(req.params.categoryId);
+        const products = await getProductsByCategory(categoryId);
+        return res.status(200).json({
+            code: 200,
+            message: 'Products by category retrieved successfully',
+            data: products
+        });
+    } catch (err) {
+        console.error('❌ Error in /category route:', err);
+        return res.status(404).json({
+            code: 404,
+            message: err.message || 'No products found for this category',
+            data: null
+        });
+    }
 });
 
 export default router;
