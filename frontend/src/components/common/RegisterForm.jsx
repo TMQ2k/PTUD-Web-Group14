@@ -12,6 +12,7 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const user = useRef({});
 
@@ -129,7 +130,7 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
           userData = {
             name: user.current.username,
             email: user.current.email,
-            role: "buyer",
+            role: "bidder",
           };
         }
       }
@@ -138,9 +139,9 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
       dispatch(
         registerSuccess({
           id: userData.id,
-          name: userData.username || userData.name,
+          name: `${userData.first_name} ${userData.last_name}`,
           email: userData.email,
-          role: userData.role || "buyer",
+          role: userData.role,
           avatar: userData.avatar || null,
         })
       );
@@ -266,17 +267,17 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                 </label>
                 <div className="relative">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showConfirmPassword ? "text" : "password"}
                     name="confirmPassword"
                     className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12"
                     placeholder="••••••••"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
-                    {showPassword ? (
+                    {showConfirmPassword ? (
                       <FaEyeSlash className="w-5 h-5" />
                     ) : (
                       <FaEye className="w-5 h-5" />

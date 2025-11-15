@@ -1,18 +1,60 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSave } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
+import { userApi } from "../../api/user.api";
+import { updateUserInfo } from "../../store/userSlice";
 
 const EditAddress = () => {
+  const dispatch = useDispatch();
+  const { userData, isLoggedIn } = useSelector((state) => state.user);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   // Form data
   const [formData, setFormData] = useState({
-    firstName: "Quang",
-    lastName: "Trần Minh",
+    firstName: "",
+    lastName: "",
     phoneNumber: "",
-    address: "2",
+    address: "",
   });
+
+  // ✅ Fetch user profile khi component mount
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!isLoggedIn) {
+        console.warn("⚠️ User chưa đăng nhập");
+        return;
+      }
+
+      try {
+        setLoading(true);
+        console.log("🔄 Đang lấy địa chỉ...");
+
+        const response = await userApi.getProfile();
+        const apiUserData = response.data;
+
+        console.log("✅ Lấy địa chỉ thành công:", apiUserData);
+
+        setFormData({
+          firstName: apiUserData.first_name || "",
+          lastName: apiUserData.last_name || "",
+          phoneNumber: apiUserData.phone_number || "",
+          address: apiUserData.address || "",
+        });
+      } catch (error) {
+        console.error("❌ Lỗi khi lấy địa chỉ:", error);
+        setError(
+          error.response?.data?.message || "Không thể lấy thông tin địa chỉ"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [isLoggedIn]);
 
   // Handle input change
   const handleChange = (e) => {
@@ -63,7 +105,7 @@ const EditAddress = () => {
   };
 
   // Handle submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -74,11 +116,46 @@ const EditAddress = () => {
 
     setLoading(true);
 
-    // TODO: Thay bằng API call thực tế
-    setTimeout(() => {
+    try {
+      console.log("🔄 Đang cập nhật địa chỉ...");
+
+      // ✅ Chuẩn bị dữ liệu gửi đi
+      const updateData = {
+        first_name: formData.firstName.trim(),
+        last_name: formData.lastName.trim(),
+        phone_number: formData.phoneNumber.replace(/\s/g, ""),
+        address: formData.address.trim(),
+      };
+
+      console.log("📤 Dữ liệu gửi đi:", updateData);
+
+      // ✅ Gọi API cập nhật
+      const response = await userApi.updateProfile(updateData);
+
+      console.log("✅ Cập nhật địa chỉ thành công:", response);
+
+      // ✅ Cập nhật Redux store
+      if (response.data) {
+        dispatch(
+          updateUserInfo({
+            name: `${response.data.first_name || ""} ${
+              response.data.last_name || ""
+            }`.trim(),
+          })
+        );
+      }
+
       setSuccess("Lưu địa chỉ giao hàng thành công!");
+    } catch (error) {
+      console.error("❌ Lỗi khi cập nhật địa chỉ:", error);
+      setError(
+        error.response?.data?.message ||
+          error.response?.data?.error ||
+          "Cập nhật địa chỉ thất bại. Vui lòng thử lại."
+      );
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (

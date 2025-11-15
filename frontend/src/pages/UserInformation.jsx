@@ -3,10 +3,13 @@ import Sidebar from "../components/common/SideBar";
 import EditInformation from "../components/common/EditInformation";
 import EditAddress from "../components/common/EditAddress";
 import MyBiddingProducts from "../components/common/MyBiddingProducts";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const UserInformation = () => {
   const [activeTab, setActiveTab] = useState("account");
-  const [userRole, setUserRole] = useState("buyer"); // "buyer" hoặc "seller"
+  const navigate = useNavigate();
 
   // Định nghĩa các tab
   const sidebarItems = [
@@ -49,7 +52,7 @@ const UserInformation = () => {
             <p className="text-gray-600 mb-4">
               Nâng cấp lên tài khoản Seller để bán hàng...
             </p>
-            {userRole === "buyer" && (
+            {userRole === "bidder" && (
               <button
                 onClick={() => setUserRole("seller")}
                 className="bg-linear-to-r from-blue-400 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-700 transition-all"
@@ -115,10 +118,20 @@ const UserInformation = () => {
     }
   };
 
+  const { userData } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (!userData) {
+      navigate("/");
+    }
+  }, [userData, navigate]);
+
+  const userRole = userData?.role;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <h1 className="text-[64px] font-serif font-black tracking-tight text-black mx-auto max-w-6xl px-8 pt-16 pb-6 border-b border-black bg-white">
-        Hello Quang
+        TRANG CÁ NHÂN CỦA BẠN
       </h1>
       <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8 px-8 pt-10 pb-20">
         <Sidebar

@@ -2,10 +2,7 @@
 import axios from "axios";
 import { authStorage } from "../utils/auth";
 
-<<<<<<< HEAD
-=======
 // Tạo axios instance
->>>>>>> defd3ba11c6ceb95738997e1708fb80b8638fcb2
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
   timeout: 10000,

@@ -176,7 +176,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
         dispatch(
           loginSuccess({
             id: userData.id,
-            name: userData.username,
+            name: `${userData.first_name} ${userData.last_name}`,
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar || null,
