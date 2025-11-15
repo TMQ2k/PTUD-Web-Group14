@@ -258,7 +258,15 @@ RETURNS TABLE(
     role VARCHAR,
     status BOOLEAN,
     is_created TIMESTAMP,
-    verified BOOLEAN
+    verified BOOLEAN,
+	phone_number VARCHAR(15),
+	birthdate DATE,
+	gender varchar(10),
+	address TEXT,
+	avatar_url TEXT,
+	updated_at TIMESTAMP,
+	first_name varchar(50),
+	last_name varchar(50)
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -269,9 +277,19 @@ BEGIN
         u.role,
         u.status,
         u.is_created,
-        u.verified
+        u.verified, 
+		ui.phone_number,
+		ui.birthdate,
+		ui.gender,
+		ui.address,
+		ui.avatar_url,
+		ui.updated_at,
+		ui.first_name,
+		ui.last_name
     FROM users u
+		JOIN users_info ui ON ui.user_id = u.user_id
     WHERE u.user_id = p_user_id
+		
       AND u.status = TRUE; -- chỉ trả user active
 END;
 $$ LANGUAGE plpgsql;
