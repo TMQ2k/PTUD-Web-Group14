@@ -8,6 +8,7 @@ import {
   updateUserInfo,
   findUserByUsername,
   deleteUser as deleteUserRepo,
+  updateAvatar,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -202,6 +203,15 @@ export const updateUserInfoService = async (user_id, userData) => {
   );
 
   return updatedUser.rows[0];
+};
+
+export const updateUserAvatarService = async (user_id, avatar_url) => {
+  // Gọi hàm trong repo
+  const updatedUser = await updateAvatar(user_id, avatar_url);
+  if (!updatedUser) {
+    throw new Error("Không tìm thấy user hoặc cập nhật avatar thất bại.");
+  }
+  return updatedUser;
 };
 
 // 🗑️ Xóa người dùng (admin)

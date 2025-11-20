@@ -1,4 +1,6 @@
 import express from "express";
+import cloudinary from "../config/cloudinary.js";
+import upload from "../middleware/upload.js";
 import jwt from "jsonwebtoken";
 import {
   register,
@@ -7,6 +9,7 @@ import {
   verifyOTP,
   updateUserInfoService,
   deleteUserService,
+  updateUserAvatarService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -227,5 +230,53 @@ router.get("/profile", authenticate, async (req, res) => {
     });
   }
 });
+
+router.patch(
+  "/update-avatar",
+  authenticate,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "avatars" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+      const userId = req.user.id; // Lấy user_id từ token
+      console.log(userId);
+
+      // Cập nhật avatar_url trong DB
+      await updateUserAvatarService(userId, uploadResult.secure_url);
+
+      return res.status(200).json({
+        code: 200,
+        message: "Upload avatar thành công",
+        data: {
+          avatar_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload avatar:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
 
 export default router;
