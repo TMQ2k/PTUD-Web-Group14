@@ -154,36 +154,6 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const { username, otp } = req.body;
-    console.log("🔹 [POST /verify-otp] Nhận yêu cầu xác thực OTP:", {
-      username,
-      otp,
-    });
-
-    // Gọi hàm verifyOTP trong service
-    const result = await verifyOTP(username, otp);
-
-    console.log("✅ [POST /verify-otp] Kết quả xác thực OTP:", result);
-
-    return res.status(200).json({
-      code: 200,
-      message: "Xác thực OTP thành công",
-      data: result ? { token: result.token } : null, // chỉ trả về token
-    });
-  } catch (err) {
-    console.error("❌ [POST /verify-otp] Lỗi:", err.message);
-
-    return res.status(400).json({
-      code: 400,
-      message: "Xác thực OTP thất bại",
-      data: null,
-      error: err.message, // có thể bỏ nếu không muốn show chi tiết
-    });
-  }
-});
-
 router.put("/update-info", authenticate, async (req, res) => {
   try {
     const userId = req.user.id; // ✅ lấy từ token
