@@ -42,3 +42,20 @@ INSERT INTO categories (name, parent_id) VALUES
 ('Laptop & Máy tính', 1),              -- 8 - con của Điện tử
 ('Giày dép', 2),                       -- 9 - con của Thời trang
 ('Máy ảnh & Thiết bị quay phim', 1);   -- 10 - con của Điện tử
+
+INSERT INTO product_categories (product_id, category_id) VALUES
+-- Đồng hồ cơ Orient Bambino → thuộc nhóm Đồng hồ (6)
+(1, 6),
+
+-- Laptop Dell XPS 13 → thuộc nhóm Laptop & Máy tính (8)
+(2, 8),
+
+-- Điện thoại iPhone 14 Pro → thuộc nhóm Điện thoại (7)
+(3, 7),
+
+-- Máy ảnh Canon EOS M50 Mark II → thuộc nhóm Máy ảnh & Thiết bị quay phim (10)
+(4, 10),
+
+-- Giày Nike Air Force 1 → thuộc nhóm Giày dép (9) và có thể là Thể thao & Dã ngoại (4)
+(5, 9),
+(5, 4);

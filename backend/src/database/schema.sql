@@ -11,6 +11,8 @@ CREATE TABLE users (
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
     phone_number VARCHAR(15),
     birthdate DATE,
     gender VARCHAR(10),
@@ -18,10 +20,7 @@ CREATE TABLE users_info (
     avatar_url TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-ALTER TABLE users_info
-DROP COLUMN full_name,
-ADD COLUMN first_name VARCHAR(50),
-ADD COLUMN last_name VARCHAR(50);
+
 
 CREATE TABLE users_rating (
     user_rating_id SERIAL PRIMARY KEY,
@@ -111,16 +110,15 @@ CREATE TABLE bids (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
+drop table auto_bids
 CREATE TABLE auto_bids (
     id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
 
     max_bid_amount NUMERIC(12, 2) NOT NULL CHECK (max_bid_amount > 0),
     current_bid_amount NUMERIC(12, 2) DEFAULT 0 CHECK (current_bid_amount >= 0),
     
-    is_active BOOLEAN DEFAULT TRUE,
     is_winner BOOLEAN DEFAULT FALSE,
 
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -128,4 +126,99 @@ CREATE TABLE auto_bids (
 
     UNIQUE (user_id, product_id)
 );
+
+CREATE TABLE bid_rejections (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    product_id BIGINT NOT NULL,
+    bidder_id BIGINT NOT NULL,
+
+    reason VARCHAR(255) DEFAULT NULL,      -- lý do bị cấm ra giá
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by BIGINT DEFAULT NULL,        -- admin hoặc seller ban
+
+    -- bidder có thể được gỡ cấm
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    lifted_at TIMESTAMP DEFAULT NULL,      -- thời điểm gỡ cấm
+    lifted_by BIGINT DEFAULT NULL,         -- người gỡ cấm
+    lift_reason VARCHAR(255) DEFAULT NULL, -- lý do gỡ cấm
+
+    CONSTRAINT fk_bid_rej_product 
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_bid_rej_bidder
+        FOREIGN KEY (bidder_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_bid_rej_created_by
+        FOREIGN KEY (created_by) REFERENCES users(user_id),
+
+    CONSTRAINT fk_bid_rej_lifted_by
+        FOREIGN KEY (lifted_by) REFERENCES users(user_id),
+
+    -- Mỗi bidder chỉ bị cấm 1 lần trên 1 product (để tránh trùng record)
+    CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
+);
+
+CREATE TABLE product_questions (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    product_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,           -- người hỏi (bidder)
+    question TEXT NOT NULL,            -- nội dung câu hỏi
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+
+    is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn câu hỏi (seller/admin)
+    hidden_at TIMESTAMP NULL,
+    hidden_by BIGINT NULL,
+
+    CONSTRAINT fk_pq_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pq_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pq_hidden_by
+        FOREIGN KEY (hidden_by) REFERENCES users(user_id)
+);
+
+CREATE TABLE product_answers (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    question_id BIGINT NOT NULL,          -- tham chiếu câu hỏi
+    seller_id BIGINT NOT NULL,            -- người trả lời (seller)
+    answer TEXT NOT NULL,                 -- nội dung trả lời
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+
+    is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn trả lời
+    hidden_at TIMESTAMP NULL,
+    hidden_by BIGINT NULL,
+
+    CONSTRAINT fk_pa_question
+        FOREIGN KEY (question_id) REFERENCES product_questions(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pa_seller
+        FOREIGN KEY (seller_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pa_hidden_by
+        FOREIGN KEY (hidden_by) REFERENCES users(user_id)
+);
+
+CREATE TABLE product_descriptions (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    description TEXT NOT NULL,             -- phần mô tả mới
+    created_by BIGINT REFERENCES users(user_id), -- seller thêm mô tả
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 
