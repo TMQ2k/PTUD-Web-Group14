@@ -173,10 +173,19 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
         console.log("✅ Lấy thông tin user thành công:", userData);
 
+        const fullName = `${userData.first_name || ""} ${
+          userData.last_name || ""
+        }`.trim();
+        const displayName =
+          fullName ||
+          userData.name ||
+          userData.username ||
+          user.current.username;
+
         dispatch(
           loginSuccess({
             id: userData.id,
-            name: `${userData.first_name} ${userData.last_name}`,
+            name: displayName,
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url || null,

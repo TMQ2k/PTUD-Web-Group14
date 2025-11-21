@@ -43,11 +43,20 @@ const App = () => {
 
         console.log("✅ Khôi phục thành công:", userData);
 
+        const fullName = `${userData.first_name || ""} ${
+          userData.last_name || ""
+        }`.trim();
+        const displayName =
+          fullName ||
+          userData.name ||
+          userData.username ||
+          user.current.username;
+
         // Lưu vào Redux
         dispatch(
           loginSuccess({
             id: userData.id,
-            name: `${userData.first_name} ${userData.last_name}`,
+            name: displayName,
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url,
