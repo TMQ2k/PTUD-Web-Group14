@@ -4,6 +4,7 @@ import EditInformation from "../components/common/EditInformation";
 import EditAddress from "../components/common/EditAddress";
 import MyBiddingProducts from "../components/common/MyBiddingProducts";
 import WonAuction from "../components/common/WonAuction";
+import RatingHistory from "../components/common/RatingHistory";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -16,6 +17,7 @@ const UserInformation = () => {
   const sidebarItems = [
     { key: "account", label: "Tài khoản" },
     { key: "addresses", label: "Địa chỉ" },
+    { key: "ratingHistory", label: "Điểm đánh giá" },
     { key: "upgrade", label: "Nâng cấp" },
     { key: "joinedAuctions", label: "Sản phẩm đã tham gia đấu giá" },
     { key: "wonAuctions", label: "Sản phẩm đã thắng đấu giá" },
@@ -50,6 +52,9 @@ const UserInformation = () => {
 
       case "addresses":
         return <EditAddress />;
+
+      case "ratingHistory":
+        return <RatingHistory />;
 
       case "upgrade":
         return (
