@@ -161,7 +161,7 @@ const RatingHistory = () => {
         </div>
 
         {/* Negative Ratings */}
-        <div className="bg-white border border-red-600 border-2 rounded-xl p-6 hover:shadow-md transition-shadow">
+        <div className="bg-white border-red-600 border-2 rounded-xl p-6 hover:shadow-md transition-shadow">
           <p className="text-sm text-gray-500 mb-2">Chưa hài lòng</p>
           <p className="text-4xl font-bold text-red-600 mb-1">
             {ratingData.negativeRatings}
