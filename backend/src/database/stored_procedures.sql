@@ -290,7 +290,47 @@ BEGIN
 		JOIN users_info ui ON ui.user_id = u.user_id
     WHERE u.user_id = p_user_id
 		
-      AND u.status = TRUE; -- chỉ trả user active
+      AND u.status = TRUE
+	  AND u.verified = TRUE; -- chỉ trả user active
 END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_place_bid(
+    p_product_id BIGINT,
+    p_user_id BIGINT,
+    p_amount NUMERIC
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Tạo mới hoặc cập nhật auto_bid của user
+    INSERT INTO auto_bids (user_id, product_id, max_bid_amount, current_bid_amount)
+    VALUES (p_user_id, p_product_id, p_amount, p_amount)
+    ON CONFLICT (user_id, product_id)
+    DO UPDATE SET
+        max_bid_amount = EXCLUDED.max_bid_amount,
+        current_bid_amount = EXCLUDED.current_bid_amount,
+        updated_at = NOW();
+
+    -- 2. Reset toàn bộ winner cho product này
+    UPDATE auto_bids
+    SET is_winner = FALSE
+    WHERE product_id = p_product_id;
+
+    -- 3. Xác định auto_bid thắng (current_bid_amount cao nhất)
+    --    Nếu trùng current_bid_amount → ưu tiên max_bid_amount cao hơn
+    WITH ranked AS (
+        SELECT id
+        FROM auto_bids
+        WHERE product_id = p_product_id
+        ORDER BY current_bid_amount DESC, max_bid_amount DESC
+        LIMIT 1
+    )
+    UPDATE auto_bids 
+    SET is_winner = TRUE
+    WHERE id IN (SELECT id FROM ranked);
+END;
+$$ LANGUAGE plpgsql;
+
 

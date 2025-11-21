@@ -70,6 +70,19 @@ export const updateUserInfo = async (
   }
 };
 
+export const updateAvatar = async (userId, avatar_url) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users_info SET avatar_url = $1 WHERE user_id = $2 RETURNING *`,
+      [avatar_url, userId]
+    );
+    return result.rows[0]; // Trả về user đã được cập nhật
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật avatar user:", err);
+    throw err;
+  }
+};
+
 // Xóa user bằng function DB
 export const deleteUser = async (userId) => {
   try {

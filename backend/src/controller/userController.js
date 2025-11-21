@@ -1,4 +1,6 @@
 import express from "express";
+import cloudinary from "../config/cloudinary.js";
+import upload from "../middleware/upload.js";
 import jwt from "jsonwebtoken";
 import {
   register,
@@ -7,6 +9,7 @@ import {
   verifyOTP,
   updateUserInfoService,
   deleteUserService,
+  updateUserAvatarService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -154,36 +157,6 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-router.post("/verify-otp", async (req, res) => {
-  try {
-    const { username, otp } = req.body;
-    console.log("🔹 [POST /verify-otp] Nhận yêu cầu xác thực OTP:", {
-      username,
-      otp,
-    });
-
-    // Gọi hàm verifyOTP trong service
-    const result = await verifyOTP(username, otp);
-
-    console.log("✅ [POST /verify-otp] Kết quả xác thực OTP:", result);
-
-    return res.status(200).json({
-      code: 200,
-      message: "Xác thực OTP thành công",
-      data: result ? { token: result.token } : null, // chỉ trả về token
-    });
-  } catch (err) {
-    console.error("❌ [POST /verify-otp] Lỗi:", err.message);
-
-    return res.status(400).json({
-      code: 400,
-      message: "Xác thực OTP thất bại",
-      data: null,
-      error: err.message, // có thể bỏ nếu không muốn show chi tiết
-    });
-  }
-});
-
 router.put("/update-info", authenticate, async (req, res) => {
   try {
     const userId = req.user.id; // ✅ lấy từ token
@@ -257,5 +230,53 @@ router.get("/profile", authenticate, async (req, res) => {
     });
   }
 });
+
+router.patch(
+  "/update-avatar",
+  authenticate,
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "avatars" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+      const userId = req.user.id; // Lấy user_id từ token
+      console.log(userId);
+
+      // Cập nhật avatar_url trong DB
+      await updateUserAvatarService(userId, uploadResult.secure_url);
+
+      return res.status(200).json({
+        code: 200,
+        message: "Upload avatar thành công",
+        data: {
+          avatar_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload avatar:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
 
 export default router;
