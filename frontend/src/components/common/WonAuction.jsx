@@ -34,7 +34,7 @@ const WonAuction = ({ products = mockWonProducts }) => {
             Xem lại giá đã thắng và gửi đánh giá cho người bán.
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 text-xs sm:text-sm px-4 py-2 rounded-full bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 font-medium">
+        <span className="inline-flex items-center gap-2 text-xs sm:text-sm px-4 py-2 rounded-full bg-linear-to-r from-green-50 to-emerald-50 text-green-700 border border-green-200 font-medium">
           <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           Đã xác nhận thanh toán
         </span>
