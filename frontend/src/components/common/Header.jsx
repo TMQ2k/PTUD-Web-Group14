@@ -278,18 +278,6 @@ export default function Header() {
                           <span>Trang cá nhân</span>
                         </Link>
 
-                        {userData?.role === "seller" && (
-                          // Upload Product
-                          <Link
-                            to="/upload-product"
-                            onClick={() => setShowUserMenu(false)}
-                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <IoLogoPolymer className="w-4 h-4 text-blue-600" />
-                            <span>Đăng sản phẩm</span>
-                          </Link>
-                        )}
-
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"

@@ -11,19 +11,20 @@ import {
 } from "redux-persist";
 import storage from "redux-persist/lib/storage"; // localStorage
 import userReducer from "./userSlice";
+import categoriesReducer from "./categoriesSlice";
 
-// Cấu hình persist
+// Cấu hình persist cho user
 const persistConfig = {
   key: "root",
   storage,
-  // Bỏ whitelist vì chỉ có 1 reducer duy nhất
 };
 
-const persistedReducer = persistReducer(persistConfig, userReducer);
+const persistedUserReducer = persistReducer(persistConfig, userReducer);
 
 export const store = configureStore({
   reducer: {
-    user: persistedReducer,
+    user: persistedUserReducer,
+    categories: categoriesReducer, // ✅ Thêm categories reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

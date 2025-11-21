@@ -3,6 +3,7 @@ import Sidebar from "../components/common/SideBar";
 import EditInformation from "../components/common/EditInformation";
 import EditAddress from "../components/common/EditAddress";
 import MyBiddingProducts from "../components/common/MyBiddingProducts";
+import WonAuction from "../components/common/WonAuction";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -26,6 +27,11 @@ const UserInformation = () => {
     {
       key: "sellerWon",
       label: "Sản phẩm đã có người thắng đấu giá",
+      requiresSeller: true,
+    },
+    {
+      key: "uploadProduct",
+      label: "Đăng sản phẩm mới",
       requiresSeller: true,
     },
   ];
@@ -71,17 +77,7 @@ const UserInformation = () => {
         return <MyBiddingProducts />;
 
       case "wonAuctions":
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Sản phẩm đã thắng đấu giá
-            </h2>
-            <p className="text-gray-600">
-              Danh sách sản phẩm bạn đã thắng đấu giá...
-            </p>
-            {/* TODO: Thêm danh sách sản phẩm */}
-          </div>
-        );
+        return <WonAuction />;
 
       case "sellerActive":
         return (
@@ -106,6 +102,16 @@ const UserInformation = () => {
               Danh sách sản phẩm đã kết thúc đấu giá...
             </p>
             {/* TODO: Thêm danh sách sản phẩm */}
+          </div>
+        );
+
+      case "uploadProduct":
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <h2 className="text-2xl font-bold mb-4">Đăng sản phẩm mới</h2>
+            <p className="text-gray-600 mb-4">
+              Mẫu để đăng sản phẩm mới lên đấu giá...
+            </p>
           </div>
         );
 

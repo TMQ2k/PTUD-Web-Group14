@@ -32,10 +32,15 @@ const DEFAULT_ITEMS = [
     label: "Sản phẩm đã có người thắng đấu giá",
     requiresSeller: true,
   },
+  {
+    key: "uploadProduct",
+    label: "Đăng sản phẩm mới",
+    requiresSeller: true,
+  },
 ];
 
 export default function AccountSidebar({
-  role = "buyer",
+  role = "bidder",
   items = DEFAULT_ITEMS,
   current = "account",
   onSelect = () => {},
