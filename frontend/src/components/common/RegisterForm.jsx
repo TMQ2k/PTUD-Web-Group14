@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
+import ReCAPTCHA from "react-google-recaptcha";
 import { userApi } from "../../api/user.api";
 import { useDispatch } from "react-redux";
 import { registerSuccess } from "../../store/userSlice";
@@ -14,6 +15,8 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [error, setError] = useState("");
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState(null);
+  const recaptchaRef = useRef(null);
   const user = useRef({});
 
   const handleRegisterSubmit = async (e) => {
@@ -30,6 +33,13 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
 
     if (!username || !email || !password || !confirmPassword) {
       setError("Vui lòng điền đầy đủ thông tin.");
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Kiểm tra reCAPTCHA
+    if (!recaptchaToken) {
+      setError("Vui lòng xác nhận rằng bạn không phải là robot.");
       setLoading(false);
       return;
     }
@@ -60,11 +70,23 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
       // ✅ BƯỚC 3: Hiển thị form OTP
       setMessage("Đăng ký thành công! Vui lòng kiểm tra email để nhận mã OTP.");
       setStep("otp");
+
+      // Reset reCAPTCHA
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } catch (error) {
       console.error("❌ Đăng ký thất bại:", error);
       setError(
         error.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại."
       );
+
+      // Reset reCAPTCHA khi có lỗi
+      setRecaptchaToken(null);
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
     } finally {
       setLoading(false);
     }
@@ -290,6 +312,20 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                 </p>
               </div>
 
+              {/* reCAPTCHA */}
+              <div className="flex justify-center">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={
+                    import.meta.env.VITE_RECAPTCHA_SITE_KEY ||
+                    "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                  }
+                  onChange={(token) => setRecaptchaToken(token)}
+                  onExpired={() => setRecaptchaToken(null)}
+                  onErrored={() => setRecaptchaToken(null)}
+                />
+              </div>
+
               {error && (
                 <div className="text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
                   {error}
@@ -303,8 +339,8 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full rounded-lg bg-linear-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                disabled={loading || !recaptchaToken}
+                className="w-full rounded-lg bg-linear-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {loading ? "Đang xử lý…" : "Đăng ký"}
               </button>
