@@ -179,7 +179,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
             name: `${userData.first_name} ${userData.last_name}`,
             email: userData.email,
             role: userData.role,
-            avatar: userData.avatar || null,
+            avatar: userData.avatar_url || null,
           })
         );
       } catch (profileError) {

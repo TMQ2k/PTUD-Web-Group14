@@ -37,6 +37,30 @@ const EditInformation = () => {
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("Vui lòng chọn file ảnh (jpg, png, gif)");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Kích thước ảnh không được vượt quá 5MB");
+      return;
+    }
+
+    // Tạo preview URL cho ảnh
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+    setAvatarFile(file);
+
+    setError("");
+  };
+
   // ✅ Fetch user profile khi component mount
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -87,6 +111,15 @@ const EditInformation = () => {
     fetchUserProfile();
   }, [isLoggedIn]);
 
+  // ✅ Cleanup preview URL khi component unmount
+  useEffect(() => {
+    return () => {
+      if (avatarPreview && avatarPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
   // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,33 +133,6 @@ const EditInformation = () => {
   };
 
   // Handle avatar file change
-  const handleAvatarChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setError("Vui lòng chọn file ảnh (jpg, png, gif)");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Kích thước ảnh không được vượt quá 5MB");
-      return;
-    }
-
-    setAvatarFile(file);
-
-    // Create preview URL
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-
-    setError("");
-  };
 
   // Validate form
   const validateForm = () => {
@@ -197,6 +203,28 @@ const EditInformation = () => {
     try {
       console.log("🔄 Đang cập nhật thông tin...");
 
+      // ✅ Nếu có avatar mới, upload trước
+      let avatarResponse = null;
+      if (avatarFile) {
+        console.log("📸 Đang upload avatar...");
+        const formData = new FormData();
+        formData.append("avatar", avatarFile);
+
+        try {
+          avatarResponse = await userApi.updateAvatar(formData);
+          console.log("✅ Upload avatar thành công:", avatarResponse);
+          setSuccess("Cập nhật avatar thành công!");
+        } catch (avatarError) {
+          console.error("❌ Lỗi khi upload avatar:", avatarError);
+          setError(
+            avatarError.response?.data?.message ||
+              "Không thể upload avatar. Vui lòng thử lại."
+          );
+          setLoading(false);
+          return;
+        }
+      }
+
       // ✅ Chuẩn bị dữ liệu để gửi (theo format backend yêu cầu)
       const updateData = {
         first_name: formData.firstName.trim(),
@@ -219,21 +247,47 @@ const EditInformation = () => {
 
       console.log("✅ Cập nhật thành công:", response);
 
-      // ✅ Cập nhật Redux store
-      if (response.data) {
-        dispatch(
-          updateUserInfo({
-            name: `${response.data.first_name || ""} ${
-              response.data.last_name || ""
-            }`.trim(),
-            email: response.data.email,
-            // Thêm các field khác nếu cần
-          })
-        );
+      // ✅ Fetch lại profile để có dữ liệu mới nhất (bao gồm avatar URL từ Cloudinary)
+      const updatedProfile = await userApi.getProfile();
+      const updatedUserData = updatedProfile.data;
+
+      console.log("✅ Profile mới nhất:", updatedUserData);
+
+      // ✅ Cập nhật Redux store với dữ liệu mới nhất
+      dispatch(
+        updateUserInfo({
+          name: `${updatedUserData.first_name || ""} ${
+            updatedUserData.last_name || ""
+          }`.trim(),
+          email: updatedUserData.email,
+          // Avatar URL mới nhất từ database (đã được cập nhật bởi upload avatar)
+          avatar: updatedUserData.avatar_url,
+          role: updatedUserData.role,
+        })
+      );
+
+      // ✅ Cập nhật formData với avatar URL mới
+      setFormData((prev) => ({
+        ...prev,
+        avatarUrl: updatedUserData.avatar_url,
+      }));
+
+      // ✅ Cập nhật preview với URL mới từ server
+      if (avatarResponse?.data?.avatar_url) {
+        setAvatarPreview(avatarResponse.data.avatar_url);
+      } else if (updatedUserData.avatar_url) {
+        setAvatarPreview(updatedUserData.avatar_url);
       }
 
-      setSuccess("Cập nhật thông tin thành công!");
+      setSuccess(
+        avatarFile
+          ? "Cập nhật thông tin và avatar thành công!"
+          : "Cập nhật thông tin thành công!"
+      );
       setIsEditing(false);
+
+      // Reset avatar file sau khi upload thành công
+      setAvatarFile(null);
 
       // Reset password fields
       setFormData((prev) => ({
@@ -380,16 +434,32 @@ const EditInformation = () => {
               Ảnh đại diện
             </h3>
             {isEditing ? (
-              <p className="text-sm text-gray-500">
-                Chọn ảnh đại diện mới (jpg, png, gif). Kích thước tối đa 5MB.
-              </p>
+              <>
+                <p className="text-sm text-gray-500">
+                  Chọn ảnh đại diện mới (jpg, png, gif). Kích thước tối đa 5MB.
+                </p>
+                {avatarFile && (
+                  <div className="flex items-center gap-2 mt-2">
+                    <Check className="text-green-600 w-4 h-4" />
+                    <span className="text-sm text-green-600 font-medium">
+                      {avatarFile.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAvatarFile(null);
+                        // Reset về avatar cũ
+                        setAvatarPreview(formData.avatarUrl || null);
+                      }}
+                      className="text-xs text-red-500 hover:text-red-700 underline"
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <></>
-            )}
-            {isEditing && avatarFile && (
-              <>
-                <Check className="text-green-600 mt-2" />
-              </>
             )}
           </div>
         </div>

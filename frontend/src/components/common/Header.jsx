@@ -48,8 +48,6 @@ export default function Header() {
         const response = await userApi.getProfile();
         const userProfile = response.data;
 
-        console.log("✅ Session restored:", userProfile);
-
         // Cập nhật Redux state
         dispatch(
           loginSuccess({
@@ -59,8 +57,8 @@ export default function Header() {
                 userProfile.last_name || ""
               }`.trim() || "User",
             email: userProfile.email,
-            role: userProfile.role || "buyer",
-            avatar: userProfile.avatar_url || null,
+            role: userProfile.role || "bidder",
+            avatar: userProfile.avatar_url,
           })
         );
       } catch (error) {
@@ -215,7 +213,7 @@ export default function Header() {
                       userData?.avatar ||
                       `https://ui-avatars.com/api/?name=${encodeURIComponent(
                         userData?.name || "User"
-                      )}&background=4F46E5&color=fff`
+                      )}&size=128&background=4F46E5&color=fff`
                     }
                     alt={userData?.name || "User"}
                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"

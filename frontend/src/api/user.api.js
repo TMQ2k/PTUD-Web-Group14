@@ -4,6 +4,7 @@ const userEndpoint = {
   register: "/users/register",
   login: "/users/login",
   profile: "/users/profile",
+  updateAvatar: "/users/update-avatar",
   verifyOtp: "/users/verify-otp",
   updateProfile: "/users/update-info",
 };
@@ -50,6 +51,20 @@ export const userApi = {
    */
   updateProfile: async (userData) => {
     const response = await http.put(userEndpoint.updateProfile, userData);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật avatar người dùng
+   * @param {FormData} formData - Dữ liệu FormData chứa file ảnh
+   * @returns {Promise<Object>} Thông tin người dùng sau khi cập nhật avatar
+   */
+  updateAvatar: async (formData) => {
+    const response = await http.patch(userEndpoint.updateAvatar, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
 };
