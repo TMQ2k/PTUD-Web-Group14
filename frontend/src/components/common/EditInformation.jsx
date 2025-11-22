@@ -190,7 +190,17 @@ const EditInformation = () => {
 
       // Mật khẩu xác nhận phải khớp
       if (formData.newPassword !== formData.confirmPassword) {
-        setError("Mật khẩu xác nhận không khớp");
+        console.log("🔍 Debug password mismatch:");
+        console.log("  - newPassword:", JSON.stringify(formData.newPassword));
+        console.log(
+          "  - confirmPassword:",
+          JSON.stringify(formData.confirmPassword)
+        );
+        console.log("  - Length new:", formData.newPassword.length);
+        console.log("  - Length confirm:", formData.confirmPassword.length);
+        setError(
+          `Mật khẩu xác nhận không khớp (${formData.newPassword.length} ≠ ${formData.confirmPassword.length} ký tự)`
+        );
         return false;
       }
     }
@@ -264,8 +274,9 @@ const EditInformation = () => {
         try {
           console.log("🔄 Đang đổi mật khẩu...");
           await userApi.changePassword({
-            currentPassword: formData.oldPassword,
+            oldPassword: formData.oldPassword,
             newPassword: formData.newPassword,
+            confirmPassword: formData.confirmPassword,
           });
           console.log("✅ Đổi mật khẩu thành công");
           passwordChanged = true;
