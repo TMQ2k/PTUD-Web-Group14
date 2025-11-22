@@ -9,6 +9,7 @@ import {
   findUserByUsername,
   deleteUser as deleteUserRepo,
   updateAvatar,
+  changePassword,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -225,5 +226,30 @@ export const deleteUserService = async (user_id) => {
   }
 
   await deleteUserRepo(user_id);
+  return true;
+};
+
+export const changePasswordService = async (
+  user_id,
+  oldPassword,
+  newPassword
+) => {
+  const exists = await pool.query(
+    "SELECT password_hashed FROM users WHERE user_id=$1",
+    [user_id]
+  );
+  if (exists.rows.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const match = await bcrypt.compare(
+    oldPassword,
+    exists.rows[0].password_hashed
+  );
+  if (!match) {
+    throw new Error("Old password is incorrect");
+  }
+  const newHashed = await bcrypt.hash(newPassword, 10);
+  await changePassword(user_id, newHashed);
   return true;
 };

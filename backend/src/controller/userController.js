@@ -10,6 +10,7 @@ import {
   updateUserInfoService,
   deleteUserService,
   updateUserAvatarService,
+  changePasswordService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -278,5 +279,31 @@ router.patch(
     }
   }
 );
+
+router.put("/change-password", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id; // Lấy user_id từ token
+    const { oldPassword, newPassword, confirmPassword } = req.body;
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        code: 400,
+        message: "Mật khẩu mới và xác nhận mật khẩu không khớp",
+      });
+    }
+    await changePasswordService(userId, oldPassword, newPassword);
+
+    res.status(200).json({
+      code: 200,
+      message: "Đổi mật khẩu thành công",
+    });
+  } catch (err) {
+    console.error("❌ [PUT /change-password] Lỗi:", err.message);
+    res.status(500).json({
+      code: 500,
+      message: "Đổi mật khẩu thất bại",
+      error: err.message,
+    });
+  }
+});
 
 export default router;

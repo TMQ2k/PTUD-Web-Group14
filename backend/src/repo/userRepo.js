@@ -109,3 +109,16 @@ export const getUserProfile = async (userId) => {
   ]);
   return result.rows[0] || null;
 };
+
+export const changePassword = async (userId, newPasswordHashed) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users SET password_hashed = $1 WHERE user_id = $2 RETURNING *`,
+      [newPasswordHashed, userId]
+    );
+    return result.rows[0]; // Trả về user đã được cập nhật
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật mật khẩu user:", err);
+    throw err;
+  }
+};
