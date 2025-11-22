@@ -11,6 +11,7 @@ import LoadingScreen from "./components/layouts/LoadingScreen";
 import RegisterForm from "./components/common/RegisterForm";
 import LoginForm from "./components/common/LoginForm";
 import UserInformation from "./pages/UserInformation";
+import Admin from "./pages/AdminDashboard";
 import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
@@ -87,12 +88,18 @@ const App = () => {
 
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<MainLayouts />}>
-        <Route path="register" element={<RegisterForm />} />
-        <Route path="login" element={<LoginForm />} />
-        <Route index element={<Home />} />
-        <Route path="profile" element={<UserInformation />} />
-      </Route>
+      <>
+        {/* Main Routes with Header + Footer */}
+        <Route path="/" element={<MainLayouts />}>
+          <Route path="register" element={<RegisterForm />} />
+          <Route path="login" element={<LoginForm />} />
+          <Route index element={<Home />} />
+          <Route path="profile" element={<UserInformation />} />
+        </Route>
+
+        {/* Admin Routes - Standalone (no MainLayouts) */}
+        <Route path="/admin" element={<Admin />} />
+      </>
     )
   );
 
