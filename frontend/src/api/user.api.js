@@ -7,6 +7,7 @@ const userEndpoint = {
   updateAvatar: "/users/update-avatar",
   verifyOtp: "/users/verify-otp",
   updateProfile: "/users/update-info",
+  changePassword: "/users/change-password",
 };
 
 export const userApi = {
@@ -65,6 +66,16 @@ export const userApi = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+
+  /**
+   * Đổi mật khẩu người dùng
+   * @param {Object} passwordData - { currentPassword, newPassword }
+   * @returns {Promise<Object>} Kết quả đổi mật khẩu
+   */
+  changePassword: async (passwordData) => {
+    const response = await http.put(userEndpoint.changePassword, passwordData);
     return response.data;
   },
 };

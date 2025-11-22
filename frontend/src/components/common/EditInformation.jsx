@@ -160,15 +160,25 @@ const EditInformation = () => {
       return false;
     }
 
-    // Nếu người dùng muốn đổi mật khẩu
+    // Nếu người dùng muốn đổi mật khẩu (nhập vào bất kỳ trường nào)
     if (
       formData.newPassword ||
       formData.oldPassword ||
       formData.confirmPassword
     ) {
-      // Phải nhập mật khẩu cũ
+      // Phải nhập đầy đủ cả 3 trường
       if (!formData.oldPassword) {
-        setError("Vui lòng nhập mật khẩu cũ");
+        setError("Vui lòng nhập mật khẩu cũ để đổi mật khẩu");
+        return false;
+      }
+
+      if (!formData.newPassword) {
+        setError("Vui lòng nhập mật khẩu mới");
+        return false;
+      }
+
+      if (!formData.confirmPassword) {
+        setError("Vui lòng xác nhận mật khẩu mới");
         return false;
       }
 
@@ -233,11 +243,6 @@ const EditInformation = () => {
         birthdate: formData.birthdate || null,
         gender: formData.gender || null,
         address: formData.address || null,
-        // Chỉ gửi password nếu user nhập
-        ...(formData.newPassword && {
-          old_password: formData.oldPassword,
-          new_password: formData.newPassword,
-        }),
       };
 
       console.log("📤 Dữ liệu gửi đi:", updateData);
@@ -252,6 +257,29 @@ const EditInformation = () => {
       const updatedUserData = updatedProfile.data;
 
       console.log("✅ Profile mới nhất:", updatedUserData);
+
+      // ✅ Nếu user nhập mật khẩu mới, gọi API đổi mật khẩu
+      let passwordChanged = false;
+      if (formData.newPassword && formData.oldPassword) {
+        try {
+          console.log("🔄 Đang đổi mật khẩu...");
+          await userApi.changePassword({
+            currentPassword: formData.oldPassword,
+            newPassword: formData.newPassword,
+          });
+          console.log("✅ Đổi mật khẩu thành công");
+          passwordChanged = true;
+        } catch (passwordError) {
+          console.error("❌ Lỗi khi đổi mật khẩu:", passwordError);
+          setError(
+            passwordError.response?.data?.message ||
+              passwordError.response?.data?.error ||
+              "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại mật khẩu cũ."
+          );
+          setLoading(false);
+          return;
+        }
+      }
 
       // ✅ Cập nhật Redux store với dữ liệu mới nhất
       dispatch(
@@ -279,17 +307,21 @@ const EditInformation = () => {
         setAvatarPreview(updatedUserData.avatar_url);
       }
 
-      setSuccess(
-        avatarFile
-          ? "Cập nhật thông tin và avatar thành công!"
-          : "Cập nhật thông tin thành công!"
-      );
+      // Success message
+      let successMsg = "Cập nhật thông tin thành công!";
+      if (avatarFile && passwordChanged) {
+        successMsg = "Cập nhật thông tin, avatar và mật khẩu thành công!";
+      } else if (avatarFile) {
+        successMsg = "Cập nhật thông tin và avatar thành công!";
+      } else if (passwordChanged) {
+        successMsg = "Cập nhật thông tin và mật khẩu thành công!";
+      }
+
+      setSuccess(successMsg);
       setIsEditing(false);
 
-      // Reset avatar file sau khi upload thành công
+      // Reset avatar file và password fields sau khi thành công
       setAvatarFile(null);
-
-      // Reset password fields
       setFormData((prev) => ({
         ...prev,
         oldPassword: "",
@@ -560,7 +592,7 @@ const EditInformation = () => {
         {/* Đổi mật khẩu - Chỉ hiện khi đang edit */}
         {isEditing && (
           <div className="pt-4 border-t border-gray-200">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">
+            <h3 className="text-lg font-semibold mb-2 text-gray-800">
               Đổi mật khẩu (Tùy chọn)
             </h3>
             <p className="text-sm text-gray-500 mb-4">
@@ -587,9 +619,9 @@ const EditInformation = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showOldPassword ? (
-                    <FaEyeSlash className="w-5 h-5" />
-                  ) : (
                     <FaEye className="w-5 h-5" />
+                  ) : (
+                    <FaEyeSlash className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -616,9 +648,9 @@ const EditInformation = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showNewPassword ? (
-                    <FaEyeSlash className="w-5 h-5" />
-                  ) : (
                     <FaEye className="w-5 h-5" />
+                  ) : (
+                    <FaEyeSlash className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -647,9 +679,9 @@ const EditInformation = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
                   {showConfirmPassword ? (
-                    <FaEyeSlash className="w-5 h-5" />
-                  ) : (
                     <FaEye className="w-5 h-5" />
+                  ) : (
+                    <FaEyeSlash className="w-5 h-5" />
                   )}
                 </button>
               </div>
