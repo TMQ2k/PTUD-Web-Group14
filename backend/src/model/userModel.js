@@ -1,5 +1,3 @@
-import React from "react";
-
 export class User {
   constructor(user_id, username, email, role) {
     this.user_id = user_id;
@@ -9,3 +7,10 @@ export class User {
   }
 }
 
+export class UserSimpleProfile {
+  constructor(username, avatar_url, rating_percent) {
+    this.username = username;
+    this.avatar_url = avatar_url;
+    this.rating_percent = rating_percent;
+  }
+}

@@ -1,16 +1,21 @@
 export class Product {
-    constructor(product_id, seller_id, name, description, starting_price, step_price, current_price, image_cover_url, is_active, created_at, end_time) {
+    constructor(product_id, seller, name, description, starting_price, buy_now_price, step_price, current_price, image_cover_url, extra_image_url = [], is_active, created_at, end_time, bidder, top_bidder, history = []) {
         this.product_id = product_id;
-        this.seller_id = seller_id;
+        this.seller = seller;
         this.name = name;
         this.description = description;
         this.starting_price = starting_price;
         this.step_price = step_price;
         this.current_price = current_price;
         this.image_cover_url = image_cover_url;
+        this.extra_image_url = extra_image_url;
         this.is_active = is_active;
         this.created_at = created_at;
         this.end_time = end_time;
+        this.buy_now_price = buy_now_price;
+        this.bidder = bidder;
+        this.top_bidder = top_bidder;
+        this.history = history;
     }
 }
 
