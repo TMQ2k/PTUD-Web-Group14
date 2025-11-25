@@ -71,6 +71,13 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL
 );
+ALTER TABLE products
+ADD COLUMN buy_now_price NUMERIC(15,2);
+
+ALTER TABLE products
+ADD CONSTRAINT chk_min_duration
+CHECK (end_time >= created_at + INTERVAL '3 hours');
+
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
@@ -108,7 +115,6 @@ CREATE TABLE bids (
         CHECK (status IN ('active', 'winning', 'outbid', 'rejected')),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 drop table auto_bids
 CREATE TABLE auto_bids (
@@ -221,4 +227,25 @@ CREATE TABLE product_descriptions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE product_stats (
+    product_id BIGINT PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+    
+    total_bids INT DEFAULT 0,               -- tổng số lượt ra giá
+    max_bid NUMERIC(15,2) DEFAULT 0,       -- giá cao nhất hiện tại
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE comments (
+    comment_id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, -- Người viết comment
+    product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE, -- Sản phẩm liên quan
+    content TEXT NOT NULL, -- Nội dung comment
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- Thời gian tạo comment
+    parent_comment_id BIGINT REFERENCES comments(comment_id) ON DELETE CASCADE, -- ID comment gốc nếu là phản hồi (nullable)
+    
+    CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_comment_product FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
 
