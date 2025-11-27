@@ -1,8 +1,4 @@
 import pool from "../config/db.js";
-export const getAllProducts = async () => {
-  const result = await pool.query("SELECT * FROM products");
-  return result.rows;
-}
 
 //Find latest products with the that are still active
 
@@ -86,4 +82,23 @@ export const getProductBaseInfoById = async (productId) => {
 export const getSellerIdByProductId = async (productId) => {
     const result = await pool.query("SELECT seller_id FROM products WHERE product_id = $1", [productId]);
     return result.rows[0]?.seller_id || null;
+}
+
+export const otherProductsByCategory = async (categoryId, excludeProductId, limit = 5) => {
+    const result = await pool.query(
+        `SELECT p.*
+        FROM products p
+        JOIN product_categories pc ON p.product_id = pc.product_id
+        WHERE pc.category_id = $1 AND p.product_id != $2
+        LIMIT $3
+        `, [categoryId, excludeProductId, limit]
+    );
+    return result.rows;
+}
+
+
+export const getAllProducts = async (limit = 5, page = 1) => {
+    const offset = (page - 1) * limit;
+    const result = await pool.query("SELECT * FROM products LIMIT $1 OFFSET $2", [limit, offset]);
+    return result.rows;
 }

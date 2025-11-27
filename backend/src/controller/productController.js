@@ -3,7 +3,8 @@ import {
     getHighestPricedProducts,
     getTopCurrentProducts,
     getProductsByCategory,
-    getProductDetailsById
+    getProductDetailsById,
+    getAllProducts    
 } from '../service/productService.js';
 
 const router = express.Router();
@@ -85,11 +86,32 @@ router.get('/:categoryId', async (req, res) => {
     }
 });
 
-router.get("/details/:productId", async (req, res) => {
+router.get("/list/:limit&:page", async (req, res) => {
+    try {
+        const limit = parseInt(req.params.limit);
+        const page = parseInt(req.params.page);
+        const products = await getAllProducts(limit, page);
+        return res.status(200).json({
+            code: 200,
+            message: 'All products retrieved successfully',
+            data: products
+        });
+    } catch (err) {
+        console.error('❌ Error in / route:', err);
+        return res.status(404).json({
+            code: 404,
+            message: err.message || 'No products found',
+            data: null
+        });
+    }
+});
+
+router.get("/details/:productId&:limit", async (req, res) => {
     try {
         const productId = parseInt(req.params.productId);
+        const limit = parseInt(req.params.limit);
         const user = req.user || null;
-        const productDetails = await getProductDetailsById(productId, user);
+        const productDetails = await getProductDetailsById(productId, limit, user);
         return res.status(200).json({
             code: 200,  
             message: 'Product details retrieved successfully',

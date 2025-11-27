@@ -17,6 +17,11 @@ export const getBidHistoryByProductId = async (productId) => {
     ));
 }
 
+export const countHistoryByProductId = async (productId) => {
+    const result = await pool.query(`SELECT COUNT(*) FROM auto_bids WHERE product_id = $1`, [productId]);
+    return parseInt(result.rows[0].count, 10);
+}   
+
 export const getHighestBidInfoofUserOnProduct = async (productId, userId) => {
     const result = await pool.query(`SELECT max_bid_amount FROM auto_bids ab WHERE ab.product_id = $1 AND ab.user_id = $2`, [productId, userId]);
     if (result.rows.length === 0) {
@@ -32,5 +37,7 @@ export const getTopBidderIdByProductId = async (productId) => {
         return null;
     }
     return result.rows[0].user_id;
-}   
+}  
+
+
 
