@@ -111,7 +111,6 @@ export const getUserProfile = async (userId) => {
   return result.rows[0] || null;
 };
 
-<<<<<<< HEAD
 export const changePassword = async (userId, newPasswordHashed) => {
   try {
     const result = await pool.query(
@@ -124,19 +123,26 @@ export const changePassword = async (userId, newPasswordHashed) => {
     throw err;
   }
 };
-=======
 export const getUserInfoById = async (user_id) => {
-  const userResult = await pool.query(`SELECT username FROM users WHERE user_id = $1`, [user_id]);
+  const userResult = await pool.query(
+    `SELECT username FROM users WHERE user_id = $1`,
+    [user_id]
+  );
   if (userResult.rows.length === 0) {
-      return null;
+    return null;
   }
   const userRow = userResult.rows[0];
-  const userInfoResult = await pool.query(`SELECT avatar_url FROM users_info WHERE user_id = $1`, [user_id]);
-  const userRatingResult = await pool.query(`SELECT rating_percent FROM users_rating WHERE user_id = $1`, [user_id]);
-  return new UserSimpleProfile(
-      userRow.username,
-      userInfoResult.rows[0].avatar_url,
-      userRatingResult.rows[0].rating_percent
+  const userInfoResult = await pool.query(
+    `SELECT avatar_url FROM users_info WHERE user_id = $1`,
+    [user_id]
   );
-} 
->>>>>>> ac33132e372d137f44f41498dd2df412a1bac02f
+  const userRatingResult = await pool.query(
+    `SELECT rating_percent FROM users_rating WHERE user_id = $1`,
+    [user_id]
+  );
+  return new UserSimpleProfile(
+    userRow.username,
+    userInfoResult.rows[0].avatar_url,
+    userRatingResult.rows[0].rating_percent
+  );
+};

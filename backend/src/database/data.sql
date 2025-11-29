@@ -59,3 +59,12 @@ INSERT INTO product_categories (product_id, category_id) VALUES
 -- Giày Nike Air Force 1 → thuộc nhóm Giày dép (9) và có thể là Thể thao & Dã ngoại (4)
 (5, 9),
 (5, 4);
+
+-- Thêm dữ liệu mẫu vào bảng bids
+INSERT INTO bids (product_id, user_id, amount, bid_time, status, created_at)
+VALUES
+    (1, 7, 6000000.00, '2025-11-12T18:46:18.065Z', 'active', NOW()),  -- Người "Kha" ra giá 6,000,000 cho sản phẩm ID 1
+    (1, 6, 5000000.00, '2025-11-12T18:46:18.065Z', 'active', NOW()),  -- Người "Kha" ra giá 5,000,000 cho sản phẩm ID 1
+    (1, 8, 3600000.00, '2025-11-12T18:46:18.065Z', 'active', NOW()),  -- Người "Tuấn" ra giá 3,600,000 cho sản phẩm ID 1
+    (1, 1, 3000000.00, '2025-11-12T18:46:18.065Z', 'active', NOW());  -- Người "Vinh" ra giá 3,000,000 cho sản phẩm ID 1
+select * from users;

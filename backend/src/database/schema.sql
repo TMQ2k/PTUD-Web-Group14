@@ -249,3 +249,16 @@ CREATE TABLE comments (
     CONSTRAINT fk_comment_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 
+CREATE TABLE watchlist (
+    id BIGSERIAL PRIMARY KEY,
+
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Không cho lưu trùng 1 sản phẩm vào watchlist của 1 user
+    CONSTRAINT uq_watchlist_user_product UNIQUE (user_id, product_id)
+);
+
+

@@ -331,6 +331,108 @@ BEGIN
     SET is_winner = TRUE
     WHERE id IN (SELECT id FROM ranked);
 END;
+$$ ;
+
+CREATE OR REPLACE FUNCTION fnc_user_watchlist_add(
+    _user_id BIGINT,
+    _product_id BIGINT
+)
+RETURNS TEXT AS $$
+DECLARE
+    exists_count INT;
+BEGIN
+    -- Kiểm tra xem product có tồn tại và đang active không (nếu cần)
+    IF NOT EXISTS (SELECT 1 FROM products WHERE product_id = _product_id) THEN
+        RETURN 'product_not_found';
+    END IF;
+
+    -- Kiểm tra user có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = _user_id) THEN
+        RETURN 'user_not_found';
+    END IF;
+
+    -- Check trùng
+    SELECT COUNT(*) INTO exists_count
+    FROM watchlist
+    WHERE user_id = _user_id AND product_id = _product_id;
+
+    IF exists_count > 0 THEN
+        RETURN 'already_exists';
+    END IF;
+
+    -- Insert vào watchlist
+    INSERT INTO watchlist(user_id, product_id)
+    VALUES (_user_id, _product_id);
+
+    RETURN 'added';
+END;
 $$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_user_watchlist_remove(
+    _user_id BIGINT,
+    _product_id BIGINT
+)
+RETURNS TEXT AS $$
+DECLARE
+    exists_count INT;
+BEGIN
+    -- Kiểm tra xem product có tồn tại và đang active không (nếu cần)
+    IF NOT EXISTS (SELECT 1 FROM watchlist WHERE product_id = _product_id and _user_id = user_id) THEN
+        RETURN 'product_not_found';
+    END IF;
+
+    -- Kiểm tra user có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM watchlist WHERE user_id = _user_id) THEN
+        RETURN 'user_not_found';
+    END IF;
+
+
+    -- Insert vào watchlist
+    delete from watchlist
+	where user_id = _user_id and product_id = _product_id;
+
+    RETURN 'deleted';
+END;
+$$ LANGUAGE plpgsql;
+go
+drop function fnc_user_watchlist
+CREATE OR REPLACE FUNCTION fnc_user_watchlist(
+    _user_id BIGINT
+)
+RETURNS TABLE (
+    watch_id BIGINT,
+    product_id INTEGER,
+    product_name VARCHAR(255),
+    product_description TEXT,
+    image_cover_url TEXT,
+    current_price NUMERIC(15,2),
+    buy_now_price NUMERIC(15,2),
+    is_active BOOLEAN,
+    product_end_time TIMESTAMP,
+    watch_created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        w.id AS watch_id,
+        p.product_id,
+        p.name,
+        p.description,
+        p.image_cover_url,
+        p.current_price,
+        p.buy_now_price,
+        p.is_active,
+        p.end_time,
+        w.created_at
+    FROM watchlist w
+    JOIN products p ON p.product_id = w.product_id
+    WHERE w.user_id = _user_id
+    ORDER BY w.created_at DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+
+
+
 
 
