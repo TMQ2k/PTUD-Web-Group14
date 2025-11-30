@@ -4,6 +4,7 @@ import {
   getTopCurrentProducts,
   getProductsByCategory,
   getProductDetailsById,
+  getProductBidHistoryService,
 } from "../service/productService.js";
 
 const router = express.Router();
@@ -98,6 +99,25 @@ router.get("/details/:productId", async (req, res) => {
     return res.status(404).json({
       code: 404,
       message: err.message || "Product not found",
+      data: null,
+    });
+  }
+});
+
+router.get("/bid-history/:productId", async (req, res) => {
+  try {
+    const productId = parseInt(req.params.productId);
+    const bidHistory = await getProductBidHistoryService(productId);
+    return res.status(200).json({
+      code: 200,
+      message: "Product bid history retrieved successfully",
+      data: bidHistory,
+    });
+  } catch (err) {
+    console.error("❌ Error in /bid-history route:", err);
+    return res.status(404).json({
+      code: 404,
+      message: err.message || "No bid history found for this product",
       data: null,
     });
   }

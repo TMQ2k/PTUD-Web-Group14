@@ -8,6 +8,7 @@ delete from users where user_id = 5
 select * from user_otp
 select * from watchlist;
 select * from users_rating;
+select * from product_history;
 update products
 set current_price = starting_price
 update users

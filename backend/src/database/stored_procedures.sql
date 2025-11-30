@@ -168,6 +168,7 @@ CREATE OR REPLACE FUNCTION fnc_create_product
     p_description TEXT,
     p_starting_price NUMERIC(15,2),
     p_step_price NUMERIC(15,2),
+	p_buy_now_price NUMERIC(15, 2),
     p_image_cover_url TEXT,
     p_end_time TIMESTAMPTZ
 )
@@ -177,11 +178,11 @@ DECLARE
 BEGIN
     INSERT INTO products(
         seller_id, name, description, starting_price, 
-        step_price, current_price, image_cover_url, end_time
+        step_price, current_price, buy_now_price, image_cover_url, end_time
     )
     VALUES (
         p_seller_id, p_name, p_description, p_starting_price, 
-        p_step_price, p_starting_price, p_image_cover_url, p_end_time
+        p_step_price, p_starting_price, buy_now_price, p_image_cover_url, p_end_time
     )
     RETURNING product_id INTO new_product_id;
 
@@ -509,7 +510,7 @@ go
 CREATE OR REPLACE FUNCTION fnc_update_auto_bids(_product_id BIGINT)
 RETURNS TABLE (
     current_price NUMERIC(12,2),
-    highest_bidder_id bigint,
+    highest_bidder_id BIGINT,
     username VARCHAR,
     email VARCHAR,
     first_name VARCHAR,
@@ -523,10 +524,11 @@ DECLARE
     v_start_price NUMERIC(12,2);
     v_new_price NUMERIC(12,2);
     v_bid_count INT;
+    v_old_price NUMERIC(12,2);
 BEGIN
     -- Lấy thông tin sản phẩm
-    SELECT p.end_time, p.step_price, p.starting_price
-    INTO v_auction_end, v_step_price, v_start_price
+    SELECT p.end_time, p.step_price, p.starting_price, p.current_price
+    INTO v_auction_end, v_step_price, v_start_price, v_old_price
     FROM products p
     WHERE p.product_id = _product_id;
 
@@ -537,9 +539,7 @@ BEGIN
 
     IF v_auction_end <= NOW() THEN
         RETURN QUERY
-        SELECT p.current_price, NULL::BIGINT, NULL, NULL, NULL, NULL
-        FROM products p
-        WHERE p.product_id = _product_id;
+        SELECT v_old_price, NULL::BIGINT, NULL, NULL, NULL, NULL;
         RETURN;
     END IF;
 
@@ -579,7 +579,7 @@ BEGIN
 
     -- Tính giá mới
     IF v_bid_count = 1 THEN
-        v_new_price := v_start_price;
+        v_new_price := v_old_price; -- không thay đổi giá
     ELSE
         v_new_price := LEAST(v_highest_bid.max_bid_amount, v_second_bid + v_step_price);
     END IF;
@@ -589,6 +589,13 @@ BEGIN
     SET current_price = v_new_price
     WHERE p.product_id = _product_id;
 
+    -- Lưu vào product_history nếu giá có thay đổi
+    IF v_new_price <> v_old_price THEN
+        INSERT INTO product_history(product_id, user_id, bid_amount, bid_time)
+        VALUES (_product_id, v_highest_bid.user_id, v_new_price, NOW());
+    END IF;
+
+    -- Trả về thông tin người đang dẫn đầu
     RETURN QUERY
     SELECT 
         v_new_price,
@@ -603,3 +610,30 @@ BEGIN
 
 END;
 $$ LANGUAGE plpgsql;
+drop function fnc_history_bids_product
+CREATE OR REPLACE FUNCTION fnc_history_bids_product(_product_id BIGINT)
+RETURNS TABLE (
+    bid_time TIMESTAMPTZ,
+    masked_username VARCHAR,
+    bid_amount NUMERIC(12,2)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        ph.bid_time,
+        -- Mask tên người dùng: giữ 1 ký tự đầu, phần còn lại thay bằng '*'
+        CASE 
+            WHEN u.username IS NULL THEN NULL
+            WHEN length(u.username) <= 1 THEN u.username
+            ELSE substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1)
+        END AS masked_username,
+        ph.bid_amount
+    FROM product_history ph
+    LEFT JOIN users u ON ph.user_id = u.user_id
+    WHERE ph.product_id = _product_id
+    ORDER BY ph.bid_time DESC
+    LIMIT 5;
+END;
+$$ LANGUAGE plpgsql;
+
+select * from fnc_history_bids_product(6)
