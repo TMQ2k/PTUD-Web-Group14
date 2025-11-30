@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+<<<<<<< HEAD
+.env
+=======
+.env
+.env.local
+.env.*.local
+>>>>>>> origin/user-information-FE

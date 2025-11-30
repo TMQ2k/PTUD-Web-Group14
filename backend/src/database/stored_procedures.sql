@@ -26,7 +26,7 @@ BEGIN
     -- Thêm user mới và lấy ID vừa tạo
     INSERT INTO users(username, password_hashed, email, role)
     VALUES (p_username, p_password_hashed, p_email, p_role)
-    RETURNING id INTO new_user_id;
+    RETURNING user_id INTO new_user_id;
 
     -- Tạo bản ghi trong bảng users_info tương ứng
     INSERT INTO users_info(user_id) VALUES (new_user_id);
@@ -53,7 +53,8 @@ BEGIN
     FROM users
     WHERE username = p_username
       AND password_hashed = p_password_hashed
-      AND status = TRUE;  -- chỉ cho phép user active
+      AND status = TRUE
+      AND verified = TRUE;  -- chỉ cho phép user active
 END;
 $$ LANGUAGE plpgsql;
 
@@ -159,7 +160,7 @@ BEGIN
     DELETE FROM users WHERE user_id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
-
+drop function fnc_create_product
 CREATE OR REPLACE FUNCTION fnc_create_product
 (
     p_seller_id INTEGER,
@@ -167,8 +168,9 @@ CREATE OR REPLACE FUNCTION fnc_create_product
     p_description TEXT,
     p_starting_price NUMERIC(15,2),
     p_step_price NUMERIC(15,2),
+	p_buy_now_price NUMERIC(15, 2),
     p_image_cover_url TEXT,
-    p_end_time TIMESTAMP
+    p_end_time TIMESTAMPTZ
 )
 RETURNS INTEGER AS $$
 DECLARE
@@ -176,11 +178,11 @@ DECLARE
 BEGIN
     INSERT INTO products(
         seller_id, name, description, starting_price, 
-        step_price, current_price, image_cover_url, end_time
+        step_price, current_price, buy_now_price, image_cover_url, end_time
     )
     VALUES (
         p_seller_id, p_name, p_description, p_starting_price, 
-        p_step_price, p_starting_price, p_image_cover_url, p_end_time
+        p_step_price, p_starting_price, buy_now_price, p_image_cover_url, p_end_time
     )
     RETURNING product_id INTO new_product_id;
 
@@ -188,14 +190,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+
 CREATE OR REPLACE FUNCTION fnc_get_products_by_seller(p_seller_id INT)
 RETURNS TABLE (
     product_id INT,
     name VARCHAR,
     current_price NUMERIC,
     is_active BOOLEAN,
-    created_at TIMESTAMP,
-    end_time TIMESTAMP
+    created_at TIMESTAMPTZ,
+    end_time TIMESTAMPTZ
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -246,7 +250,7 @@ BEGIN
     RETURN 'Password changed successfully';
 END;
 $$ LANGUAGE plpgsql;
-
+drop function fnc_user_profile
 CREATE OR REPLACE FUNCTION fnc_user_profile(
     p_user_id INT
 )
@@ -256,8 +260,16 @@ RETURNS TABLE(
     email VARCHAR,
     role VARCHAR,
     status BOOLEAN,
-    is_created TIMESTAMP,
-    verified BOOLEAN
+    is_created TIMESTAMPTZ,
+    verified BOOLEAN,
+	phone_number VARCHAR(15),
+	birthdate DATE,
+	gender varchar(10),
+	address TEXT,
+	avatar_url TEXT,
+	updated_at TIMESTAMPTZ,
+	first_name varchar(50),
+	last_name varchar(50)
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -268,10 +280,360 @@ BEGIN
         u.role,
         u.status,
         u.is_created,
-        u.verified
+        u.verified, 
+		ui.phone_number,
+		ui.birthdate,
+		ui.gender,
+		ui.address,
+		ui.avatar_url,
+		ui.updated_at,
+		ui.first_name,
+		ui.last_name
     FROM users u
+		JOIN users_info ui ON ui.user_id = u.user_id
     WHERE u.user_id = p_user_id
-      AND u.status = TRUE; -- chỉ trả user active
+		
+      AND u.status = TRUE
+	  AND u.verified = TRUE; -- chỉ trả user active
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION fnc_place_bid(
+    p_product_id BIGINT,
+    p_user_id BIGINT,
+    p_amount NUMERIC
+)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- 1. Tạo mới hoặc cập nhật auto_bid của user
+    INSERT INTO auto_bids (user_id, product_id, max_bid_amount, current_bid_amount)
+    VALUES (p_user_id, p_product_id, p_amount, p_amount)
+    ON CONFLICT (user_id, product_id)
+    DO UPDATE SET
+        max_bid_amount = EXCLUDED.max_bid_amount,
+        current_bid_amount = EXCLUDED.current_bid_amount,
+        updated_at = NOW();
+
+    -- 2. Reset toàn bộ winner cho product này
+    UPDATE auto_bids
+    SET is_winner = FALSE
+    WHERE product_id = p_product_id;
+
+    -- 3. Xác định auto_bid thắng (current_bid_amount cao nhất)
+    --    Nếu trùng current_bid_amount → ưu tiên max_bid_amount cao hơn
+    WITH ranked AS (
+        SELECT id
+        FROM auto_bids
+        WHERE product_id = p_product_id
+        ORDER BY current_bid_amount DESC, max_bid_amount DESC
+        LIMIT 1
+    )
+    UPDATE auto_bids 
+    SET is_winner = TRUE
+    WHERE id IN (SELECT id FROM ranked);
+END;
+$$ ;
+
+CREATE OR REPLACE FUNCTION fnc_user_watchlist_add(
+    _user_id BIGINT,
+    _product_id BIGINT
+)
+RETURNS TEXT AS $$
+DECLARE
+    exists_count INT;
+BEGIN
+    -- Kiểm tra xem product có tồn tại và đang active không (nếu cần)
+    IF NOT EXISTS (SELECT 1 FROM products WHERE product_id = _product_id) THEN
+        RETURN 'product_not_found';
+    END IF;
+
+    -- Kiểm tra user có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM users WHERE user_id = _user_id) THEN
+        RETURN 'user_not_found';
+    END IF;
+
+    -- Check trùng
+    SELECT COUNT(*) INTO exists_count
+    FROM watchlist
+    WHERE user_id = _user_id AND product_id = _product_id;
+
+    IF exists_count > 0 THEN
+        RETURN 'already_exists';
+    END IF;
+
+    -- Insert vào watchlist
+    INSERT INTO watchlist(user_id, product_id)
+    VALUES (_user_id, _product_id);
+
+    RETURN 'added';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_user_watchlist_remove(
+    _user_id BIGINT,
+    _product_id BIGINT
+)
+RETURNS TEXT AS $$
+DECLARE
+    exists_count INT;
+BEGIN
+    -- Kiểm tra xem product có tồn tại và đang active không (nếu cần)
+    IF NOT EXISTS (SELECT 1 FROM watchlist WHERE product_id = _product_id and _user_id = user_id) THEN
+        RETURN 'product_not_found';
+    END IF;
+
+    -- Kiểm tra user có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM watchlist WHERE user_id = _user_id) THEN
+        RETURN 'user_not_found';
+    END IF;
+
+
+    -- Insert vào watchlist
+    delete from watchlist
+	where user_id = _user_id and product_id = _product_id;
+
+    RETURN 'deleted';
+END;
+$$ LANGUAGE plpgsql;
+go
+drop function fnc_user_watchlist
+CREATE OR REPLACE FUNCTION fnc_user_watchlist(
+    _user_id BIGINT
+)
+RETURNS TABLE (
+    watch_id BIGINT,
+    product_id INTEGER,
+    product_name VARCHAR(255),
+    product_description TEXT,
+    image_cover_url TEXT,
+    current_price NUMERIC(15,2),
+    buy_now_price NUMERIC(15,2),
+    is_active BOOLEAN,
+    product_end_time TIMESTAMPTZ,
+    watch_created_at TIMESTAMPTZ
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        w.id AS watch_id,
+        p.product_id,
+        p.name,
+        p.description,
+        p.image_cover_url,
+        p.current_price,
+        p.buy_now_price,
+        p.is_active,
+        p.end_time,
+        w.created_at
+    FROM watchlist w
+    JOIN products p ON p.product_id = w.product_id
+    WHERE w.user_id = _user_id
+    ORDER BY w.created_at DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
+    _user_id BIGINT,
+    _product_id BIGINT,
+    _new_max_bid NUMERIC(12,2)
+)
+RETURNS TEXT AS $$
+DECLARE
+    old_max_bid NUMERIC(12,2);
+    auction_end TIMESTAMPTZ;
+    user_rating NUMERIC(5,2);
+    current_price NUMERIC(12,2);
+    remaining INTERVAL;
+BEGIN
+    -- Kiểm tra sản phẩm còn trong thời gian đấu giá
+    SELECT p.end_time, p.current_price INTO auction_end, current_price
+    FROM products p
+    WHERE p.product_id = _product_id;
+
+    IF auction_end IS NULL THEN
+        RETURN 'Sản phẩm không tồn tại.';
+    ELSIF auction_end <= NOW() THEN
+        RETURN 'Sản phẩm đã hết thời gian đấu giá.';
+    END IF;
+
+    -- Kiểm tra điểm đánh giá
+    SELECT ur.rating_percent INTO user_rating
+    FROM users_rating ur
+    WHERE ur.user_id = _user_id;
+
+    IF user_rating IS NOT NULL AND user_rating < 80 THEN
+        RETURN format('Bạn không đủ điểm đánh giá (%s%%) để đấu giá.', user_rating);
+    END IF;
+
+    -- Lấy giá max_bid hiện tại (nếu có)
+    SELECT ab.max_bid_amount INTO old_max_bid
+    FROM auto_bids ab
+    WHERE ab.user_id = _user_id AND product_id = _product_id;
+
+    -- 📌 Kiểm tra điều kiện gia hạn 20 phút
+    remaining := auction_end - NOW();
+
+    IF _new_max_bid > current_price AND remaining <= INTERVAL '10 minutes' THEN
+        UPDATE products
+        SET end_time = end_time + INTERVAL '20 minutes'
+        WHERE product_id = _product_id;
+
+        RAISE NOTICE 'Đấu giá sắp kết thúc, thời gian đã được gia hạn thêm 20 phút.';
+    END IF;
+
+    -- Xử lý insert/update auto bid
+    IF NOT FOUND THEN
+        INSERT INTO auto_bids(user_id, product_id, max_bid_amount, current_bid_amount)
+        VALUES (_user_id, _product_id, _new_max_bid, 0);
+
+        RETURN 'Đặt auto bid thành công.';
+    ELSE
+        IF _new_max_bid <= old_max_bid THEN
+            RETURN format('Giá mới phải lớn hơn giá hiện tại (%s).', old_max_bid);
+        END IF;
+
+        UPDATE auto_bids
+        SET max_bid_amount = _new_max_bid,
+            updated_at = NOW()
+        WHERE user_id = _user_id AND product_id = _product_id;
+
+        RETURN 'Cập nhật auto bid thành công.';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+drop function fnc_update_auto_bids;
+go
+CREATE OR REPLACE FUNCTION fnc_update_auto_bids(_product_id BIGINT)
+RETURNS TABLE (
+    current_price NUMERIC(12,2),
+    highest_bidder_id BIGINT,
+    username VARCHAR,
+    email VARCHAR,
+    first_name VARCHAR,
+    last_name VARCHAR
+) AS $$
+DECLARE
+    v_highest_bid RECORD;
+    v_second_bid NUMERIC(12,2);
+    v_step_price NUMERIC(12,2);
+    v_auction_end TIMESTAMP;
+    v_start_price NUMERIC(12,2);
+    v_new_price NUMERIC(12,2);
+    v_bid_count INT;
+    v_old_price NUMERIC(12,2);
+BEGIN
+    -- Lấy thông tin sản phẩm
+    SELECT p.end_time, p.step_price, p.starting_price, p.current_price
+    INTO v_auction_end, v_step_price, v_start_price, v_old_price
+    FROM products p
+    WHERE p.product_id = _product_id;
+
+    IF v_auction_end IS NULL THEN
+        RETURN QUERY SELECT 0::NUMERIC, NULL::BIGINT, NULL, NULL, NULL, NULL;
+        RETURN;
+    END IF;
+
+    IF v_auction_end <= NOW() THEN
+        RETURN QUERY
+        SELECT v_old_price, NULL::BIGINT, NULL, NULL, NULL, NULL;
+        RETURN;
+    END IF;
+
+    -- Lấy auto-bid cao nhất
+    SELECT ab.user_id, ab.max_bid_amount
+    INTO v_highest_bid
+    FROM auto_bids ab
+    WHERE ab.product_id = _product_id
+    ORDER BY ab.max_bid_amount DESC, ab.created_at ASC
+    LIMIT 1;
+
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT 0::NUMERIC, NULL::BIGINT, NULL, NULL, NULL, NULL;
+        RETURN;
+    END IF;
+
+    -- Đếm số bidder
+    SELECT COUNT(*) INTO v_bid_count
+    FROM auto_bids
+    WHERE product_id = _product_id;
+
+    -- Lấy auto-bid cao thứ nhì
+    SELECT sub.amount 
+    INTO v_second_bid
+    FROM (
+        SELECT ab.max_bid_amount AS amount
+        FROM auto_bids ab
+        WHERE ab.product_id = _product_id 
+          AND ab.user_id <> v_highest_bid.user_id
+        ORDER BY ab.max_bid_amount DESC
+        LIMIT 1
+    ) AS sub;
+
+    IF v_second_bid IS NULL THEN
+        v_second_bid := v_start_price;
+    END IF;
+
+    -- Tính giá mới
+    IF v_bid_count = 1 THEN
+        v_new_price := v_old_price; -- không thay đổi giá
+    ELSE
+        v_new_price := LEAST(v_highest_bid.max_bid_amount, v_second_bid + v_step_price);
+    END IF;
+
+    -- Cập nhật giá mới
+    UPDATE products p
+    SET current_price = v_new_price
+    WHERE p.product_id = _product_id;
+
+    -- Lưu vào product_history nếu giá có thay đổi
+    IF v_new_price <> v_old_price THEN
+        INSERT INTO product_history(product_id, user_id, bid_amount, bid_time)
+        VALUES (_product_id, v_highest_bid.user_id, v_new_price, NOW());
+    END IF;
+
+    -- Trả về thông tin người đang dẫn đầu
+    RETURN QUERY
+    SELECT 
+        v_new_price,
+        v_highest_bid.user_id,
+        u.username,
+        u.email,
+        ui.first_name,
+        ui.last_name
+    FROM users u
+    LEFT JOIN users_info ui ON u.user_id = ui.user_id
+    WHERE u.user_id = v_highest_bid.user_id;
+
+END;
+$$ LANGUAGE plpgsql;
+drop function fnc_history_bids_product
+CREATE OR REPLACE FUNCTION fnc_history_bids_product(_product_id BIGINT)
+RETURNS TABLE (
+    bid_time TIMESTAMPTZ,
+    masked_username VARCHAR,
+    bid_amount NUMERIC(12,2)
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        ph.bid_time,
+        -- Mask tên người dùng: giữ 1 ký tự đầu, phần còn lại thay bằng '*'
+        CASE 
+            WHEN u.username IS NULL THEN NULL
+            WHEN length(u.username) <= 1 THEN u.username
+            ELSE substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1)
+        END AS masked_username,
+        ph.bid_amount
+    FROM product_history ph
+    LEFT JOIN users u ON ph.user_id = u.user_id
+    WHERE ph.product_id = _product_id
+    ORDER BY ph.bid_time DESC
+    LIMIT 5;
+END;
+$$ LANGUAGE plpgsql;
+
+select * from fnc_history_bids_product(6)

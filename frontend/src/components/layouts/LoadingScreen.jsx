@@ -6,7 +6,7 @@ const LoadingScreen = ({ exiting = false, duration = 700 }) => {
     <div
       className={[
         "pointer-events-none fixed inset-0 z-9999 flex items-center justify-center",
-        "bg-linear-to-r from-blue-600 to-indigo-500",
+        "bg-linear-to-r from-blue-400 to-purple-600",
         "transition-opacity",
         `duration-[${duration}ms]`,
         exiting ? "opacity-0" : "opacity-100",

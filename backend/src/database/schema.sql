@@ -7,10 +7,12 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
-
+go
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
     phone_number VARCHAR(15),
     birthdate DATE,
     gender VARCHAR(10),
@@ -18,11 +20,8 @@ CREATE TABLE users_info (
     avatar_url TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-ALTER TABLE users_info
-DROP COLUMN full_name,
-ADD COLUMN first_name VARCHAR(50),
-ADD COLUMN last_name VARCHAR(50);
 
+go
 CREATE TABLE users_rating (
     user_rating_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -36,9 +35,27 @@ CREATE TABLE users_rating (
         END
     ) STORED
 );
+go
+ALTER TABLE users_rating
+ADD CONSTRAINT uq_users_rating_user_id UNIQUE (user_id);
+go
+drop table user_upgrade_requests
+CREATE TABLE user_upgrade_requests (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
+    reason TEXT,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' 
+        CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
 
+    reviewed_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    review_comment TEXT,
 
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    reviewed_at TIMESTAMPTZ,
+);
+go
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
     seller_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -52,28 +69,199 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL
 );
+go
+ALTER TABLE products
+ADD COLUMN buy_now_price NUMERIC(15,2);
+go
+ALTER TABLE products
+ADD CONSTRAINT chk_min_duration
+CHECK (end_time >= created_at + INTERVAL '3 hours');
+go
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-
+go
 CREATE TABLE product_categories (
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(category_id) ON DELETE CASCADE,
     PRIMARY KEY (product_id, category_id)
 );
-
+go
 CREATE TABLE product_images (
     image_id SERIAL PRIMARY KEY,
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     image_url TEXT NOT NULL
 );
 
-
+go
 CREATE TABLE user_otp (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     otp_code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
+go
+CREATE TABLE bids (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+
+    amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+    bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    status VARCHAR(20) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'winning', 'outbid', 'rejected')),
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+);
+go
+drop table auto_bids
+go
+CREATE TABLE auto_bids (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+
+    max_bid_amount NUMERIC(12, 2) NOT NULL CHECK (max_bid_amount > 0),
+    current_bid_amount NUMERIC(12, 2) DEFAULT 0 CHECK (current_bid_amount >= 0),
+    
+    is_winner BOOLEAN DEFAULT FALSE,
+
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
+    UNIQUE (user_id, product_id)
+);
+go
+CREATE TABLE bid_rejections (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    product_id BIGINT NOT NULL,
+    bidder_id BIGINT NOT NULL,
+
+    reason VARCHAR(255) DEFAULT NULL,      -- lý do bị cấm ra giá
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by BIGINT DEFAULT NULL,        -- admin hoặc seller ban
+
+    -- bidder có thể được gỡ cấm
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    lifted_at TIMESTAMP DEFAULT NULL,      -- thời điểm gỡ cấm
+    lifted_by BIGINT DEFAULT NULL,         -- người gỡ cấm
+    lift_reason VARCHAR(255) DEFAULT NULL, -- lý do gỡ cấm
+
+    CONSTRAINT fk_bid_rej_product 
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_bid_rej_bidder
+        FOREIGN KEY (bidder_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_bid_rej_created_by
+        FOREIGN KEY (created_by) REFERENCES users(user_id),
+
+    CONSTRAINT fk_bid_rej_lifted_by
+        FOREIGN KEY (lifted_by) REFERENCES users(user_id),
+
+    -- Mỗi bidder chỉ bị cấm 1 lần trên 1 product (để tránh trùng record)
+    CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
+);
+go
+CREATE TABLE product_questions (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    product_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,           -- người hỏi (bidder)
+    question TEXT NOT NULL,            -- nội dung câu hỏi
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+
+    is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn câu hỏi (seller/admin)
+    hidden_at TIMESTAMP NULL,
+    hidden_by BIGINT NULL,
+
+    CONSTRAINT fk_pq_product
+        FOREIGN KEY (product_id) REFERENCES products(product_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pq_user
+        FOREIGN KEY (user_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pq_hidden_by
+        FOREIGN KEY (hidden_by) REFERENCES users(user_id)
+);
+go
+CREATE TABLE product_answers (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+
+    question_id BIGINT NOT NULL,          -- tham chiếu câu hỏi
+    seller_id BIGINT NOT NULL,            -- người trả lời (seller)
+    answer TEXT NOT NULL,                 -- nội dung trả lời
+
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NULL,
+
+    is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn trả lời
+    hidden_at TIMESTAMP NULL,
+    hidden_by BIGINT NULL,
+
+    CONSTRAINT fk_pa_question
+        FOREIGN KEY (question_id) REFERENCES product_questions(id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pa_seller
+        FOREIGN KEY (seller_id) REFERENCES users(user_id)
+            ON DELETE CASCADE,
+
+    CONSTRAINT fk_pa_hidden_by
+        FOREIGN KEY (hidden_by) REFERENCES users(user_id)
+);
+go
+CREATE TABLE product_descriptions (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    description TEXT NOT NULL,             -- phần mô tả mới
+    created_by BIGINT REFERENCES users(user_id), -- seller thêm mô tả
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+go
+CREATE TABLE product_stats (
+    product_id BIGINT PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+    
+    total_bids INT DEFAULT 0,               -- tổng số lượt ra giá
+    max_bid NUMERIC(15,2) DEFAULT 0,       -- giá cao nhất hiện tại
+    
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+go
+CREATE TABLE comments (
+    comment_id BIGSERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, -- Người viết comment
+    product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE, -- Sản phẩm liên quan
+    content TEXT NOT NULL, -- Nội dung comment
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- Thời gian tạo comment
+    parent_comment_id BIGINT REFERENCES comments(comment_id) ON DELETE CASCADE, -- ID comment gốc nếu là phản hồi (nullable)
+    
+    CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_comment_product FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+go
+CREATE TABLE watchlist (
+    id BIGSERIAL PRIMARY KEY,
+
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    -- Không cho lưu trùng 1 sản phẩm vào watchlist của 1 user
+    CONSTRAINT uq_watchlist_user_product UNIQUE (user_id, product_id)
+);
+
+
+
+

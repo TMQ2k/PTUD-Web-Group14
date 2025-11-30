@@ -5,13 +5,14 @@ import dotenv from "dotenv";
 import userController from "./src/controller/userController.js";
 import productController from "./src/controller/productController.js";
 import categoryController from "./src/controller/catergoryController.js";
+import bidderController from "./src/controller/bidderController.js";
 
 dotenv.config();
 
 const app = express();
 app.use(
   cors({
-    origin: "http://localhost:3000", // hoặc domain frontend của bạn
+    origin: "http://localhost:3000",
   })
 );
 
@@ -21,15 +22,25 @@ app.use(express.json());
 app.use("/api/users", userController);
 app.use("/api/products", productController);
 app.use("/api/categories", categoryController);
+app.use("/api/bidder", bidderController);
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
-//print user database connection test
+
+//print products columns
+
 import pool from "./src/config/db.js";
-pool.query("SELECT * FROM users", (err, res) => {
-  if (err) {
-    console.error("Database connection error:", err);
-  } else {
-    console.log("Database connected:", res.rows);
+
+const printProductColumns = async () => {
+  try {
+    const result = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'products'");
+    console.log("Products table columns:"); 
+    result.rows.forEach(row => {
+      console.log(`${row.column_name}: ${row.data_type}`);
+    });
+  } catch (error) {
+    console.error("Error fetching product columns:", error);
   }
-});
+};
+
+printProductColumns();

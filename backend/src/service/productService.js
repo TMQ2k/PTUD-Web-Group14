@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
 import "../model/productModel.js";
@@ -20,7 +20,6 @@ import {
 
 import { getUserInfoById } from '../repo/userRepo.js';
 import { Product, ProductProfile } from '../model/productModel.js';
-
 
 export const getSearchProducts = async (search, categoryName, limit = 10, page = 1) => {
     const offset = (page - 1) * limit;
@@ -139,7 +138,6 @@ export const getProductDetailsById = async (productId, limit, user) => {
     };  
 }
 
-
 export const postProduct = async (user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls) => {
     if (user.role !== 'seller') {
         throw new Error('Only sellers can create products');
@@ -159,3 +157,12 @@ export const postProduct = async (user, name, description, starting_price, step_
 }
 
 
+export const getProductBidHistoryService = async (productId) => {
+  try {
+    const bidHistory = await getProductBidHistoryRepo(productId);
+    return bidHistory;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy lịch sử đấu giá sản phẩm:", err);
+    throw err;
+  }
+};

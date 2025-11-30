@@ -1,20 +1,83 @@
 import { useState, useEffect } from "react";
 import { IoLogoPolymer } from "react-icons/io";
-import { FaSearch, FaChevronDown, FaRegHeart } from "react-icons/fa";
+import {
+  FaSearch,
+  FaChevronDown,
+  FaRegHeart,
+  FaUser,
+  FaSignOutAlt,
+} from "react-icons/fa";
 import { MdPersonOutline } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Globe } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import CategorySlider from "./CategorySlider";
+import CategorySlider from "../layouts/CategorySlider";
+import LoginForm from "./LoginForm";
+import RegisterForm from "./RegisterForm";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../store/userSlice";
+import { authStorage } from "../../utils/auth";
 
 export default function Header() {
+  const dispatch = useDispatch();
   const [showCats, setShowCats] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const navigate = useNavigate();
+
+  const { isLoggedIn, userData } = useSelector((state) => state.user);
+
+  // TODO: Thay thế bằng Redux/Context API của bạn
+  // Ví dụ giả lập user đã đăng nhập
+  const [user, setUser] = useState(null);
 
   // Đóng overlay bằng ESC
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && setShowCats(false);
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        setShowCats(false);
+        setShowUserMenu(false);
+        setShowLoginModal(false);
+        setShowRegisterModal(false);
+      }
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
+
+  // Đóng user menu khi click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (showUserMenu && !e.target.closest(".user-menu-container")) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showUserMenu]);
+
+  // Handle logout
+  const handleLogout = () => {
+    // Không cần xóa localStorage vì không dùng nữa
+    authStorage.removeToken();
+    dispatch(logout());
+    setShowUserMenu(false);
+    // KHÔNG cần window.location.reload() - UI tự động cập nhật
+    // Optional: Redirect về trang chủ sau logout
+    navigate("/");
+  };
+
+  // Handle switch between login/register modals
+  const handleSwitchToRegister = () => {
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowRegisterModal(false);
+    setShowLoginModal(true);
+  };
 
   return (
     <header className="bg-white shadow sticky top-0 z-50">
@@ -38,7 +101,7 @@ export default function Header() {
           <button
             type="button"
             onClick={() => setShowCats(true)}
-            className="flex items-center gap-2 font-medium text-gray-800 hover:text-blue-600 transition-colors px-2"
+            className="flex items-center gap-2 font-medium text-indigo-600/80 hover:text-blue-600 transition-colors px-2"
           >
             Categories
             <FaChevronDown
@@ -52,7 +115,7 @@ export default function Header() {
         {/* Search */}
         <div className="flex-1 md:flex-2 lg:flex-3 max-w-[820px]">
           <div className="relative w-full bg-gray-100 rounded-md md:rounded-lg">
-            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none w-5 h-5" />
+            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600/75 pointer-events-none w-5 h-5" />
             <input
               type="text"
               placeholder="Search for brand, model, artist..."
@@ -61,7 +124,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Login + Heart + Register (guest) */}
+        {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
         <div className="hidden md:flex items-center gap-4 ml-auto">
           <button
             type="button"
@@ -71,20 +134,114 @@ export default function Header() {
             <FaRegHeart className="w-5 h-5 text-blue-600" />
           </button>
 
-          <Link
-            to="/login"
-            className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
-          >
-            <MdPersonOutline className="w-5 h-5" />
-            Đăng nhập
-          </Link>
+          {!isLoggedIn ? (
+            // Hiển thị nút đăng nhập/đăng ký khi chưa login
+            <>
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 font-medium transition-colors"
+              >
+                <MdPersonOutline className="w-5 h-5" />
+                Đăng nhập
+              </button>
 
-          <Link
-            to="/register"
-            className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium bg-linear-to-r from-blue-400 to-purple-600 hover:from-blue-500 hover:to-purple-700 transition-colors"
-          >
-            Đăng ký
-          </Link>
+              <button
+                onClick={() => setShowRegisterModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded-md font-medium bg-linear-to-r from-blue-400 to-purple-600 hover:from-blue-500 hover:to-purple-700 transition-colors"
+              >
+                Đăng ký
+              </button>
+            </>
+          ) : (
+            // Hiển thị giỏ hàng, avatar và dropdown khi đã login
+            <>
+              <Link
+                to="/guide"
+                className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
+             hover:opacity-80 transition-all text-[16px]"
+              >
+                Cách thao tác trên website
+              </Link>
+              <div className="relative user-menu-container">
+                <button
+                  type="button"
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-2 p-1 rounded-full hover:ring-2 hover:ring-blue-400 transition-all focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="User menu"
+                >
+                  <img
+                    src={
+                      userData?.avatar ||
+                      "https://ui-avatars.com/api/?name=" +
+                        (userData?.name || "User")
+                    }
+                    alt={userData?.name || "User"}
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                  />
+                  <FaChevronDown
+                    className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${
+                      showUserMenu ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                    >
+                      {/* User Info */}
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="font-semibold text-gray-800">
+                          {userData?.name || "User"}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate">
+                          {userData?.email || "user@example.com"}
+                        </p>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-1">
+                        <Link
+                          to="/profile"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <FaUser className="w-4 h-4 text-blue-600" />
+                          <span>Trang cá nhân</span>
+                        </Link>
+
+                        {userData?.role === "seller" && (
+                          // Upload Product
+                          <Link
+                            to="/upload-product"
+                            onClick={() => setShowUserMenu(false)}
+                            className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <IoLogoPolymer className="w-4 h-4 text-blue-600" />
+                            <span>Đăng sản phẩm</span>
+                          </Link>
+                        )}
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <FaSignOutAlt className="w-4 h-4" />
+                          <span>Đăng xuất</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -122,6 +279,20 @@ export default function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ===== Login Modal ===== */}
+      <LoginForm
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToRegister={handleSwitchToRegister}
+      />
+
+      {/* ===== Register Modal ===== */}
+      <RegisterForm
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
     </header>
   );
 }

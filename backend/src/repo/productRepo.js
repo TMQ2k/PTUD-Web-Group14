@@ -1,15 +1,20 @@
 import pool from "../config/db.js";
 
-
 export const getProductImages = async (productId) => {
-    const result = await pool.query("SELECT image_url FROM product_images WHERE product_id = $1", [productId]);
-    return result.rows.map(row => row.image_url);
-}
+  const result = await pool.query(
+    "SELECT image_url FROM product_images WHERE product_id = $1",
+    [productId]
+  );
+  return result.rows.map((row) => row.image_url);
+};
 
 export const getProductBaseInfoById = async (productId) => {
-    const result = await pool.query("SELECT * FROM products WHERE product_id = $1", [productId]);
-    return result.rows[0] || null;
-}
+  const result = await pool.query(
+    "SELECT * FROM products WHERE product_id = $1",
+    [productId]
+  );
+  return result.rows[0] || null;
+};
 
 export const getSellerIdByProductId = async (productId) => {
     const result = await pool.query("SELECT seller_id FROM products WHERE product_id = $1", [productId]);
@@ -129,5 +134,5 @@ export const postProduct = async(seller_id, name, description, starting_price, s
             [productId, extra_image_url]
         );
     }
-    return result.rows[0];
+    return result.rows[0].product
 }

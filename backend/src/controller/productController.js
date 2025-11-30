@@ -1,10 +1,11 @@
-import express, { json } from 'express';
+import express, { json } from "express";
 import {
     getSearchProducts,
     getProductsList,
     getProductDetailsById,
     postProduct
 } from '../service/productService.js';
+import { authenticate } from "../middleware/auth.js";
 
 const router = express.Router();
 router.get('/', async (req, res) => {
@@ -49,7 +50,7 @@ router.get('/:productId', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const user = req.user; 
         const { name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls } = req.body;
@@ -69,5 +70,3 @@ router.post('/', async (req, res) => {
 });
 
 export default router;
-
-        
