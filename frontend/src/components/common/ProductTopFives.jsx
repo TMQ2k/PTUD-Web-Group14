@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import ProductCard from "./ProductCard";
 import { TrendingUp, ClockFading, BanknoteArrowUp } from "lucide-react";
 //test image
@@ -182,6 +182,7 @@ const products = [
 const ProductTopFives = () => {
   const [top5HighestPriceProducts, setTop5HighestPriceProducts] = useState([]);
   const [top5EndingProducts, setTop5EndingProducts] = useState([]);
+  const [top5MostBidProducts, setTop5MostBidProducts] = useState([]);
 
   // const top5EndingProducts = products
   //   .sort((a, b) => {
@@ -252,17 +253,62 @@ const ProductTopFives = () => {
     fetchTop5EndingProducts();
   }, []);
 
-  const top5MostBidProducts = products
-    .sort((a, b) => b.bidCount - a.bidCount)
-    .slice(0, 5);
+  useEffect(() => {
+    const fetchTop5MostBidProducts = async () => {
+      try {
+        const response = await productApi.getTop5MostBidded();
+        // Transform backend data to match ProductCard props
+        const transformedProducts = response.data.map((product) => {
+          // Calculate remaining time
+          const endTime = new Date(product.end_time);
+          const now = new Date();
+          const diffMs = endTime - now;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffMinutes = Math.floor(
+            (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+          const remainingTime = `${String(diffHours).padStart(2, "0")}:${String(
+            diffMinutes
+          ).padStart(2, "0")}:${String(diffSeconds).padStart(2, "0")}`;
+          // Format posted date
+          const createdAt = new Date(product.created_at);
+          const postedDate = `${String(createdAt.getDate()).padStart(
+            2,
+            "0"
+          )}/${String(createdAt.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}/${createdAt.getFullYear()}`;
+          // Format price
+          const formattedPrice = new Intl.NumberFormat("vi-VN").format(
+            product.current_price
+          );
+          return {
+            id: product.product_id,
+            image: product.image_cover_url || electronicsImg,
+            name: product.name,
+            currentPrice: formattedPrice,
+            highestBidder: "Đang cập nhật",
+            buyNowPrice: product.buy_now_price
+              ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
+              : null,
+            postedDate: postedDate,
+            remainingTime: remainingTime,
+            bidCount: product.bid_count || 0,
+          };
+        });
 
-  // const top5HighestPriceProducts = products
-  //   .sort((a, b) => {
-  //     const priceA = parseInt(a.currentPrice.replace(/,/g, ""));
-  //     const priceB = parseInt(b.currentPrice.replace(/,/g, ""));
-  //     return priceB - priceA;
-  //   })
-  //   .slice(0, 5);
+        setTop5MostBidProducts(transformedProducts);
+      } catch (error) {
+        console.error(
+          "❌ Lỗi khi fetch top 5 sản phẩm có nhiều lượt ra giá nhất:",
+          error
+        );
+      }
+    };
+    fetchTop5MostBidProducts();
+  }, []);
 
   useEffect(() => {
     const fetchTop5HighestPriceProducts = async () => {
