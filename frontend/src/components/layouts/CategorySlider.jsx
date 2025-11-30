@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import electronicsIm from "../../assets/electronics.jpg";
 import { categoryApi } from "../../api/categories.api";
 import { useDispatch, useSelector } from "react-redux";
@@ -39,6 +40,7 @@ const CategorySlider = ({
   onClose,
 }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [pageIndex, setPageIndex] = useState(0); // 0: level 1, 1: level 2
   const [activeParent, setActiveParent] = useState(null); // id của danh mục cha đang chọn
 
@@ -46,6 +48,13 @@ const CategorySlider = ({
   const { categories, loading, error } = useSelector(
     (state) => state.categories
   );
+
+  // ✅ Reset state khi mở lại CategorySlider
+  useEffect(() => {
+    // Reset về trang level 1 mỗi khi component mount
+    setPageIndex(0);
+    setActiveParent(null);
+  }, []); // Chạy một lần khi mount
 
   // ✅ Fetch categories khi component mount
   useEffect(() => {
@@ -190,6 +199,19 @@ const CategorySlider = ({
                     <button
                       key={category.id}
                       onClick={() => {
+                        // Nếu category không có children, navigate trực tiếp
+                        if (
+                          !category.children ||
+                          category.children.length === 0
+                        ) {
+                          navigate(`/category/${category.id}`);
+                          // Reset state trước khi đóng
+                          setPageIndex(0);
+                          setActiveParent(null);
+                          onClose?.();
+                          return;
+                        }
+                        // Nếu có children, hiển thị level 2
                         setActiveParent(category.id);
                         setPageIndex(1);
                         onSelectCategory?.(category);
@@ -221,7 +243,15 @@ const CategorySlider = ({
                   {parent.children.map((child) => (
                     <button
                       key={child.id}
-                      onClick={() => onSelectCategory?.(parent, child)}
+                      onClick={() => {
+                        // Navigate đến trang CategoryProducts với categoryId của child
+                        navigate(`/category/${child.id}`);
+                        onSelectCategory?.(parent, child);
+                        // Reset state trước khi đóng
+                        setPageIndex(0);
+                        setActiveParent(null);
+                        onClose?.(); // Đóng CategorySlider sau khi chọn
+                      }}
                       className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
                     >
                       <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">

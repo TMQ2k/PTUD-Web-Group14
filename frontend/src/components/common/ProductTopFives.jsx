@@ -3,6 +3,8 @@ import ProductCard from "./ProductCard";
 import { TrendingUp, ClockFading, BanknoteArrowUp } from "lucide-react";
 //test image
 import electronicsImg from "../../assets/electronics.jpg";
+import { useEffect, useState } from "react";
+import { productApi } from "../../api/product.api";
 
 const products = [
   // 🕒 Top 5 gần kết thúc
@@ -178,27 +180,151 @@ const products = [
 ];
 
 const ProductTopFives = () => {
-  const top5EndingProducts = products
-    .sort((a, b) => {
-      const timeA = a.remainingTime.split(":").map(Number);
-      const timeB = b.remainingTime.split(":").map(Number);
-      const totalSecondsA = timeA[0] * 3600 + timeA[1] * 60 + timeA[2];
-      const totalSecondsB = timeB[0] * 3600 + timeB[1] * 60 + timeB[2];
-      return totalSecondsA - totalSecondsB;
-    })
-    .slice(0, 5);
+  const [top5HighestPriceProducts, setTop5HighestPriceProducts] = useState([]);
+  const [top5EndingProducts, setTop5EndingProducts] = useState([]);
+
+  // const top5EndingProducts = products
+  //   .sort((a, b) => {
+  //     const timeA = a.remainingTime.split(":").map(Number);
+  //     const timeB = b.remainingTime.split(":").map(Number);
+  //     const totalSecondsA = timeA[0] * 3600 + timeA[1] * 60 + timeA[2];
+  //     const totalSecondsB = timeB[0] * 3600 + timeB[1] * 60 + timeB[2];
+  //     return totalSecondsA - totalSecondsB;
+  //   })
+  //   .slice(0, 5);
+
+  useEffect(() => {
+    const fetchTop5EndingProducts = async () => {
+      try {
+        const response = await productApi.getTop5EndingSoon();
+
+        // Transform backend data to match ProductCard props
+        const transformedProducts = response.data.map((product) => {
+          // Calculate remaining time
+          const endTime = new Date(product.end_time);
+          const now = new Date();
+          const diffMs = endTime - now;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffMinutes = Math.floor(
+            (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+          const remainingTime = `${String(diffHours).padStart(2, "0")}:${String(
+            diffMinutes
+          ).padStart(2, "0")}:${String(diffSeconds).padStart(2, "0")}`;
+
+          // Format posted date
+          const createdAt = new Date(product.created_at);
+          const postedDate = `${String(createdAt.getDate()).padStart(
+            2,
+            "0"
+          )}/${String(createdAt.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}/${createdAt.getFullYear()}`;
+
+          // Format price
+          const formattedPrice = new Intl.NumberFormat("vi-VN").format(
+            product.current_price
+          );
+
+          return {
+            id: product.product_id,
+            image: product.image_cover_url || electronicsImg,
+            name: product.name,
+            currentPrice: formattedPrice,
+            highestBidder: "Đang cập nhật",
+            buyNowPrice: product.buy_now_price
+              ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
+              : null,
+            postedDate: postedDate,
+            remainingTime: remainingTime,
+            bidCount: product.bid_count || 0,
+          };
+        });
+
+        setTop5EndingProducts(transformedProducts);
+      } catch (error) {
+        console.error("❌ Lỗi khi fetch top 5 sản phẩm gần kết thúc:", error);
+      }
+    };
+
+    fetchTop5EndingProducts();
+  }, []);
 
   const top5MostBidProducts = products
     .sort((a, b) => b.bidCount - a.bidCount)
     .slice(0, 5);
 
-  const top5HighestPriceProducts = products
-    .sort((a, b) => {
-      const priceA = parseInt(a.currentPrice.replace(/,/g, ""));
-      const priceB = parseInt(b.currentPrice.replace(/,/g, ""));
-      return priceB - priceA;
-    })
-    .slice(0, 5);
+  // const top5HighestPriceProducts = products
+  //   .sort((a, b) => {
+  //     const priceA = parseInt(a.currentPrice.replace(/,/g, ""));
+  //     const priceB = parseInt(b.currentPrice.replace(/,/g, ""));
+  //     return priceB - priceA;
+  //   })
+  //   .slice(0, 5);
+
+  useEffect(() => {
+    const fetchTop5HighestPriceProducts = async () => {
+      try {
+        const response = await productApi.getTop5HighestPrice();
+
+        // Transform backend data to match ProductCard props
+        const transformedProducts = response.data.map((product) => {
+          // Calculate remaining time
+          const endTime = new Date(product.end_time);
+          const now = new Date();
+          const diffMs = endTime - now;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffMinutes = Math.floor(
+            (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+          const remainingTime = `${String(diffHours).padStart(2, "0")}:${String(
+            diffMinutes
+          ).padStart(2, "0")}:${String(diffSeconds).padStart(2, "0")}`;
+
+          // Format posted date
+          const createdAt = new Date(product.created_at);
+          const postedDate = `${String(createdAt.getDate()).padStart(
+            2,
+            "0"
+          )}/${String(createdAt.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}/${createdAt.getFullYear()}`;
+
+          // Format price
+          const formattedPrice = new Intl.NumberFormat("vi-VN").format(
+            product.current_price
+          );
+
+          return {
+            id: product.product_id,
+            image: product.image_cover_url || electronicsImg,
+            name: product.name,
+            currentPrice: formattedPrice,
+            highestBidder: "Đang cập nhật", // Backend chưa trả về
+            buyNowPrice: product.buy_now_price
+              ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
+              : null,
+            postedDate: postedDate,
+            remainingTime: remainingTime,
+            bidCount: product.bid_count || 0, // Backend chưa trả về
+          };
+        });
+
+        setTop5HighestPriceProducts(transformedProducts);
+      } catch (error) {
+        console.error(
+          "❌ Lỗi khi fetch top 5 sản phẩm có giá cao nhất:",
+          error
+        );
+      }
+    };
+
+    fetchTop5HighestPriceProducts();
+  }, []);
 
   return (
     <>

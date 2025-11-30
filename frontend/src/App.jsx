@@ -12,6 +12,7 @@ import RegisterForm from "./components/common/RegisterForm";
 import LoginForm from "./components/common/LoginForm";
 import UserInformation from "./pages/UserInformation";
 import Admin from "./pages/AdminDashboard";
+import CategoryProducts from "./pages/CategoryProducts";
 import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
@@ -95,6 +96,7 @@ const App = () => {
           <Route path="login" element={<LoginForm />} />
           <Route index element={<Home />} />
           <Route path="profile" element={<UserInformation />} />
+          <Route path="category/:categoryId" element={<CategoryProducts />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}

@@ -322,6 +322,7 @@ export default function Header() {
                 onSelectCategory={(lv1, lv2) => {
                   console.log("Selected:", lv1, lv2);
                 }}
+                onClose={() => setShowCats(false)}
               />
             </motion.div>
           </motion.div>

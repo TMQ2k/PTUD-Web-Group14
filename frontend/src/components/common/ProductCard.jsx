@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Clock, Tag, User, Heart } from "lucide-react";
+import { FaFire } from "react-icons/fa";
 
 const ProductCard = ({
+  id,
   image,
   name,
   currentPrice,
@@ -87,7 +89,8 @@ const ProductCard = ({
         {/* Badge "Mua ngay" nếu có */}
         {buyNowPrice && (
           <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-            🔥 Mua ngay: {buyNowPrice}₫
+            <FaFire className="inline w-4 h-4 mr-1 mb-1 text-orange-500" />
+            Mua ngay: {buyNowPrice}₫
           </div>
         )}
       </div>
