@@ -57,17 +57,6 @@ export const getTopBidderIdByProductId = async (productId) => {
   return result.rows[0].user_id;
 };
 
-export const getAutoBidWinnerIdByProductId = async (productId) => {
-  const result = await pool.query(
-    `SELECT ab.user_id FROM auto_bids ab WHERE ab.product_id = $1 ORDER BY ab.current_bid_amount DESC LIMIT 1`,
-    [productId]
-  );
-  if (result.rows.length === 0) {
-    return null;
-  }
-  return result.rows[0].user_id;
-};
-
 export const addItemToWatchlist = async (userId, productId) => {
   try {
     const result = await pool.query(

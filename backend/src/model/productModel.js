@@ -21,7 +21,7 @@ export class Product {
 }
 
 export class ProductProfile {
-    constructor(product_id, name, image_cover_url, current_price, buy_now_price = null, is_active, created_at, end_time, top_bidder, history_count) {
+    constructor(product_id, name, image_cover_url, current_price, buy_now_price, is_active, created_at, end_time, top_bidder, history_count) {
         this.product_id = product_id;
         this.name = name;
         this.image_cover_url = image_cover_url;
