@@ -42,3 +42,20 @@ CREATE INDEX idx_user_otp_code_user ON user_otp(user_id, otp_code);
 CREATE INDEX idx_auto_bids_user_id ON auto_bids(user_id);
 CREATE INDEX idx_auto_bids_product_id ON auto_bids(product_id);
 CREATE INDEX idx_auto_bids_is_active ON auto_bids(is_active);
+
+-- Tăng tốc truy vấn mô tả theo product
+CREATE INDEX idx_product_descriptions_product_id
+    ON product_descriptions(product_id);
+
+-- Lọc theo người tạo mô tả (seller)
+CREATE INDEX idx_product_descriptions_created_by
+    ON product_descriptions(created_by);
+
+-- Nếu hay dùng ORDER BY created_at DESC
+CREATE INDEX idx_product_descriptions_created_at
+    ON product_descriptions(created_at);
+-- Để hỗ trợ các phản hồi (response), bạn có thể tạo một index trên parent_comment_id để dễ dàng tìm các phản hồi cho mỗi comment.
+CREATE INDEX idx_parent_comment_id ON comments(parent_comment_id);
+
+CREATE INDEX idx_watchlist_user ON watchlist(user_id);
+CREATE INDEX idx_watchlist_product ON watchlist(product_id);

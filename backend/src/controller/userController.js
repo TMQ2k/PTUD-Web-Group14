@@ -11,6 +11,9 @@ import {
   deleteUserService,
   updateUserAvatarService,
   changePasswordService,
+  sendVerifyForgotPasswordOTP,
+  verifyForgotPasswordOTP,
+  resetPassword,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -302,6 +305,73 @@ router.put("/change-password", authenticate, async (req, res) => {
       code: 500,
       message: "Đổi mật khẩu thất bại",
       error: err.message,
+    });
+  }
+});
+
+router.post("/send-otp", async (req, res) => {
+  try {
+    const { identifier } = req.body;
+    // Gọi hàm gửi OTP từ service
+    const msg = await sendVerifyForgotPasswordOTP(identifier);
+
+    res.status(200).json({
+      code: 200,
+      message: "OTP sent successfully",
+      data: { note: msg },
+    });
+  } catch (err) {
+    console.error("❌ Error in /send-otp route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to send OTP",
+      data: null,
+    });
+  }
+});
+
+router.post("/verify-otp-reset-pass", async (req, res) => {
+  try {
+    const { identifier, otp } = req.body;
+    // Gọi hàm verify OTP từ service
+    console.log(identifier, otp);
+    await verifyForgotPasswordOTP(identifier, otp);
+    res.status(200).json({
+      code: 200,
+      message: "OTP verified successfully",
+      data: null,
+    });
+  } catch (err) {
+    console.error("❌ Error in /verify-otp route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to verify OTP",
+      data: null,
+    });
+  }
+});
+
+router.put("/reset-password", async (req, res) => {
+  try {
+    const { identifier, newPassword, confirmPassword } = req.body;
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        code: 400,
+        message: "New password and confirm password do not match",
+      });
+    }
+    await resetPassword(identifier, newPassword);
+    res.status(200).json({
+      code: 200,
+      message: "Password reset successfully",
+      data: null,
+    });
+  } catch (err) {
+    console.error("❌ Error in /reset-password route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to reset password",
+      data: null,
     });
   }
 });
