@@ -8,6 +8,9 @@ const userEndpoint = {
   verifyOtp: "/users/verify-otp",
   updateProfile: "/users/update-info",
   changePassword: "/users/change-password",
+  sendOtpResetPassword: "/users/send-otp",
+  verifyOtpResetPassword: "/users/verify-otp-reset-pass",
+  resetPassword: "/users/reset-password",
 };
 
 export const userApi = {
@@ -76,6 +79,41 @@ export const userApi = {
    */
   changePassword: async (passwordData) => {
     const response = await http.put(userEndpoint.changePassword, passwordData);
+    return response.data;
+  },
+
+  /**
+   * Gửi OTP để reset mật khẩu
+   * @param {string} identifier - Email hoặc username
+   * @returns {Promise<Object>} Kết quả gửi OTP
+   */
+  sendOtpResetPassword: async (identifier) => {
+    const response = await http.post(userEndpoint.sendOtpResetPassword, {
+      identifier,
+    });
+    return response.data;
+  },
+
+  /**
+   * Xác thực OTP reset mật khẩu
+   * @param {Object} otpData - { identifier, otp }
+   * @returns {Promise<Object>} Kết quả xác thực OTP
+   */
+  verifyOtpResetPassword: async (otpData) => {
+    const response = await http.post(
+      userEndpoint.verifyOtpResetPassword,
+      otpData
+    );
+    return response.data;
+  },
+
+  /**
+   * Đặt lại mật khẩu
+   * @param {Object} resetData - { identifier, newPassword, confirmPassword }
+   * @returns {Promise<Object>} Kết quả reset mật khẩu
+   */
+  resetPassword: async (resetData) => {
+    const response = await http.put(userEndpoint.resetPassword, resetData);
     return response.data;
   },
 };
