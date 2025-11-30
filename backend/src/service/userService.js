@@ -253,3 +253,68 @@ export const changePasswordService = async (
   await changePassword(user_id, newHashed);
   return true;
 };
+
+export const sendVerifyForgotPasswordOTP = async (identifier) => {
+  // Tìm user theo username hoặc email
+  const result = await pool.query(
+    "SELECT user_id, email FROM users WHERE username = $1 OR email = $1",
+    [identifier]
+  );
+  const user = result.rows[0];
+  if (!user) {
+    throw new Error("User not found");
+  }
+  // Tạo OTP & lưu
+  const otp = generateOTP();
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+  await pool.query(
+    "INSERT INTO user_otp (user_id, otp_code, expires_at) VALUES ($1, $2, $3) ON CONFLICT (user_id) DO UPDATE SET otp_code = $2, expires_at = $3",
+    [user.user_id, otp, expiresAt]
+  );
+  // Gửi email OTP KHÔNG ĐỢI (async)
+  sendOTPEmail(user.email, otp).catch((err) => {
+    console.error(
+      "⚠️ Lỗi gửi email OTP (không ảnh hưởng response):",
+      err.message
+    );
+  });
+
+  console.log(`🔑 OTP cho ${user.email}: ${otp}`); // Log để test
+  return `OTP sent to ${user.email}`;
+};
+
+export const verifyForgotPasswordOTP = async (identifier, otp) => {
+  // Tương tự hàm verifyOTP nhưng không cập nhật verified
+  console.log(
+    "[verifyForgotPasswordOTP] Bắt đầu xác thực OTP cho:",
+    identifier
+  );
+  const result = await pool.query(
+    `SELECT u.user_id, u.email, u.username, o.otp_code, o.expires_at
+     FROM users u
+     JOIN user_otp o ON u.user_id = o.user_id
+     WHERE u.username = $1 OR u.email = $1`,
+    [identifier]
+  );
+
+  const data = result.rows[0];
+  if (!data) throw new Error("No OTP found for user");
+  if (data.otp_code !== otp) throw new Error("Invalid OTP");
+  if (new Date() > data.expires_at) throw new Error("OTP expired");
+  return { message: "OTP verified successfully!" };
+};
+
+export const resetPassword = async (identifier, newPassword) => {
+  // Tìm user theo username hoặc email
+  const result = await pool.query(
+    "SELECT user_id FROM users WHERE username = $1 OR email = $1",
+    [identifier]
+  );
+  const user = result.rows[0];
+  if (!user) {
+    throw new Error("User not found");
+  }
+  const newHashed = await bcrypt.hash(newPassword, 10);
+  await changePassword(user.user_id, newHashed);
+  return { message: "Password reset successfully!" };
+};
