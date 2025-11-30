@@ -7,7 +7,7 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
-
+go
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -21,7 +21,7 @@ CREATE TABLE users_info (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+go
 CREATE TABLE users_rating (
     user_rating_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -35,16 +35,16 @@ CREATE TABLE users_rating (
         END
     ) STORED
 );
-
+go
+ALTER TABLE users_rating
+ADD CONSTRAINT uq_users_rating_user_id UNIQUE (user_id);
+go
+drop table user_upgrade_requests
 CREATE TABLE user_upgrade_requests (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
-    cur_role VARCHAR(50) NOT NULL,
-    requested_role VARCHAR(50) NOT NULL,
-
     reason TEXT,
-    attachments JSONB,  -- có thể chứa danh sách URL hoặc metadata file
     status VARCHAR(20) NOT NULL DEFAULT 'pending' 
         CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
 
@@ -54,10 +54,8 @@ CREATE TABLE user_upgrade_requests (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     reviewed_at TIMESTAMPTZ,
-
-    CONSTRAINT chk_different_role CHECK (cur_role <> requested_role)
 );
-
+go
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
     seller_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -71,39 +69,40 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL
 );
+go
 ALTER TABLE products
 ADD COLUMN buy_now_price NUMERIC(15,2);
-
+go
 ALTER TABLE products
 ADD CONSTRAINT chk_min_duration
 CHECK (end_time >= created_at + INTERVAL '3 hours');
-
+go
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL
 );
-
+go
 CREATE TABLE product_categories (
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(category_id) ON DELETE CASCADE,
     PRIMARY KEY (product_id, category_id)
 );
-
+go
 CREATE TABLE product_images (
     image_id SERIAL PRIMARY KEY,
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     image_url TEXT NOT NULL
 );
 
-
+go
 CREATE TABLE user_otp (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     otp_code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
-
+go
 CREATE TABLE bids (
     id BIGSERIAL PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -116,7 +115,9 @@ CREATE TABLE bids (
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 );
+go
 drop table auto_bids
+go
 CREATE TABLE auto_bids (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -132,7 +133,7 @@ CREATE TABLE auto_bids (
 
     UNIQUE (user_id, product_id)
 );
-
+go
 CREATE TABLE bid_rejections (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -166,7 +167,7 @@ CREATE TABLE bid_rejections (
     -- Mỗi bidder chỉ bị cấm 1 lần trên 1 product (để tránh trùng record)
     CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
 );
-
+go
 CREATE TABLE product_questions (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -192,7 +193,7 @@ CREATE TABLE product_questions (
     CONSTRAINT fk_pq_hidden_by
         FOREIGN KEY (hidden_by) REFERENCES users(user_id)
 );
-
+go
 CREATE TABLE product_answers (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -218,7 +219,7 @@ CREATE TABLE product_answers (
     CONSTRAINT fk_pa_hidden_by
         FOREIGN KEY (hidden_by) REFERENCES users(user_id)
 );
-
+go
 CREATE TABLE product_descriptions (
     id BIGSERIAL PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -226,7 +227,7 @@ CREATE TABLE product_descriptions (
     created_by BIGINT REFERENCES users(user_id), -- seller thêm mô tả
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
+go
 CREATE TABLE product_stats (
     product_id BIGINT PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
     
@@ -236,7 +237,7 @@ CREATE TABLE product_stats (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
+go
 CREATE TABLE comments (
     comment_id BIGSERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, -- Người viết comment
@@ -248,7 +249,7 @@ CREATE TABLE comments (
     CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT fk_comment_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
-
+go
 CREATE TABLE watchlist (
     id BIGSERIAL PRIMARY KEY,
 
@@ -260,5 +261,7 @@ CREATE TABLE watchlist (
     -- Không cho lưu trùng 1 sản phẩm vào watchlist của 1 user
     CONSTRAINT uq_watchlist_user_product UNIQUE (user_id, product_id)
 );
+
+
 
 

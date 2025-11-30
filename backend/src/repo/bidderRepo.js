@@ -81,3 +81,29 @@ export const getUserWatchlist = async (userId) => {
   ]);
   return result.rows;
 };
+
+//dùng để thêm hoặc cập nhật auto bid
+export const upsertAutoBid = async (userId, productId, maxBidAmount) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM fnc_upsert_auto_bid($1, $2, $3)`,
+      [userId, productId, maxBidAmount]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi thêm/cập nhật auto bid:", err);
+    throw err;
+  }
+};
+//dùng để chạy tự động sau mỗi lần có bid mới
+export const updateAutoBidCurrentAmount = async (productId) => {
+  try {
+    const result = await pool.query(`SELECT * FROM fnc_update_auto_bids($1)`, [
+      productId,
+    ]);
+    return result.rows;
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật current bid amount:", err);
+    throw err;
+  }
+};
