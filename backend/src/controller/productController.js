@@ -1,132 +1,72 @@
 import express, { json } from 'express';
 import {
-    getHighestPricedProducts,
-    getTopCurrentProducts,
-    getProductsByCategory,
+    getSearchProducts,
+    getProductsList,
     getProductDetailsById,
-    getAllProducts    
+    postProduct
 } from '../service/productService.js';
 
 const router = express.Router();
-router.get('/top-current/:limit', async (req, res) => {
+router.get('/', async (req, res) => {
     try {
-        const limit = parseInt(req.params.limit) || 5;
-        const products = await getTopCurrentProducts(limit);
-        return res.status(200).json({
+        const categoryId = req.query.categoryId;
+        const sortBy = req.query.sortBy;
+        const limit = parseInt(req.query.limit);
+        const page = parseInt(req.query.page) || 1;
+        const is_active = req.query.is_active === 'true' ? true : req.query.is_active === 'false' ? false : undefined;
+        const products = await getProductsList(categoryId, limit, page, sortBy, is_active);
+        res.json({
             code: 200,
-            message: 'Top current products retrieved successfully',
+            message: 'Products retrieved successfully',
             data: products
         });
-    } catch (err) {
-        console.error('❌ Error in /top-current route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'No products found',
+    } catch (error) {
+        res.status(500).json({ 
+            code: 500,
+            message: error.message,
             data: null
         });
     }
 });
 
-router.get('/highest-priced/:limit', async (req, res) => {
+router.get('/:productId', async (req, res) => {
     try {
-        const limit = parseInt(req.params.limit) || 5;
-        const products = await getHighestPricedProducts(limit);
-        return res.status(200).json({
-            code: 200,
-            message: 'Highest priced products retrieved successfully',
-            data: products
-        });
-        
-    } catch (err) {
-        console.error('❌ Error in /highest-priced route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'No products found',
-            data: null
-        });
-    }
-
-});
-
-router.get('/most-bidded/:limit', async (req, res) => {
-    try {
-        const limit = parseInt(req.params.limit) || 5;
-        const products = await getMostBiddedProducts(limit);
-        return res.status(200).json({
-            code: 200,
-            message: 'Most bidded products retrieved successfully',
-            data: products
-        });
-    } catch (err) {
-        console.error('❌ Error in /most-bidded route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'No products found',
-            data: null
-        });
-    }
-});
-
-router.get('/:categoryId', async (req, res) => {
-    try {
-        const categoryId = parseInt(req.params.categoryId);
-        const products = await getProductsByCategory(categoryId);
-        return res.status(200).json({
-            code: 200,
-            message: 'Products by category retrieved successfully',
-            data: products
-        });
-    } catch (err) {
-        console.error('❌ Error in /category route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'No products found for this category',
-            data: null
-        });
-    }
-});
-
-router.get("/list/:limit&:page", async (req, res) => {
-    try {
-        const limit = parseInt(req.params.limit);
-        const page = parseInt(req.params.page);
-        const products = await getAllProducts(limit, page);
-        return res.status(200).json({
-            code: 200,
-            message: 'All products retrieved successfully',
-            data: products
-        });
-    } catch (err) {
-        console.error('❌ Error in / route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'No products found',
-            data: null
-        });
-    }
-});
-
-router.get("/details/:productId&:limit", async (req, res) => {
-    try {
-        const productId = parseInt(req.params.productId);
-        const limit = parseInt(req.params.limit);
-        const user = req.user || null;
+        const productId = req.params.productId;
+        const limit = parseInt(req.query.limit);
+        const user = req.user; // Assuming user info is attached to the request
         const productDetails = await getProductDetailsById(productId, limit, user);
-        return res.status(200).json({
-            code: 200,  
+        res.json({
+            code: 200,
             message: 'Product details retrieved successfully',
-            data: productDetails    
+            data: productDetails
         });
-    } catch (err) {
-        console.error('❌ Error in /details route:', err);
-        return res.status(404).json({
-            code: 404,
-            message: err.message || 'Product not found',
+    } catch (error) {
+        res.status(500).json({ 
+            code: 500,
+            message: error.message,
             data: null
         });
     }
 });
 
+router.post('/', async (req, res) => {
+    try {
+        const user = req.user; 
+        const { name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls } = req.body;
+        const newProduct = await postProduct(user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls);
+        res.status(201).json({
+            code : 201,
+            message : 'Product created successfully',
+            data : newProduct
+        });
+    } catch (error) {   
+        res.status(500).json({ 
+            code: 500,
+            message: error.message,
+            data: null
+        });
+    }  
+});
 
 export default router;
 

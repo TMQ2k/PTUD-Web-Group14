@@ -3,14 +3,12 @@ dotenv.config();
 
 import "../model/productModel.js";
 import {
-    getHighestPricedProducts as getHighestPricedProductsRepo,
-    getTopCurrentProducts as getTopCurrentProductsRepo,
-    getMostBiddedProducts as getMostBiddedProductsRepo,
-    getProductsByCategory as getProductsByCategoryRepo,
     getProductBaseInfoById as getProductBaseInfoByIdRepo,
     getProductImages as getProductImagesRepo,
     otherProductsByCategory as otherProductsByCategoryRepo,
-    getAllProducts as getAllProductsRepo
+    getSearchProducts as getSearchProductsRepo,
+    getProductsList as getProductsListRepo,
+    postProduct as postProductRepo,
 } from '../repo/productRepo.js';
 
 import {
@@ -21,34 +19,12 @@ import {
 } from '../repo/bidderRepo.js';
 
 import { getUserInfoById } from '../repo/userRepo.js';
+import { Product, ProductProfile } from '../model/productModel.js';
 
 
-export const getHighestPricedProducts = async (limit = 5) => {
-    const products = await getHighestPricedProductsRepo(limit);
-    if (!products) {
-        throw new Error('No products found');
-    }
-    return products;
-}
-
-export const getTopCurrentProducts = async (limit = 5) => {
-    const products = await getTopCurrentProductsRepo(limit);
-    if (!products) {
-        throw new Error('No products found');
-    }
-    return products;
-}
-
-export const getMostBiddedProducts = async (limit = 5) => {
-    const products = await getMostBiddedProductsRepo(limit);
-    if (!products) {
-        throw new Error('No products found');
-    }
-    return products;
-}
-
-export const getAllProducts = async (limit = 5, page = 1) => {
-    const products = await getAllProductsRepo(limit, page);
+export const getSearchProducts = async (search, categoryName, limit = 10, page = 1) => {
+    const offset = (page - 1) * limit;
+    const products = await getSearchProductsRepo(search, categoryName, limit, offset);
     for (let prod of products) {
         const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
         if (top_bidder_id) {
@@ -65,12 +41,8 @@ export const getAllProducts = async (limit = 5, page = 1) => {
     return products;
 }
 
-
-export const getProductsByCategory = async (categoryId) => {
-    const products = await getProductsByCategoryRepo(categoryId);
-    if (!products) {
-        throw new Error('No products found for this category');
-    }
+export const getProductsList = async (categoryId, limit, page = 1, sortBy, is_active) => {
+    const products = await getProductsListRepo(categoryId, limit, page, sortBy, is_active);
     for (let prod of products) {
         const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
         if (top_bidder_id) {
@@ -81,7 +53,23 @@ export const getProductsByCategory = async (categoryId) => {
         const countHistory = await countHistoryByProductId(prod.product_id);
         prod.history_count = countHistory;
     }
-    return products;
+    if (!products) {
+        throw new Error('No products found');
+    }
+    
+    //Filt products attributes to match ProductProfile
+    return products.map(prod => new ProductProfile(
+        prod.product_id,
+        prod.name,
+        prod.image_cover_url,
+        prod.current_price,
+        prod.buy_now_price,
+        prod.is_active,
+        prod.created_at,
+        prod.end_time,
+        prod.top_bidder,
+        prod.history_count
+    ));
 }
 
 export const getProductDetailsById = async (productId, limit, user) => {
@@ -151,5 +139,23 @@ export const getProductDetailsById = async (productId, limit, user) => {
     };  
 }
 
+
+export const postProduct = async (user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls) => {
+    if (user.role !== 'seller') {
+        throw new Error('Only sellers can create products');
+    }
+    const newProduct = await postProductRepo(
+        user.user_id,
+        name,
+        description,
+        starting_price,
+        step_price,
+        buy_now_price,
+        image_cover_url,
+        end_time,
+        extra_image_urls,
+    );
+    return newProduct;
+}
 
 

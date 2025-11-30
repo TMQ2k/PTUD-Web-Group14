@@ -24,3 +24,12 @@ app.use("/api/categories", categoryController);
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
+//print user database connection test
+import pool from "./src/config/db.js";
+pool.query("SELECT * FROM users", (err, res) => {
+  if (err) {
+    console.error("Database connection error:", err);
+  } else {
+    console.log("Database connected:", res.rows);
+  }
+});
