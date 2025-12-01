@@ -1,3 +1,20 @@
+CREATE OR REPLACE FUNCTION fnc_product_extra_images(
+    _product_id INTEGER,
+    _image_urls TEXT[]
+)
+RETURNS VOID AS $$
+DECLARE
+    v_url TEXT;
+BEGIN
+    -- Duyệt từng URL trong mảng
+    FOREACH v_url IN ARRAY _image_urls
+    LOOP
+        INSERT INTO product_images(product_id, image_url)
+        VALUES (_product_id, v_url);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION fnc_register_user(
     p_username VARCHAR,
     p_password_hashed TEXT,
@@ -55,22 +72,6 @@ BEGIN
       AND password_hashed = p_password_hashed
       AND status = TRUE
       AND verified = TRUE;  -- chỉ cho phép user active
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION fnc_increase_product_price(p_product_id INT)
-RETURNS NUMERIC AS $$
-DECLARE
-    new_price NUMERIC;
-BEGIN
-    UPDATE products
-    SET current_price = current_price + step_price
-    WHERE product_id = p_product_id
-      AND is_active = TRUE
-    RETURNING current_price INTO new_price;
-
-    RETURN new_price;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -182,7 +183,7 @@ BEGIN
     )
     VALUES (
         p_seller_id, p_name, p_description, p_starting_price, 
-        p_step_price, p_starting_price, buy_now_price, p_image_cover_url, p_end_time
+        p_step_price, p_starting_price, p_buy_now_price, p_image_cover_url, p_end_time
     )
     RETURNING product_id INTO new_product_id;
 
@@ -298,43 +299,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fnc_place_bid(
-    p_product_id BIGINT,
-    p_user_id BIGINT,
-    p_amount NUMERIC
-)
-RETURNS VOID
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- 1. Tạo mới hoặc cập nhật auto_bid của user
-    INSERT INTO auto_bids (user_id, product_id, max_bid_amount, current_bid_amount)
-    VALUES (p_user_id, p_product_id, p_amount, p_amount)
-    ON CONFLICT (user_id, product_id)
-    DO UPDATE SET
-        max_bid_amount = EXCLUDED.max_bid_amount,
-        current_bid_amount = EXCLUDED.current_bid_amount,
-        updated_at = NOW();
-
-    -- 2. Reset toàn bộ winner cho product này
-    UPDATE auto_bids
-    SET is_winner = FALSE
-    WHERE product_id = p_product_id;
-
-    -- 3. Xác định auto_bid thắng (current_bid_amount cao nhất)
-    --    Nếu trùng current_bid_amount → ưu tiên max_bid_amount cao hơn
-    WITH ranked AS (
-        SELECT id
-        FROM auto_bids
-        WHERE product_id = p_product_id
-        ORDER BY current_bid_amount DESC, max_bid_amount DESC
-        LIMIT 1
-    )
-    UPDATE auto_bids 
-    SET is_winner = TRUE
-    WHERE id IN (SELECT id FROM ranked);
-END;
-$$ ;
 
 CREATE OR REPLACE FUNCTION fnc_user_watchlist_add(
     _user_id BIGINT,
@@ -621,11 +585,10 @@ BEGIN
     RETURN QUERY
     SELECT 
         ph.bid_time,
-        -- Mask tên người dùng: giữ 1 ký tự đầu, phần còn lại thay bằng '*'
         CASE 
             WHEN u.username IS NULL THEN NULL
-            WHEN length(u.username) <= 1 THEN u.username
-            ELSE substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1)
+            WHEN length(u.username) <= 1 THEN u.username::VARCHAR
+            ELSE (substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1))::VARCHAR
         END AS masked_username,
         ph.bid_amount
     FROM product_history ph
@@ -636,4 +599,3 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select * from fnc_history_bids_product(6)
