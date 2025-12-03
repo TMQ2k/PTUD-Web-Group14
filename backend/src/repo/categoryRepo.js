@@ -27,3 +27,18 @@ export const createCategory = async (name, parentId = null) => {
   );
   return result.rows[0].category_id;
 };
+
+export const deleteCategoryById = async (categoryId) => {
+  const result = await pool.query("SELECT * FROM fnc_delete_category($1)", [
+    categoryId,
+  ]);
+  return result.rows[0];
+};
+
+export const updateCategoryName = async (categoryId, newName) => {
+  const result = await pool.query("SELECT * FROM fnc_update_category($1, $2)", [
+    categoryId,
+    newName,
+  ]);
+  return result.rows[0];
+};

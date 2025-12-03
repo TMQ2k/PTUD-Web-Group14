@@ -3,6 +3,8 @@ dotenv.config();
 import {
   getAllCategories as getAllCategoriesRepo,
   createCategory as createCategoryRepo,
+  deleteCategoryById as deleteCategoryByIdRepo,
+  updateCategoryName as updateCategoryNameRepo,
 } from "../repo/categoryRepo.js";
 
 export const getAllCategories = async () => {
@@ -19,4 +21,20 @@ export const createCategory = async (name, parentId = null) => {
     throw new Error("Failed to create category");
   }
   return categoryId;
+};
+
+export const deleteCategoryById = async (categoryId) => {
+  const result = await deleteCategoryByIdRepo(categoryId);
+  if (!result) {
+    throw new Error("Failed to delete category");
+  }
+  return result;
+};
+
+export const updateCategoryName = async (categoryId, newName) => {
+  const result = await updateCategoryNameRepo(categoryId, newName);
+  if (!result) {
+    throw new Error("Failed to update category name");
+  }
+  return result;
 };
