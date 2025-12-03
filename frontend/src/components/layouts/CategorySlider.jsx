@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import electronicsIm from "../../assets/electronics.jpg";
-import { categoryApi } from "../../api/categories.api";
+import { categoryApi } from "../../api/category.api";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setCategories,
@@ -69,7 +69,7 @@ const CategorySlider = ({
         dispatch(setCategoriesLoading());
         console.log("🔄 Đang fetch categories từ API...");
 
-        const response = await categoryApi.getAll();
+        const response = await categoryApi.getAllCategories();
         console.log("📦 Response từ API:", response);
 
         // Backend trả về: { code: 200, message: "...", data: [...] }
@@ -136,7 +136,7 @@ const CategorySlider = ({
           <div className="flex items-center gap-3">
             {pageIndex === 1 && (
               <button
-                className="inline-flex items-center gap-1 text-sm rounded border px-2 py-1 text-white/95 border-white/40 hover:bg-white/10"
+                className="inline-flex items-center gap-2 text-sm font-medium rounded-lg px-4 py-2 text-white bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 transition-all duration-200 shadow-sm hover:shadow-md"
                 onClick={() => setPageIndex(0)}
               >
                 <ArrowLeft className="w-4 h-4" /> Quay lại
