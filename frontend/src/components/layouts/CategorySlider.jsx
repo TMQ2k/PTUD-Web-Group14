@@ -199,19 +199,7 @@ const CategorySlider = ({
                     <button
                       key={category.id}
                       onClick={() => {
-                        // Nếu category không có children, navigate trực tiếp
-                        if (
-                          !category.children ||
-                          category.children.length === 0
-                        ) {
-                          navigate(`/category/${category.id}`);
-                          // Reset state trước khi đóng
-                          setPageIndex(0);
-                          setActiveParent(null);
-                          onClose?.();
-                          return;
-                        }
-                        // Nếu có children, hiển thị level 2
+                        // Luôn slide sang Level 2 (dù có children hay không)
                         setActiveParent(category.id);
                         setPageIndex(1);
                         onSelectCategory?.(category);
@@ -238,30 +226,40 @@ const CategorySlider = ({
                   animate="center"
                   exit="outLeft"
                   variants={variants}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
-                  {parent.children.map((child) => (
-                    <button
-                      key={child.id}
-                      onClick={() => {
-                        // Navigate đến trang CategoryProducts với categoryId của child
-                        navigate(`/category/${child.id}`);
-                        onSelectCategory?.(parent, child);
-                        // Reset state trước khi đóng
-                        setPageIndex(0);
-                        setActiveParent(null);
-                        onClose?.(); // Đóng CategorySlider sau khi chọn
-                      }}
-                      className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
-                    >
-                      <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
-                        {child.name}
-                      </span>
-                      <span className="relative w-20 h-20 rounded-full overflow-hidden shrink-0">
-                        <div className="absolute inset-0 bg-white/70" />
-                      </span>
-                    </button>
-                  ))}
+                  {/* Kiểm tra nếu không có children → Hiển thị COMING SOON */}
+                  {!parent.children || parent.children.length === 0 ? (
+                    <div className="bg-white/20 backdrop-blur-sm rounded-xl p-8 text-center">
+                      <h3 className="text-2xl font-bold text-white">
+                        COMING SOON
+                      </h3>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                      {parent.children.map((child) => (
+                        <button
+                          key={child.id}
+                          onClick={() => {
+                            // Navigate đến trang CategoryProducts với categoryId của child
+                            navigate(`/category/${child.id}`);
+                            onSelectCategory?.(parent, child);
+                            // Reset state trước khi đóng
+                            setPageIndex(0);
+                            setActiveParent(null);
+                            onClose?.(); // Đóng CategorySlider sau khi chọn
+                          }}
+                          className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
+                        >
+                          <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
+                            {child.name}
+                          </span>
+                          <span className="relative w-20 h-20 rounded-full overflow-hidden shrink-0">
+                            <div className="absolute inset-0 bg-white/70" />
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

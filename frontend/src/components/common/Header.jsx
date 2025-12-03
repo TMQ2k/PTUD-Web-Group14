@@ -165,13 +165,14 @@ export default function Header() {
 
         {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
         <div className="hidden md:flex items-center gap-4 ml-auto">
-          <button
-            type="button"
-            className="p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Yêu thích"
+          <Link
+            to="/watchlist"
+            className="p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
+            aria-label="Danh sách yêu thích"
+            title="Danh sách yêu thích"
           >
-            <FaRegHeart className="w-5 h-5 text-blue-600" />
-          </button>
+            <FaRegHeart className="w-5 h-5 text-blue-600 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+          </Link>
 
           {!isLoggedIn ? (
             // Hiển thị nút đăng nhập/đăng ký khi chưa login

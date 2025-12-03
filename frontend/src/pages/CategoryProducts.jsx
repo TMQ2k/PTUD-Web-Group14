@@ -3,8 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, Home, Filter, SortAsc } from "lucide-react";
 import { productApi } from "../api/product.api";
 import { categoryApi } from "../api/category.api";
+import { watchlistApi } from "../api/watchlist.api";
 import ProductCard from "../components/common/ProductCard";
 import electronicsImg from "../assets/electronics.jpg";
+import { useSelector } from "react-redux";
 
 const CategoryProducts = () => {
   const { categoryId } = useParams();
@@ -15,11 +17,29 @@ const CategoryProducts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState("default"); // default, price-asc, price-desc, time
-
+  const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const user = useSelector((state) => state.user);
   // Scroll to top khi component mount (reload trang)
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, []);
+
+  // Fetch watchlist để check sản phẩm nào đã yêu thích
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      if (!user.isLoggedIn) return;
+
+      try {
+        const response = await watchlistApi.getWatchlist();
+        const ids = new Set(response.data.map((item) => item.product_id));
+        setWatchlistIds(ids);
+      } catch (error) {
+        console.error("❌ Lỗi khi fetch watchlist:", error);
+      }
+    };
+
+    fetchWatchlist();
+  }, [user.isLoggedIn]);
 
   useEffect(() => {
     // Scroll to top khi thay đổi categoryId
@@ -52,13 +72,11 @@ const CategoryProducts = () => {
 
           // Format posted date
           const createdAt = new Date(product.created_at);
-          const postedDate = `${String(createdAt.getDate()).padStart(
-            2,
-            "0"
-          )}/${String(createdAt.getMonth() + 1).padStart(
-            2,
-            "0"
-          )}/${createdAt.getFullYear()}`;
+          const postedDate = isNaN(createdAt.getTime())
+            ? "--/--/----"
+            : `${String(createdAt.getDate()).padStart(2, "0")}/${String(
+                createdAt.getMonth() + 1
+              ).padStart(2, "0")}/${createdAt.getFullYear()}`;
 
           // Format price
           const formattedPrice = new Intl.NumberFormat("vi-VN").format(
@@ -268,7 +286,11 @@ const CategoryProducts = () => {
         {sortedProducts.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product) => (
-              <ProductCard key={product.id} {...product} />
+              <ProductCard
+                key={product.id}
+                {...product}
+                isInWatchlist={watchlistIds.has(product.id)}
+              />
             ))}
           </div>
         ) : (

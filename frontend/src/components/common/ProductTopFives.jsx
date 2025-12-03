@@ -5,6 +5,8 @@ import { TrendingUp, ClockFading, BanknoteArrowUp } from "lucide-react";
 import electronicsImg from "../../assets/electronics.jpg";
 import { useEffect, useState } from "react";
 import { productApi } from "../../api/product.api";
+import { watchlistApi } from "../../api/watchlist.api";
+import { useSelector } from "react-redux";
 
 const products = [
   // 🕒 Top 5 gần kết thúc
@@ -183,6 +185,25 @@ const ProductTopFives = () => {
   const [top5HighestPriceProducts, setTop5HighestPriceProducts] = useState([]);
   const [top5EndingProducts, setTop5EndingProducts] = useState([]);
   const [top5MostBidProducts, setTop5MostBidProducts] = useState([]);
+  const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const user = useSelector((state) => state.user);
+
+  // Fetch watchlist để check sản phẩm nào đã yêu thích
+  useEffect(() => {
+    const fetchWatchlist = async () => {
+      if (!user.isLoggedIn) return;
+
+      try {
+        const response = await watchlistApi.getWatchlist();
+        const ids = new Set(response.data.map((item) => item.product_id));
+        setWatchlistIds(ids);
+      } catch (error) {
+        console.error("❌ Lỗi khi fetch watchlist:", error);
+      }
+    };
+
+    fetchWatchlist();
+  }, [user.isLoggedIn]);
 
   // const top5EndingProducts = products
   //   .sort((a, b) => {
@@ -384,7 +405,11 @@ const ProductTopFives = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {top5EndingProducts.map((product, index) => (
-            <ProductCard key={index} {...product} />
+            <ProductCard
+              key={index}
+              {...product}
+              isInWatchlist={watchlistIds.has(product.id)}
+            />
           ))}
         </div>
       </div>
@@ -399,7 +424,11 @@ const ProductTopFives = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {top5MostBidProducts.map((product, index) => (
-            <ProductCard key={index} {...product} />
+            <ProductCard
+              key={index}
+              {...product}
+              isInWatchlist={watchlistIds.has(product.id)}
+            />
           ))}
         </div>
       </div>
@@ -414,7 +443,11 @@ const ProductTopFives = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {top5HighestPriceProducts.map((product, index) => (
-            <ProductCard key={index} {...product} />
+            <ProductCard
+              key={index}
+              {...product}
+              isInWatchlist={watchlistIds.has(product.id)}
+            />
           ))}
         </div>
       </div>

@@ -13,10 +13,13 @@ import LoginForm from "./components/common/LoginForm";
 import UserInformation from "./pages/UserInformation";
 import Admin from "./pages/AdminDashboard";
 import CategoryProducts from "./pages/CategoryProducts";
+import WatchList from "./pages/WatchList";
 import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
 import { userApi } from "./api/user.api";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
   const [showLoading, setShowLoading] = useState(true);
@@ -97,6 +100,7 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />
+          <Route path="watchlist" element={<WatchList />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
@@ -104,11 +108,24 @@ const App = () => {
       </>
     )
   );
-
   return (
     <>
       {/* Render nội dung chính NGAY LẬP TỨC để khi overlay fade thì UI đã sẵn sàng */}
       <RouterProvider router={router} />
+
+      {/* Toast notifications */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
 
       {/* Overlay loading nằm trên cùng, mờ dần khi exit */}
       {showLoading && (
