@@ -376,7 +376,8 @@ RETURNS TABLE (
     buy_now_price NUMERIC(15,2),
     is_active BOOLEAN,
     product_end_time TIMESTAMPTZ,
-    watch_created_at TIMESTAMPTZ
+    watch_created_at TIMESTAMPTZ,
+	product_created_at TIMESTAMPTZ
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -390,9 +391,10 @@ BEGIN
         p.buy_now_price,
         p.is_active,
         p.end_time,
-        w.created_at
+        w.created_at,
+		p.created_at
     FROM watchlist w
-    JOIN products p ON p.product_id = w.product_id
+    	JOIN products p ON p.product_id = w.product_id
     WHERE w.user_id = _user_id
     ORDER BY w.created_at DESC;
 END;
@@ -597,5 +599,64 @@ BEGIN
     ORDER BY ph.bid_time DESC
     LIMIT 5;
 END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_delete_category(
+    p_category_id integer
+)
+RETURNS TEXT
+AS $$
+BEGIN
+    -- Parent ID check: nếu truyền parent_id nhưng không tồn tại -> báo lỗi
+    IF p_parent_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM categories c WHERE c.category_id = p_parent_id
+        ) THEN
+            RAISE EXCEPTION 'Parent category with id % does not exist', p_parent_id;
+        END IF;
+    END IF;
+
+    -- Insert category
+    INSERT INTO categories(name, parent_id)
+    VALUES (p_name, p_parent_id)
+    RETURNING categories.category_id,
+              categories.name,
+              categories.parent_id
+    INTO category_id, name, parent_id;
+
+    RETURN NEXT;
+END; 
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_create_category(
+    p_name VARCHAR,
+    p_parent_id INT DEFAULT NULL
+)
+RETURNS TABLE (
+    category_id INT,
+    name VARCHAR,
+    parent_id INT
+)
+AS $$
+BEGIN
+    -- Parent ID check: nếu truyền parent_id nhưng không tồn tại -> báo lỗi
+    IF p_parent_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM categories c WHERE c.category_id = p_parent_id
+        ) THEN
+            RAISE EXCEPTION 'Parent category with id % does not exist', p_parent_id;
+        END IF;
+    END IF;
+
+    -- Insert category
+    INSERT INTO categories(name, parent_id)
+    VALUES (p_name, p_parent_id)
+    RETURNING categories.category_id,
+              categories.name,
+              categories.parent_id
+    INTO category_id, name, parent_id;
+
+    RETURN NEXT;
+END; 
 $$ LANGUAGE plpgsql;
 
