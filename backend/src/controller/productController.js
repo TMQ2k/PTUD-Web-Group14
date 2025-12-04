@@ -1,12 +1,9 @@
 import express, { json } from "express";
 import {
-  getHighestPricedProducts,
-  getTopCurrentProducts,
-  getProductsByCategory,
   getProductDetailsById,
-  postProduct,
-  getProductBidHistoryService,
   deleteProductById,
+  getProductsList,
+  postProduct,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 

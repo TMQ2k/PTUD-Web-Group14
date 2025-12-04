@@ -3,18 +3,14 @@ dotenv.config();
 
 import "../model/productModel.js";
 import {
-  getHighestPricedProducts as getHighestPricedProductsRepo,
-  getTopCurrentProducts as getTopCurrentProductsRepo,
-  getMostBiddedProducts as getMostBiddedProductsRepo,
-  getProductsByCategory as getProductsByCategoryRepo,
   getProductBaseInfoById as getProductBaseInfoByIdRepo,
   getProductImages as getProductImagesRepo,
   otherProductsByCategory as otherProductsByCategoryRepo,
   getSearchProducts as getSearchProductsRepo,
-  getProductsList as getProductsListRepo,
   postProduct as postProductRepo,
   getProductBidHistory as getProductBidHistoryRepo,
   deleteProductById as deleteProductByIdRepo,
+  getProductsList as getProductsListRepo,
 } from "../repo/productRepo.js";
 
 import {
