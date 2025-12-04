@@ -4,8 +4,10 @@ import {
   getProductsList,
   getProductDetailsById,
   postProduct,
+  getProductBidHistoryService,
+  deleteProductById,
 } from "../service/productService.js";
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 router.get("/", async (req, res) => {
@@ -98,5 +100,22 @@ router.post("/", authenticate, async (req, res) => {
     });
   }
 });
-
+router.delete("/delete", authenticate, authorize("admin"), async (req, res) => {
+  try {
+    const productId = req.body.productId;
+    const result = await deleteProductById(productId);
+    return res.status(200).json({
+      code: 200,
+      message: "Product deleted successfully",
+      data: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /delete route:", err);
+    return res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to delete product",
+      data: null,
+    });
+  }
+});
 export default router;

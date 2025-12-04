@@ -5,8 +5,11 @@ import {
   removeProductFromWatchlist,
   updateAutoBidCurrentAmountService,
   upsertAutoBidService,
+  requestUpgradeToSellerService,
+  getUpgradeRequestsService,
+  handleUpgradeRequestService,
 } from "../service/bidderService.js";
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 router.post("/add-to-watchlist", authenticate, async (req, res) => {
@@ -112,4 +115,74 @@ router.put("/auto-bid/update/:productId", async (req, res) => {
   }
 });
 
+router.post(
+  "/request-upgrade",
+  authenticate,
+  authorize("bidder"),
+  async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const requestResult = await requestUpgradeToSellerService(userId);
+      res.status(200).json({
+        code: 200,
+        message: "Upgrade request submitted successfully",
+        data: requestResult,
+      });
+    } catch (err) {
+      console.error("Error in /request-upgrade route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to submit upgrade request",
+        data: null,
+      });
+    }
+  }
+);
+
+router.get(
+  "/upgrade-requests",
+  authenticate,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const requests = await getUpgradeRequestsService();
+      res.status(200).json({
+        code: 200,
+        message: "Upgrade requests retrieved successfully",
+        data: requests,
+      });
+    } catch (err) {
+      console.error("Error in /upgrade-requests route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to retrieve upgrade requests",
+        data: null,
+      });
+    }
+  }
+);
+
+router.post(
+  "/handle-upgrade-request",
+  authenticate,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const { userId, approve } = req.body;
+      const result = await handleUpgradeRequestService(userId, approve);
+      res.status(200).json({
+        code: 200,
+        message: "Upgrade request handled successfully",
+        data: result,
+      });
+    } catch (err) {
+      console.error("Error in /handle-upgrade-request route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to handle upgrade request",
+        data: null,
+      });
+    }
+  }
+);
 export default router;

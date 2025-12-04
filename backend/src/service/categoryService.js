@@ -1,13 +1,40 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { 
-    getAllCategories as getAllCategoriesRepo
-}  from "../repo/categoryRepo.js";
+import {
+  getAllCategories as getAllCategoriesRepo,
+  createCategory as createCategoryRepo,
+  deleteCategoryById as deleteCategoryByIdRepo,
+  updateCategoryName as updateCategoryNameRepo,
+} from "../repo/categoryRepo.js";
 
 export const getAllCategories = async () => {
-    const categories = await getAllCategoriesRepo();
-    if (!categories) {
-        throw new Error('No categories found');
-    }
-    return categories;
+  const categories = await getAllCategoriesRepo();
+  if (!categories) {
+    throw new Error("No categories found");
+  }
+  return categories;
+};
+
+export const createCategory = async (name, parentId = null) => {
+  const categoryId = await createCategoryRepo(name, parentId);
+  if (!categoryId) {
+    throw new Error("Failed to create category");
+  }
+  return categoryId;
+};
+
+export const deleteCategoryById = async (categoryId) => {
+  const result = await deleteCategoryByIdRepo(categoryId);
+  if (!result) {
+    throw new Error("Failed to delete category");
+  }
+  return result;
+};
+
+export const updateCategoryName = async (categoryId, newName) => {
+  const result = await updateCategoryNameRepo(categoryId, newName);
+  if (!result) {
+    throw new Error("Failed to update category name");
+  }
+  return result;
 };
