@@ -3,8 +3,12 @@ select * from users_info
 select * from categories
 delete from users where user_id = 3
 select * from users
+delete from user_upgrade_requests
 select * from product_categories
 select * from products
+select * from product_descriptions
+select * from product_categories
+delete from products where product_id = 5
 select * from product_images
 delete from users where user_id = 5
 select * from user_otp
@@ -15,12 +19,19 @@ update products
 set current_price = starting_price
 update users
 set verified = true
-where user_id = 11
+where user_id = 14
+
+update users
+set role = 'bidder'
+where user_id = 14
 
 update users_rating
 set rating_plus = 1, rating_minus = 0
-where user_id = 10
+where user_id = 14
 
+
+insert into categories
+values('')
 -- User 1: được đánh giá tốt nhiều
  
 update users

@@ -84,17 +84,6 @@ export const updateAvatar = async (userId, avatar_url) => {
   }
 };
 
-// Xóa user bằng function DB
-export const deleteUser = async (userId) => {
-  try {
-    await pool.query("SELECT fnc_delete_user($1)", [userId]);
-    return true;
-  } catch (err) {
-    console.error("❌ [Repo] Lỗi khi xóa user:", err);
-    throw err;
-  }
-};
-
 // Tìm user theo username để service thực hiện bcrypt.compare
 export const findUserByUsername = async (username) => {
   const result = await pool.query(
@@ -168,4 +157,26 @@ export const getAllUsers = async () => {
     });
   }
   return users;
+};
+
+export const deleteUserById = async (userId) => {
+  console.log("➡ PostgreSQL delete userId =", userId);
+
+  try {
+    const result = await pool.query("SELECT * FROM fnc_delete_user($1)", [
+      userId,
+    ]);
+
+    // Kiểm tra giá trị trả về từ function
+    const isDeleted = result.rows[0]?.fnc_delete_user;
+
+    if (!isDeleted) {
+      throw new Error("User không tồn tại hoặc đã bị xóa");
+    }
+
+    return true;
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi xóa user theo ID:", err);
+    throw err;
+  }
 };

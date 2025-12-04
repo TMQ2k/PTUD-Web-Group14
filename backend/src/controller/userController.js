@@ -8,13 +8,13 @@ import {
   getUserProfile,
   verifyOTP,
   updateUserInfoService,
-  deleteUserService,
   updateUserAvatarService,
   changePasswordService,
   sendVerifyForgotPasswordOTP,
   verifyForgotPasswordOTP,
   resetPassword,
   getAllUsersService,
+  deleteUserByIdService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -183,34 +183,6 @@ router.put("/update-info", authenticate, async (req, res) => {
     res.status(500).json({
       code: 500,
       message: "Cập nhật thông tin thất bại",
-      error: err.message,
-    });
-  }
-});
-
-// DELETE /api/users/:id  (Admin only)
-router.delete("/:id", authenticate, authorize("admin"), async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = Number(id);
-    if (Number.isNaN(userId)) {
-      return res.status(400).json({ code: 400, message: "Invalid user id" });
-    }
-
-    await deleteUserService(userId);
-    return res.status(200).json({
-      code: 200,
-      message: "User deleted successfully",
-      data: { user_id: userId },
-    });
-  } catch (err) {
-    console.error("❌ [DELETE /:id] Lỗi:", err.message);
-    if (err.message === "User not found") {
-      return res.status(404).json({ code: 404, message: "User not found" });
-    }
-    return res.status(500).json({
-      code: 500,
-      message: "Delete user failed",
       error: err.message,
     });
   }
@@ -394,4 +366,52 @@ router.get("/", authenticate, authorize("admin"), async (req, res) => {
     });
   }
 });
+
+// Thêm route test này TRƯỚC route delete
+router.post("/test-body", (req, res) => {
+  console.log("🧪 Test body:", req.body);
+  res.json({
+    received: req.body,
+    type: typeof req.body.userId,
+    hasUserId: !!req.body.userId,
+  });
+});
+
+// TEST - bỏ tạm để kiểm tra logic
+router.delete(
+  "/delete-user",
+  authenticate,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const userIdNumber = parseInt(userId, 10);
+
+      console.log("✅ userId parsed:", userIdNumber);
+
+      if (!userId || isNaN(userIdNumber)) {
+        return res.status(400).json({
+          code: 400,
+          message: "Invalid user id",
+        });
+      }
+
+      const result = await deleteUserByIdService(userIdNumber);
+
+      return res.status(200).json({
+        code: 200,
+        message: "Xóa user thành công",
+        data: result,
+      });
+    } catch (err) {
+      console.error("❌ Lỗi:", err.message);
+      return res.status(500).json({
+        code: 500,
+        message: "Xóa user thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
+
 export default router;
