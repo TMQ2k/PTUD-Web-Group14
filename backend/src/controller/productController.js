@@ -1,7 +1,8 @@
 import express, { json } from "express";
 import {
-  getSearchProducts,
-  getProductsList,
+  getHighestPricedProducts,
+  getTopCurrentProducts,
+  getProductsByCategory,
   getProductDetailsById,
   postProduct,
   getProductBidHistoryService,
