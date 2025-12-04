@@ -1,3 +1,20 @@
+CREATE OR REPLACE FUNCTION fnc_product_extra_images(
+    _product_id INTEGER,
+    _image_urls TEXT[]
+)
+RETURNS VOID AS $$
+DECLARE
+    v_url TEXT;
+BEGIN
+    -- Duyệt từng URL trong mảng
+    FOREACH v_url IN ARRAY _image_urls
+    LOOP
+        INSERT INTO product_images(product_id, image_url)
+        VALUES (_product_id, v_url);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION fnc_register_user(
     p_username VARCHAR,
     p_password_hashed TEXT,
@@ -55,22 +72,6 @@ BEGIN
       AND password_hashed = p_password_hashed
       AND status = TRUE
       AND verified = TRUE;  -- chỉ cho phép user active
-END;
-$$ LANGUAGE plpgsql;
-
-
-CREATE OR REPLACE FUNCTION fnc_increase_product_price(p_product_id INT)
-RETURNS NUMERIC AS $$
-DECLARE
-    new_price NUMERIC;
-BEGIN
-    UPDATE products
-    SET current_price = current_price + step_price
-    WHERE product_id = p_product_id
-      AND is_active = TRUE
-    RETURNING current_price INTO new_price;
-
-    RETURN new_price;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -182,7 +183,7 @@ BEGIN
     )
     VALUES (
         p_seller_id, p_name, p_description, p_starting_price, 
-        p_step_price, p_starting_price, buy_now_price, p_image_cover_url, p_end_time
+        p_step_price, p_starting_price, p_buy_now_price, p_image_cover_url, p_end_time
     )
     RETURNING product_id INTO new_product_id;
 
@@ -298,43 +299,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fnc_place_bid(
-    p_product_id BIGINT,
-    p_user_id BIGINT,
-    p_amount NUMERIC
-)
-RETURNS VOID
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    -- 1. Tạo mới hoặc cập nhật auto_bid của user
-    INSERT INTO auto_bids (user_id, product_id, max_bid_amount, current_bid_amount)
-    VALUES (p_user_id, p_product_id, p_amount, p_amount)
-    ON CONFLICT (user_id, product_id)
-    DO UPDATE SET
-        max_bid_amount = EXCLUDED.max_bid_amount,
-        current_bid_amount = EXCLUDED.current_bid_amount,
-        updated_at = NOW();
-
-    -- 2. Reset toàn bộ winner cho product này
-    UPDATE auto_bids
-    SET is_winner = FALSE
-    WHERE product_id = p_product_id;
-
-    -- 3. Xác định auto_bid thắng (current_bid_amount cao nhất)
-    --    Nếu trùng current_bid_amount → ưu tiên max_bid_amount cao hơn
-    WITH ranked AS (
-        SELECT id
-        FROM auto_bids
-        WHERE product_id = p_product_id
-        ORDER BY current_bid_amount DESC, max_bid_amount DESC
-        LIMIT 1
-    )
-    UPDATE auto_bids 
-    SET is_winner = TRUE
-    WHERE id IN (SELECT id FROM ranked);
-END;
-$$ ;
 
 CREATE OR REPLACE FUNCTION fnc_user_watchlist_add(
     _user_id BIGINT,
@@ -412,7 +376,8 @@ RETURNS TABLE (
     buy_now_price NUMERIC(15,2),
     is_active BOOLEAN,
     product_end_time TIMESTAMPTZ,
-    watch_created_at TIMESTAMPTZ
+    watch_created_at TIMESTAMPTZ,
+	product_created_at TIMESTAMPTZ
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -426,9 +391,10 @@ BEGIN
         p.buy_now_price,
         p.is_active,
         p.end_time,
-        w.created_at
+        w.created_at,
+		p.created_at
     FROM watchlist w
-    JOIN products p ON p.product_id = w.product_id
+    	JOIN products p ON p.product_id = w.product_id
     WHERE w.user_id = _user_id
     ORDER BY w.created_at DESC;
 END;
@@ -621,11 +587,10 @@ BEGIN
     RETURN QUERY
     SELECT 
         ph.bid_time,
-        -- Mask tên người dùng: giữ 1 ký tự đầu, phần còn lại thay bằng '*'
         CASE 
             WHEN u.username IS NULL THEN NULL
-            WHEN length(u.username) <= 1 THEN u.username
-            ELSE substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1)
+            WHEN length(u.username) <= 1 THEN u.username::VARCHAR
+            ELSE (substring(u.username FROM 1 FOR 1) || repeat('*', length(u.username)-1))::VARCHAR
         END AS masked_username,
         ph.bid_amount
     FROM product_history ph
@@ -636,4 +601,376 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select * from fnc_history_bids_product(6)
+CREATE OR REPLACE FUNCTION fnc_delete_category(
+    p_category_id integer
+)
+RETURNS TEXT
+AS $$
+BEGIN
+    -- Parent ID check: nếu truyền parent_id nhưng không tồn tại -> báo lỗi
+    IF p_parent_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM categories c WHERE c.category_id = p_parent_id
+        ) THEN
+            RAISE EXCEPTION 'Parent category with id % does not exist', p_parent_id;
+        END IF;
+    END IF;
+
+    -- Insert category
+    INSERT INTO categories(name, parent_id)
+    VALUES (p_name, p_parent_id)
+    RETURNING categories.category_id,
+              categories.name,
+              categories.parent_id
+    INTO category_id, name, parent_id;
+
+    RETURN NEXT;
+END; 
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_create_category(
+    p_name VARCHAR,
+    p_parent_id INT DEFAULT NULL
+)
+RETURNS TABLE (
+    category_id INT,
+    name VARCHAR,
+    parent_id INT
+)
+AS $$
+BEGIN
+    -- Parent ID check: nếu truyền parent_id nhưng không tồn tại -> báo lỗi
+    IF p_parent_id IS NOT NULL THEN
+        IF NOT EXISTS (
+            SELECT 1 FROM categories c WHERE c.category_id = p_parent_id
+        ) THEN
+            RAISE EXCEPTION 'Parent category with id % does not exist', p_parent_id;
+        END IF;
+    END IF;
+
+    -- Insert category
+    INSERT INTO categories(name, parent_id)
+    VALUES (p_name, p_parent_id)
+    RETURNING categories.category_id,
+              categories.name,
+              categories.parent_id
+    INTO category_id, name, parent_id;
+
+    RETURN NEXT;
+END; 
+$$ LANGUAGE plpgsql;
+
+drop function fnc_delete_category
+CREATE OR REPLACE FUNCTION fnc_delete_category(p_category_id integer)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_parent_id integer;
+    v_child_count integer;
+    v_product_count integer;
+BEGIN
+    -- Kiểm tra tồn tại category
+    SELECT parent_id INTO v_parent_id
+    FROM categories
+    WHERE category_id = p_category_id;
+
+    IF NOT FOUND THEN
+        RETURN 'Category không tồn tại';
+    END IF;
+
+    ----------------------------------------------------------------------------
+    -- 1. Nếu category là root (parent_id IS NULL) => kiểm tra category con
+    ----------------------------------------------------------------------------
+    IF v_parent_id IS NULL THEN
+        SELECT COUNT(*) INTO v_child_count
+        FROM categories
+        WHERE parent_id = p_category_id;
+
+        IF v_child_count > 0 THEN
+            RETURN 'Không thể xoá category gốc vì vẫn còn category con.';
+        END IF;
+    END IF;
+
+    ----------------------------------------------------------------------------
+    -- 2. Kiểm tra category có sản phẩm không
+    ----------------------------------------------------------------------------
+    SELECT COUNT(*) INTO v_product_count
+    FROM product_categories
+    WHERE category_id = p_category_id;
+
+    IF v_product_count > 0 THEN
+        RETURN 'Không thể xoá category vì vẫn còn sản phẩm thuộc category.';
+    END IF;
+
+    ----------------------------------------------------------------------------
+    -- Thực hiện xoá (xóa luôn quan hệ nếu có)
+    ----------------------------------------------------------------------------
+    DELETE FROM categories WHERE category_id = p_category_id;
+
+    RETURN 'Xóa category thành công.';
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fnc_update_category(
+    p_category_id INTEGER,
+    p_name VARCHAR
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_exists INT;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra category tồn tại
+    --------------------------------------------------------------------
+    SELECT COUNT(*) INTO v_exists
+    FROM categories
+    WHERE category_id = p_category_id;
+
+    IF v_exists = 0 THEN
+        RETURN 'Category không tồn tại.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Cập nhật tên category
+    --------------------------------------------------------------------
+    UPDATE categories
+    SET name = p_name
+    WHERE category_id = p_category_id;
+
+    RETURN 'Cập nhật tên category thành công.';
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fnc_delete_product(
+    p_product_id INTEGER
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_exists INT;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra sản phẩm tồn tại
+    --------------------------------------------------------------------
+    SELECT COUNT(*) INTO v_exists
+    FROM products
+    WHERE product_id = p_product_id;
+
+    IF v_exists = 0 THEN
+        RETURN 'Sản phẩm không tồn tại.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Xóa các bảng liên quan
+    --------------------------------------------------------------------
+
+    -- product_categories
+    DELETE FROM product_categories WHERE product_id = p_product_id;
+
+    -- product_images
+    DELETE FROM product_images WHERE product_id = p_product_id;
+
+    -- product_descriptions
+    DELETE FROM product_descriptions WHERE product_id = p_product_id;
+
+    -- product_stats
+    DELETE FROM product_stats WHERE product_id = p_product_id;
+
+    -- product_questions và product_answers (có FK ON DELETE CASCADE nhưng xóa explicit cũng được)
+    DELETE FROM product_answers WHERE question_id IN 
+        (SELECT id FROM product_questions WHERE product_id = p_product_id);
+    DELETE FROM product_questions WHERE product_id = p_product_id;
+
+    -- comments
+    DELETE FROM comments WHERE product_id = p_product_id;
+
+    -- bids
+    DELETE FROM bids WHERE product_id = p_product_id;
+
+    -- auto_bids
+    DELETE FROM auto_bids WHERE product_id = p_product_id;
+
+    -- bid_rejections
+    DELETE FROM bid_rejections WHERE product_id = p_product_id;
+
+    -- watchlist
+    DELETE FROM watchlist WHERE product_id = p_product_id;
+
+    -- product_history
+    DELETE FROM product_history WHERE product_id = p_product_id;
+
+    --------------------------------------------------------------------
+    -- 3. Xóa sản phẩm
+    --------------------------------------------------------------------
+    DELETE FROM products WHERE product_id = p_product_id;
+
+    RETURN 'Xóa sản phẩm thành công.';
+END;
+$$;
+
+select * from fnc_delete_product(7)
+select * from products
+
+CREATE OR REPLACE FUNCTION fnc_add_upgrade_request(
+    p_user_id BIGINT
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_role VARCHAR(20);
+    v_pending_count INT;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra user tồn tại
+    --------------------------------------------------------------------
+    SELECT role INTO v_role
+    FROM users
+    WHERE user_id = p_user_id;
+
+    IF NOT FOUND THEN
+        RETURN 'User không tồn tại.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra role là bidder
+    --------------------------------------------------------------------
+    IF v_role <> 'bidder' THEN
+        RETURN 'Chỉ bidder mới có thể yêu cầu nâng cấp.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra user có request pending chưa
+    --------------------------------------------------------------------
+    SELECT COUNT(*) INTO v_pending_count
+    FROM user_upgrade_requests
+    WHERE user_id = p_user_id
+      AND status = 'pending';
+
+    IF v_pending_count > 0 THEN
+        RETURN 'User đã có request đang pending.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Thêm request mới
+    --------------------------------------------------------------------
+    INSERT INTO user_upgrade_requests (user_id)
+    VALUES (p_user_id);
+
+    RETURN 'Tạo request nâng cấp thành công.';
+END;
+$$;
+drop function fnc_get_upgrade_requests()
+CREATE OR REPLACE FUNCTION fnc_get_upgrade_requests()
+RETURNS TABLE (
+    request_id BIGINT,
+    user_id BIGINT,
+    username VARCHAR,
+    email VARCHAR,
+    role VARCHAR,
+    status VARCHAR(20),
+    rating_plus INTEGER,
+    rating_minus INTEGER,
+    rating_percent NUMERIC(5,2),
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        r.id,
+        r.user_id,
+        u.username,
+        u.email,
+        u.role,
+        r.status,
+        COALESCE(ur.rating_plus,0),
+        COALESCE(ur.rating_minus,0),
+        COALESCE(ur.rating_percent,0),
+        r.created_at,
+        r.updated_at
+    FROM user_upgrade_requests r
+    JOIN users u ON u.user_id = r.user_id
+    LEFT JOIN users_rating ur ON ur.user_id = u.user_id
+    ORDER BY r.created_at DESC;
+END;
+$$;
+
+
+CREATE OR REPLACE FUNCTION fnc_change_role_for_bidder(
+    p_user_id BIGINT,
+    p_action VARCHAR  -- 'approved' hoặc 'rejected'
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_role VARCHAR(20);
+    v_request_id BIGINT;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra user tồn tại
+    --------------------------------------------------------------------
+    SELECT role INTO v_role
+    FROM users
+    WHERE user_id = p_user_id;
+
+    IF NOT FOUND THEN
+        RETURN 'User không tồn tại.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra user là bidder
+    --------------------------------------------------------------------
+    IF v_role <> 'bidder' THEN
+        RETURN 'Chỉ bidder mới có thể thay đổi role.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra user có request pending không
+    --------------------------------------------------------------------
+    SELECT id INTO v_request_id
+    FROM user_upgrade_requests
+    WHERE user_id = p_user_id
+      AND status = 'pending'
+    ORDER BY created_at ASC
+    LIMIT 1;
+
+    IF NOT FOUND THEN
+        RETURN 'User không có request pending.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Cập nhật request
+    --------------------------------------------------------------------
+    IF p_action NOT IN ('approved','rejected') THEN
+        RETURN 'Tham số action phải là "approved" hoặc "rejected".';
+    END IF;
+
+    UPDATE user_upgrade_requests
+    SET
+        status = p_action,
+        updated_at = NOW()
+    WHERE id = v_request_id;
+
+    --------------------------------------------------------------------
+    -- 5. Nếu approved, đổi role user
+    --------------------------------------------------------------------
+    IF p_action = 'approved' THEN
+        UPDATE users
+        SET role = 'seller'
+        WHERE user_id = p_user_id;
+    END IF;
+
+    RETURN format('Request %s thành công, role user %s.', p_action, CASE WHEN p_action='approved' THEN 'đã đổi thành seller' ELSE 'giữ nguyên bidder' END);
+
+END;
+$$;
+
+
