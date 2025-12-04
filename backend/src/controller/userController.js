@@ -14,6 +14,7 @@ import {
   sendVerifyForgotPasswordOTP,
   verifyForgotPasswordOTP,
   resetPassword,
+  getAllUsersService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -376,4 +377,21 @@ router.put("/reset-password", async (req, res) => {
   }
 });
 
+router.get("/", authenticate, authorize("admin"), async (req, res) => {
+  try {
+    const users = await getAllUsersService();
+    res.status(200).json({
+      code: 200,
+      message: "Lấy tất cả user thành công",
+      data: users,
+    });
+  } catch (err) {
+    console.error("❌ [GET /users] Lỗi:", err.message);
+    res.status(500).json({
+      code: 500,
+      message: "Lấy tất cả user thất bại",
+      error: err.message,
+    });
+  }
+});
 export default router;

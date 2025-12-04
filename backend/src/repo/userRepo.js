@@ -146,3 +146,25 @@ export const getUserInfoById = async (user_id) => {
     userRatingResult.rows[0].rating_percent
   );
 };
+
+export const getAllUsers = async () => {
+  const result = await pool.query(
+    `SELECT u.user_id, u.username, ui.first_name, ui.last_name, u.email, u.role, u.status
+      FROM users u
+      JOIN users_info ui ON u.user_id = ui.user_id
+      WHERE u.role IN ('bidder', 'seller')`
+  );
+  const users = [];
+  for (let row of result.rows) {
+    users.push({
+      user_id: row.user_id,
+      username: row.username,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      email: row.email,
+      role: row.role,
+      status: row.status,
+    });
+  }
+  return users;
+};

@@ -44,16 +44,11 @@ CREATE TABLE user_upgrade_requests (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
-    reason TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'pending' 
-        CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
-
-    reviewed_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
-    review_comment TEXT,
+        CHECK (status IN ('pending', 'approved', 'rejected')),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    reviewed_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 go
 CREATE TABLE products (

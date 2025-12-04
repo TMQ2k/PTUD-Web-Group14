@@ -10,6 +10,7 @@ import {
   getProductBaseInfoById as getProductBaseInfoByIdRepo,
   getProductImages as getProductImagesRepo,
   getProductBidHistory as getProductBidHistoryRepo,
+  deleteProductById as deleteProductByIdRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -99,4 +100,12 @@ export const getProductBidHistoryService = async (productId) => {
     console.error("❌ [Service] Lỗi khi lấy lịch sử đấu giá sản phẩm:", err);
     throw err;
   }
+};
+
+export const deleteProductById = async (productId) => {
+  const result = await deleteProductByIdRepo(productId);
+  if (!result) {
+    throw new Error("Failed to delete product");
+  }
+  return result;
 };

@@ -116,3 +116,10 @@ export const getProductBidHistory = async (productId) => {
   );
   return result.rows;
 };
+
+export const deleteProductById = async (productId) => {
+  const result = await pool.query("SELECT * FROM fnc_delete_product($1)", [
+    productId,
+  ]);
+  return result.rows[0];
+};

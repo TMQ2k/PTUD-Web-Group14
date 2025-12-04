@@ -4,6 +4,9 @@ import {
   getUserWatchlist,
   upsertAutoBid,
   updateAutoBidCurrentAmount,
+  requestUpgradeToSeller,
+  getUpgradeRequests,
+  handleUpgradeRequest,
 } from "../repo/bidderRepo.js";
 
 export const addProductToWatchlist = async (userId, productId) => {
@@ -52,6 +55,36 @@ export const updateAutoBidCurrentAmountService = async (productId) => {
     return updatedBids;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi cập nhật current bid amount:", err);
+    throw err;
+  }
+};
+
+export const requestUpgradeToSellerService = async (userId) => {
+  try {
+    const result = await requestUpgradeToSeller(userId);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi yêu cầu nâng cấp lên seller:", err);
+    throw err;
+  }
+};
+
+export const getUpgradeRequestsService = async () => {
+  try {
+    const requests = await getUpgradeRequests();
+    return requests;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy các yêu cầu nâng cấp:", err);
+    throw err;
+  }
+};
+
+export const handleUpgradeRequestService = async (userId, approve) => {
+  try {
+    const result = await handleUpgradeRequest(userId, approve);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi xử lý yêu cầu nâng cấp:", err);
     throw err;
   }
 };
