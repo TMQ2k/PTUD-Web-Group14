@@ -155,11 +155,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fnc_delete_user(p_user_id INT)
-RETURNS VOID AS $$
-BEGIN
-    DELETE FROM users WHERE user_id = p_user_id;
-END;
 $$ LANGUAGE plpgsql;
 drop function fnc_create_product
 CREATE OR REPLACE FUNCTION fnc_create_product
@@ -973,4 +968,25 @@ BEGIN
 END;
 $$;
 
+DROP FUNCTION fnc_delete_user(integer)
+CREATE OR REPLACE FUNCTION fnc_delete_user(p_user_id INTEGER)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    _exists BOOLEAN;
+BEGIN
+    -- Kiểm tra user có tồn tại không
+    SELECT EXISTS (SELECT 1 FROM users WHERE user_id = p_user_id)
+    INTO _exists;
 
+    IF NOT _exists THEN
+        RETURN FALSE; -- User không tồn tại
+    END IF;
+
+    -- Xoá user → các bảng con sẽ tự xoá nhờ ON DELETE CASCADE
+    DELETE FROM users WHERE user_id = p_user_id;
+
+    RETURN TRUE;
+END;
+$$;

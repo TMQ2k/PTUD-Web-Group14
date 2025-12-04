@@ -7,10 +7,10 @@ import {
   getUserProfile as getUserProfileRepo,
   updateUserInfo,
   findUserByUsername,
-  deleteUser as deleteUserRepo,
   updateAvatar,
   changePassword,
   getAllUsers,
+  deleteUserById,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -216,20 +216,6 @@ export const updateUserAvatarService = async (user_id, avatar_url) => {
   return updatedUser;
 };
 
-// 🗑️ Xóa người dùng (admin)
-export const deleteUserService = async (user_id) => {
-  // Kiểm tra tồn tại
-  const exists = await pool.query("SELECT 1 FROM users WHERE user_id=$1", [
-    user_id,
-  ]);
-  if (exists.rows.length === 0) {
-    throw new Error("User not found");
-  }
-
-  await deleteUserRepo(user_id);
-  return true;
-};
-
 export const changePasswordService = async (
   user_id,
   oldPassword,
@@ -326,6 +312,16 @@ export const getAllUsersService = async () => {
     return users;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi lấy tất cả user:", err);
+    throw err;
+  }
+};
+
+export const deleteUserByIdService = async (userId) => {
+  try {
+    await deleteUserById(userId);
+    return { message: "User deleted successfully." };
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi xóa user theo ID:", err);
     throw err;
   }
 };
