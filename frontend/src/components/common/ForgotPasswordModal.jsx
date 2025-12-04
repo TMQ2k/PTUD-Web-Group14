@@ -168,7 +168,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-400 to-purple-600 p-6 relative">
+            <div className="bg-linear-to-r from-blue-400 to-purple-600 p-6 relative">
               <button
                 onClick={handleClose}
                 className="absolute top-4 right-4 text-white hover:bg-white/20 rounded-full p-2 transition-colors"
@@ -266,7 +266,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-lg bg-gradient-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                    className="w-full rounded-lg bg-linear-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                   >
                     {loading ? "Đang gửi..." : "Gửi mã OTP"}
                   </button>
@@ -323,7 +323,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="flex-1 rounded-lg bg-gradient-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl disabled:opacity-60"
+                      className="flex-1 rounded-lg bg-linear-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl disabled:opacity-60"
                     >
                       {loading ? "Đang xác thực..." : "Xác nhận"}
                     </button>
@@ -407,7 +407,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-lg bg-gradient-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+                    className="w-full rounded-lg bg-linear-to-r from-blue-400 to-purple-600 text-white py-3 font-bold hover:from-blue-500 hover:to-purple-700 transition-all shadow-md hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                   >
                     {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
                   </button>
