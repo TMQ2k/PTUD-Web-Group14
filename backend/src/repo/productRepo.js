@@ -262,6 +262,16 @@ export const postProduct = async (
   return result.rows[0].product;
 };
 
+export const getProductBidHistory = async (productId) => {
+  const result = await pool.query(
+    `
+        SELECT * FROM fnc_history_bids_product($1)
+    `,
+    [productId]
+  );
+  return result.rows;
+};
+
 export const deleteProductById = async (productId) => {
   const result = await pool.query("SELECT * FROM fnc_delete_product($1)", [
     productId,
