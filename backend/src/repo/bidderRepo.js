@@ -1,5 +1,6 @@
 import pool from "../config/db.js";
 import { BidHistory, HighestBidInfo, TopBidder } from "../model/bidModel.js";
+import { ProductProfile } from "../model/productModel.js";
 
 //auto_bids(id, user_id, product_id, max_bid_amount, current_bid_amount, is_winner, created_at, updated_at)
 export const getBidHistoryByProductId = async (productId) => {
@@ -112,6 +113,42 @@ export const updateAutoBidCurrentAmount = async (productId) => {
     return result.rows;
   } catch (err) {
     console.error("❌ [Repo] Lỗi khi cập nhật current bid amount:", err);
+    throw err;
+  }
+};
+
+export const requestUpgradeToSeller = async (userId) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM fnc_add_upgrade_request($1)`,
+      [userId]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi tạo yêu cầu nâng cấp lên seller:", err);
+    throw err;
+  }
+};
+
+export const getUpgradeRequests = async () => {
+  try {
+    const result = await pool.query(`SELECT * FROM fnc_get_upgrade_requests()`);
+    return result.rows;
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi lấy danh sách yêu cầu nâng cấp:", err);
+    throw err;
+  }
+};
+
+export const handleUpgradeRequest = async (userId, approve) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM fnc_change_role_for_bidder($1, $2)`,
+      [userId, approve]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi xử lý yêu cầu nâng cấp:", err);
     throw err;
   }
 };

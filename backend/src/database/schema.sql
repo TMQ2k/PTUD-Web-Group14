@@ -44,16 +44,11 @@ CREATE TABLE user_upgrade_requests (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
-    reason TEXT,
     status VARCHAR(20) NOT NULL DEFAULT 'pending' 
-        CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled')),
-
-    reviewed_by BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
-    review_comment TEXT,
+        CHECK (status IN ('pending', 'approved', 'rejected')),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    reviewed_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 go
 CREATE TABLE products (
@@ -67,8 +62,20 @@ CREATE TABLE products (
     image_cover_url TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    end_time TIMESTAMP NOT NULL
+    end_time TIMESTAMP NOT NULL,
 );
+insert into products 
+(seller_id, name, description, starting_price, step_price, current_price, image_cover_url, is_active, end_time)
+values(null, 'hi', 'hi', 123, 123, 123, 'hi', true, '2025-12-05 23:59:59')
+ALTER TABLE products
+ADD CONSTRAINT chk_is_active_end_time
+CHECK (
+    (is_active = TRUE AND end_time > NOW())
+    OR
+    (is_active = FALSE)
+);
+
+
 go
 ALTER TABLE products
 ADD COLUMN buy_now_price NUMERIC(15,2);
@@ -80,8 +87,12 @@ go
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+    name VARCHAR(100) NOT NULL,
+	parent_id integer references categories(category_id) on delete cascade 
 );
+ALTER TABLE categories
+ALTER COLUMN parent_id SET DEFAULT NULL;
+
 go
 CREATE TABLE product_categories (
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
@@ -262,6 +273,13 @@ CREATE TABLE watchlist (
     CONSTRAINT uq_watchlist_user_product UNIQUE (user_id, product_id)
 );
 
+CREATE TABLE product_history (
+    history_id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    bid_amount NUMERIC(15,2) NOT NULL,        -- giá đã đấu
+    bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW()  -- thời điểm ra giá
+);
 
 
 

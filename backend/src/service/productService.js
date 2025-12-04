@@ -213,3 +213,11 @@ export const getProductBidHistoryService = async (productId) => {
     throw err;
   }
 };
+
+export const deleteProductById = async (productId) => {
+  const result = await deleteProductByIdRepo(productId);
+  if (!result) {
+    throw new Error("Failed to delete product");
+  }
+  return result;
+};

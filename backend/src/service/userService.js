@@ -10,6 +10,7 @@ import {
   deleteUser as deleteUserRepo,
   updateAvatar,
   changePassword,
+  getAllUsers,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -317,4 +318,14 @@ export const resetPassword = async (identifier, newPassword) => {
   const newHashed = await bcrypt.hash(newPassword, 10);
   await changePassword(user.user_id, newHashed);
   return { message: "Password reset successfully!" };
+};
+
+export const getAllUsersService = async () => {
+  try {
+    const users = await getAllUsers();
+    return users;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy tất cả user:", err);
+    throw err;
+  }
 };
