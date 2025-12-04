@@ -27,6 +27,11 @@ export const getBidHistoryByProductId = async (productId) => {
   );
 };
 
+export const countHistoryByProductId = async (productId) => {
+    const result = await pool.query(`SELECT COUNT(*) FROM auto_bids WHERE product_id = $1`, [productId]);
+    return parseInt(result.rows[0].count, 10);
+}   
+
 export const getHighestBidInfoofUserOnProduct = async (productId, userId) => {
   const result = await pool.query(
     `SELECT max_bid_amount FROM auto_bids ab WHERE ab.product_id = $1 AND ab.user_id = $2`,
@@ -40,15 +45,15 @@ export const getHighestBidInfoofUserOnProduct = async (productId, userId) => {
 };
 
 export const getTopBidderIdByProductId = async (productId) => {
-  const result = await pool.query(
-    `SELECT ab.user_id FROM auto_bids ab WHERE ab.product_id = $1 ORDER BY ab.current_bid_amount DESC LIMIT 1`,
-    [productId]
-  );
-  if (result.rows.length === 0) {
-    return null;
-  }
-  return result.rows[0].user_id;
-};
+    const result = await pool.query(`SELECT ab.user_id FROM auto_bids ab WHERE ab.product_id = $1 ORDER BY ab.current_bid_amount DESC LIMIT 1`, [productId]);
+    if (result.rows.length === 0) {
+        return null;
+    }
+    return result.rows[0].user_id;
+}  
+
+
+
 
 export const addItemToWatchlist = async (userId, productId) => {
   try {
