@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../store/userSlice";
 import { useNavigate } from "react-router-dom";
 import { LogOut, ShieldCheck } from "lucide-react";
+import { authStorage } from "../../utils/auth";
 
 const AdminHeader = () => {
   const dispatch = useDispatch();
@@ -9,6 +10,7 @@ const AdminHeader = () => {
   const userData = useSelector((state) => state.user.userData);
 
   const handleLogout = () => {
+    authStorage.removeToken();
     dispatch(logout());
     navigate("/");
   };
