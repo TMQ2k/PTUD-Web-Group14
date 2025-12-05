@@ -1,63 +1,73 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle, XCircle, Clock, Calendar } from "lucide-react";
+import { adminApi } from "../../api/admin.api";
+import { toast } from "react-toastify";
 
 const RequestManagement = () => {
-  const [filterStatus, setFilterStatus] = useState("all"); // all, pending, approved, expired
+  const [filterStatus, setFilterStatus] = useState("all"); // all, pending, approved, rejected, expired
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - TODO: Replace with API call
-  const mockRequests = [
-    {
-      id: 1,
-      user_id: 5,
-      username: "user123",
-      email: "user123@example.com",
-      full_name: "Nguyễn Văn A",
-      status: "pending",
-      requested_at: "2024-03-10T10:30:00",
-      approved_at: null,
-      expires_at: null,
-    },
-    {
-      id: 2,
-      user_id: 7,
-      username: "bidder456",
-      email: "bidder456@example.com",
-      full_name: "Trần Thị B",
-      status: "approved",
-      requested_at: "2024-03-08T14:20:00",
-      approved_at: "2024-03-08T15:00:00",
-      expires_at: "2024-03-15T15:00:00",
-    },
-    {
-      id: 3,
-      user_id: 9,
-      username: "tempSeller",
-      email: "temp@example.com",
-      full_name: "Lê Văn C",
-      status: "expired",
-      requested_at: "2024-02-20T09:00:00",
-      approved_at: "2024-02-20T10:00:00",
-      expires_at: "2024-02-27T10:00:00",
-    },
-  ];
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
-  const filteredRequests = mockRequests.filter((request) => {
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getUpgradeRequests();
+      setRequests(response.data);
+    } catch (error) {
+      console.error("Error fetching upgrade requests:", error);
+      toast.error("Không thể tải danh sách yêu cầu");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredRequests = requests.filter((request) => {
     if (filterStatus === "all") return true;
     return request.status === filterStatus;
   });
 
-  const handleApprove = (requestId, userId) => {
-    // TODO: Approve request API call
-    // Backend should:
-    // 1. Update user role to "seller"
-    // 2. Set expires_at to current_time + 7 days
-    // 3. Create a scheduled job to downgrade role after 7 days
-    console.log("Approve request:", requestId, "for user:", userId);
+  const handleApprove = async (userId, username) => {
+    if (
+      !window.confirm(
+        `Duyệt yêu cầu nâng cấp của "${username}" lên Seller trong 7 ngày?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await adminApi.handleUpgradeRequest(userId, true);
+      toast.success("Đã duyệt yêu cầu! User sẽ là Seller trong 7 ngày.");
+      await fetchRequests();
+    } catch (error) {
+      console.error("Error approving request:", error);
+      toast.error(error.response?.data?.message || "Duyệt yêu cầu thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReject = (requestId) => {
-    // TODO: Reject request API call
-    console.log("Reject request:", requestId);
+  const handleReject = async (userId, username) => {
+    if (!window.confirm(`Từ chối yêu cầu nâng cấp của "${username}"?`)) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await adminApi.handleUpgradeRequest(userId, false);
+      toast.success("Đã từ chối yêu cầu.");
+      await fetchRequests();
+    } catch (error) {
+      console.error("Error rejecting request:", error);
+      toast.error(error.response?.data?.message || "Từ chối yêu cầu thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDateTime = (dateString) => {
@@ -93,11 +103,17 @@ const RequestManagement = () => {
         label: "Đã duyệt",
         icon: CheckCircle,
       },
+      rejected: {
+        bg: "bg-red-100",
+        text: "text-red-800",
+        label: "Từ chối",
+        icon: XCircle,
+      },
       expired: {
         bg: "bg-gray-100",
         text: "text-gray-800",
         label: "Hết hạn",
-        icon: XCircle,
+        icon: Clock,
       },
     };
     const config = statusConfig[status] || statusConfig.pending;
@@ -186,6 +202,16 @@ const RequestManagement = () => {
             Đã duyệt
           </button>
           <button
+            onClick={() => setFilterStatus("rejected")}
+            className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              filterStatus === "rejected"
+                ? "bg-purple-600 text-white"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            Từ chối
+          </button>
+          <button
             onClick={() => setFilterStatus("expired")}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               filterStatus === "expired"
@@ -200,115 +226,141 @@ const RequestManagement = () => {
 
       {/* Requests Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Username
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Họ tên
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày yêu cầu
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hết hạn
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trạng thái
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredRequests.length === 0 ? (
+        {loading && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent"></div>
+            <p className="text-gray-600 mt-2">Đang tải...</p>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <td
-                    colSpan="8"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    Không có yêu cầu nào
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Username
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Họ tên
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ngày yêu cầu
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hết hạn
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Trạng thái
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
                 </tr>
-              ) : (
-                filteredRequests.map((request) => (
-                  <tr
-                    key={request.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      #{request.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {request.username}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {request.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {request.full_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {formatDateTime(request.requested_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {request.expires_at
-                        ? formatDateTime(request.expires_at)
-                        : "-"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getStatusBadge(request.status, request.expires_at)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        {request.status === "pending" && (
-                          <>
-                            <button
-                              onClick={() =>
-                                handleApprove(request.id, request.user_id)
-                              }
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Duyệt (7 ngày)"
-                            >
-                              <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleReject(request.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Từ chối"
-                            >
-                              <XCircle className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {request.status === "approved" && (
-                          <span className="text-xs text-gray-500 italic">
-                            Đang hoạt động
-                          </span>
-                        )}
-                        {request.status === "expired" && (
-                          <span className="text-xs text-gray-500 italic">
-                            Đã kết thúc
-                          </span>
-                        )}
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredRequests.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      Không có yêu cầu nào
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredRequests.map((request) => (
+                    <tr
+                      key={request.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        #{request.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {request.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {request.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {request.full_name}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {formatDateTime(request.requested_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {request.expires_at
+                          ? formatDateTime(request.expires_at)
+                          : "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {getStatusBadge(request.status, request.expires_at)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-3">
+                          {request.status === "pending" && (
+                            <>
+                              <button
+                                onClick={() =>
+                                  handleApprove(
+                                    request.user_id,
+                                    request.username
+                                  )
+                                }
+                                disabled={loading}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:bg-green-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600"
+                                title="Duyệt (7 ngày)"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                <span>Duyệt</span>
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleReject(
+                                    request.user_id,
+                                    request.username
+                                  )
+                                }
+                                disabled={loading}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 active:bg-red-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
+                                title="Từ chối"
+                              >
+                                <XCircle className="w-4 h-4" />
+                                <span>Từ chối</span>
+                              </button>
+                            </>
+                          )}
+                          {request.status === "approved" && (
+                            <span className="text-xs text-gray-500 italic">
+                              Đang hoạt động
+                            </span>
+                          )}
+                          {request.status === "rejected" && (
+                            <span className="text-xs text-red-500 italic">
+                              Đã từ chối
+                            </span>
+                          )}
+                          {request.status === "expired" && (
+                            <span className="text-xs text-gray-500 italic">
+                              Đã kết thúc
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

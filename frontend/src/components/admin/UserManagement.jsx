@@ -1,59 +1,60 @@
-import { useState } from "react";
-import { Search, Edit, Trash2, UserCheck, UserX } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Trash2 } from "lucide-react";
+import { adminApi } from "../../api/admin.api";
+import { toast } from "react-toastify";
 
 const UserManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all"); // all, bidder, seller
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data - TODO: Replace with API call
-  const mockUsers = [
-    {
-      id: 1,
-      username: "user123",
-      email: "user123@example.com",
-      first_name: "Nguyễn",
-      last_name: "Văn A",
-      role: "bidder",
-      avatar: null,
-      created_at: "2024-01-15",
-    },
-    {
-      id: 2,
-      username: "seller456",
-      email: "seller456@example.com",
-      first_name: "Trần",
-      last_name: "Thị B",
-      role: "seller",
-      avatar: null,
-      created_at: "2024-02-20",
-    },
-    // Add more mock data as needed
-  ];
+  // Fetch users on mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  const filteredUsers = mockUsers.filter((user) => {
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await adminApi.getAllUsers();
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Không thể tải danh sách users");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = users.filter((user) => {
+    const fullName = `${user.first_name || ""} ${user.last_name || ""}`.trim();
     const matchesSearch =
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.first_name} ${user.last_name}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
+      user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fullName.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === "all" || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
 
-  const handleDeleteUser = (userId) => {
-    // TODO: Implement delete API call
-    console.log("Delete user:", userId);
-  };
+  const handleDeleteUser = async (userId, username) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa user "${username}"?`)) {
+      return;
+    }
 
-  const handleEditUser = (userId) => {
-    // TODO: Implement edit modal/page
-    console.log("Edit user:", userId);
-  };
+    try {
+      setLoading(true);
+      await adminApi.deleteUser(userId);
+      toast.success("Xóa user thành công!");
 
-  const handleToggleRole = (userId, currentRole) => {
-    // TODO: Implement role toggle API call
-    console.log("Toggle role for user:", userId, "from", currentRole);
+      // Refresh users list
+      await fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error(error.response?.data?.message || "Xóa user thất bại");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -121,117 +122,115 @@ const UserManagement = () => {
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Username
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Họ tên
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Vai trò
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ngày tạo
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hành động
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsers.length === 0 ? (
+        {loading && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-purple-600 border-t-transparent"></div>
+            <p className="text-gray-600 mt-2">Đang tải...</p>
+          </div>
+        )}
+
+        {!loading && (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <td
-                    colSpan="7"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    Không tìm thấy người dùng nào
-                  </td>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Username
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Họ tên
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vai trò
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ngày tạo
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Hành động
+                  </th>
                 </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      #{user.id}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {user.username}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {user.first_name} {user.last_name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          user.role === "seller"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {user.role === "seller" ? "Seller" : "Bidder"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(user.created_at).toLocaleDateString("vi-VN")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* Toggle Role Button */}
-                        <button
-                          onClick={() => handleToggleRole(user.id, user.role)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                          title={
-                            user.role === "seller"
-                              ? "Chuyển sang Bidder"
-                              : "Chuyển sang Seller"
-                          }
-                        >
-                          {user.role === "seller" ? (
-                            <UserX className="w-4 h-4" />
-                          ) : (
-                            <UserCheck className="w-4 h-4" />
-                          )}
-                        </button>
-                        {/* Edit Button */}
-                        <button
-                          onClick={() => handleEditUser(user.id)}
-                          className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Chỉnh sửa"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        {/* Delete Button */}
-                        <button
-                          onClick={() => handleDeleteUser(user.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Xóa"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="7"
+                      className="px-6 py-8 text-center text-gray-500"
+                    >
+                      Không tìm thấy người dùng nào
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  filteredUsers.map((user) => (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        #{user.user_id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {user.username}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {user.email}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {user.first_name || ""} {user.last_name || ""}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user.role === "seller"
+                              ? "bg-green-100 text-green-800"
+                              : user.role === "bidder"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {user.role === "seller"
+                            ? "Seller"
+                            : user.role === "bidder"
+                            ? "Bidder"
+                            : user.role}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {user.created_at
+                          ? new Date(user.created_at).toLocaleDateString(
+                              "vi-VN"
+                            )
+                          : "N/A"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          {/* Delete Button */}
+                          <button
+                            onClick={() =>
+                              handleDeleteUser(user.user_id, user.username)
+                            }
+                            disabled={loading}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Xóa"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

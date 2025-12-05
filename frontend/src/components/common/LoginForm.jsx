@@ -6,9 +6,11 @@ import { authStorage } from "../../utils/auth";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "../../store/userSlice";
 import ForgotPasswordModal from "./ForgotPasswordModal";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [step, setStep] = useState("login"); // "login" hoặc "otp"
   const [userEmail, setUserEmail] = useState(""); // Lưu email để verify OTP
   const [loading, setLoading] = useState(false);
@@ -91,6 +93,11 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
       setTimeout(() => {
         onClose();
+
+        // Điều hướng admin nếu role là admin
+        if (userData.role === "admin") {
+          navigate("/admin");
+        }
       }, 1000);
     } catch (error) {
       console.error("❌ Xác thực OTP thất bại:", error);
@@ -193,6 +200,13 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
             avatar: userData.avatar_url || null,
           })
         );
+
+        onClose();
+
+        // Điều hướng admin nếu role là admin
+        if (userData.role === "admin") {
+          navigate("/admin");
+        }
       } catch (profileError) {
         console.warn(
           "⚠️ API /profile chưa sẵn sàng, tạm thời dùng data từ login:",
@@ -208,9 +222,9 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
             avatar: null,
           })
         );
-      }
 
-      onClose();
+        onClose();
+      }
     } catch (error) {
       console.error("❌ Lỗi đăng nhập:", error);
       console.error("❌ Chi tiết lỗi:", error.response?.data);

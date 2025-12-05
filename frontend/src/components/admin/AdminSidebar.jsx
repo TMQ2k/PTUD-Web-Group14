@@ -1,6 +1,10 @@
 import { Users, FolderTree, Package, FileText } from "lucide-react";
 
-const AdminSidebar = ({ activeTab, setActiveTab }) => {
+const AdminSidebar = ({
+  activeTab,
+  setActiveTab,
+  pendingRequestsCount = 0,
+}) => {
   const menuItems = [
     {
       key: "users",
@@ -25,6 +29,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
       label: "Quản lý Requests",
       icon: FileText,
       description: "Yêu cầu nâng cấp",
+      badge: pendingRequestsCount,
     },
   ];
 
@@ -43,7 +48,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
               <button
                 key={item.key}
                 onClick={() => setActiveTab(item.key)}
-                className={`w-full flex items-start gap-3 p-4 rounded-lg transition-all duration-200 ${
+                className={`w-full flex items-start gap-3 p-4 rounded-lg transition-all duration-200 relative ${
                   isActive
                     ? "bg-linear-to-r from-purple-600 to-blue-600 text-white shadow-md"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
@@ -54,7 +59,7 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
                     isActive ? "text-white" : "text-gray-600"
                   }`}
                 />
-                <div className="text-left">
+                <div className="text-left flex-1">
                   <p
                     className={`font-medium ${
                       isActive ? "text-white" : "text-gray-800"
@@ -70,6 +75,12 @@ const AdminSidebar = ({ activeTab, setActiveTab }) => {
                     {item.description}
                   </p>
                 </div>
+                {/* Badge for pending requests */}
+                {item.badge > 0 && (
+                  <span className="absolute top-2 right-2 inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-red-600 rounded-full animate-pulse">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

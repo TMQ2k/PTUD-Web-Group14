@@ -5,6 +5,7 @@ import EditAddress from "../components/common/EditAddress";
 import MyBiddingProducts from "../components/common/MyBiddingProducts";
 import WonAuction from "../components/common/WonAuction";
 import RatingHistory from "../components/common/RatingHistory";
+import UpgradeToSeller from "../components/common/UpgradeToSeller";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -57,27 +58,8 @@ const UserInformation = () => {
         return <RatingHistory />;
 
       case "upgrade":
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold mb-4">Nâng cấp tài khoản</h2>
-            <p className="text-gray-600 mb-4">
-              Nâng cấp lên tài khoản Seller để bán hàng...
-            </p>
-            {userRole === "bidder" && (
-              <button
-                onClick={() => setUserRole("seller")}
-                className="bg-linear-to-r from-blue-400 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:from-blue-500 hover:to-purple-700 transition-all"
-              >
-                Nâng cấp thành Seller
-              </button>
-            )}
-            {userRole === "seller" && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-green-700">
-                ✓ Bạn đã là tài khoản Seller
-              </div>
-            )}
-          </div>
-        );
+        return <UpgradeToSeller />;
+
       case "joinedAuctions":
         return <MyBiddingProducts />;
 
