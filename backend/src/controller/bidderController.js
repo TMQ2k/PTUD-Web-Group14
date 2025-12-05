@@ -54,6 +54,10 @@ router.delete("/remove-from-watchlist", authenticate, async (req, res) => {
 });
 
 router.get("/watchlist", authenticate, async (req, res) => {
+  console.log(
+    "🚀 ~ file: bidderController.js:70 ~ router.get ~ req.user:",
+    req.user
+  );
   try {
     const userId = req.user.id;
     const watchlist = await getUserWatchlistService(userId);
@@ -97,6 +101,10 @@ router.put("/auto-bid", authenticate, async (req, res) => {
 });
 
 router.put("/auto-bid/update/:productId", async (req, res) => {
+  console.log(
+    "🚀 ~ file: bidderController.js:138 ~ router.put ~ req.params:",
+    req.params
+  );
   try {
     const { productId } = req.params;
     const updatedBids = await updateAutoBidCurrentAmountService(productId);

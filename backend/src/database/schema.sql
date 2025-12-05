@@ -64,9 +64,7 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL,
 );
-insert into products 
-(seller_id, name, description, starting_price, step_price, current_price, image_cover_url, is_active, end_time)
-values(null, 'hi', 'hi', 123, 123, 123, 'hi', true, '2025-12-05 23:59:59')
+
 ALTER TABLE products
 ADD CONSTRAINT chk_is_active_end_time
 CHECK (
@@ -281,5 +279,8 @@ CREATE TABLE product_history (
     bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW()  -- thời điểm ra giá
 );
 
+select * from products
 
-
+select * from users
+select * from product_history
+select * from auto_bids

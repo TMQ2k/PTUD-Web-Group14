@@ -11,6 +11,7 @@ import {
   getSearchProducts as getSearchProductsRepo,
   getProductsList as getProductsListRepo,
   postProduct as postProductRepo,
+  deactiveProduct as deactiveProductRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -217,5 +218,10 @@ export const deleteProductById = async (productId) => {
   if (!result) {
     throw new Error("Failed to delete product");
   }
+  return result;
+};
+
+export const deactiveProduct = async () => {
+  const result = await deactiveProductRepo();
   return result;
 };
