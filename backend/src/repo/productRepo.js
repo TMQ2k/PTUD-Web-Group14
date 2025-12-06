@@ -8,6 +8,17 @@ export const getProductImages = async (productId) => {
   return result.rows.map((row) => row.image_url);
 };
 
+export const getCategoriesByProductId = async (productId) => {
+    const result = await pool.query(
+        `SELECT c.category_id, c.name, c.parent_id
+        FROM categories c
+        JOIN product_categories pc ON c.category_id = pc.category_id
+        WHERE pc.product_id = $1`,
+        [productId]
+    );
+    return result.rows;
+};
+
 export const getProductBaseInfoById = async (productId) => {
   const result = await pool.query(
     "SELECT * FROM products WHERE product_id = $1",
@@ -21,14 +32,15 @@ export const getSellerIdByProductId = async (productId) => {
     return result.rows[0]?.seller_id || null;
 }
 
-export const otherProductsByCategory = async (categoryId, excludeProductId, limit = 5) => {
+export const otherProductsByCategory = async (categoryIds, excludeProductId, limit = 5) => {
     const result = await pool.query(
-        `SELECT p.*
+        `SELECT DISTINCT p.*
         FROM products p
         JOIN product_categories pc ON p.product_id = pc.product_id
-        WHERE pc.category_id = $1 AND p.product_id != $2
-        LIMIT $3
-        `, [categoryId, excludeProductId, limit]
+        WHERE pc.category_id = ANY($1)
+        AND p.product_id != $2
+        LIMIT $3`,
+        [categoryIds, excludeProductId, limit]
     );
     return result.rows;
 }

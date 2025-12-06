@@ -7,10 +7,10 @@ import {
     getProductImages as getProductImagesRepo,
     otherProductsByCategory as otherProductsByCategoryRepo,
     getSearchProducts as getSearchProductsRepo,
+    getCategoriesByProductId as getCategoriesByProductIdRepo,
     getProductsList as getProductsListRepo,
     postProduct as postProductRepo,
     updateProduct as updateProductRepo,
-    deleteProductById as deleteProductByIdRepo,
 } from '../repo/productRepo.js';
 
 import {
@@ -21,7 +21,7 @@ import {
 } from '../repo/bidderRepo.js';
 
 import { getUserInfoById } from '../repo/userRepo.js';
-import { Product, ProductProfile } from '../model/productModel.js';
+import { otherProductsInfo, Product, ProductProfile } from '../model/productModel.js';
 
 export const getSearchProducts = async (search, categoryName, limit = 10, page = 1) => {
     const offset = (page - 1) * limit;
@@ -73,7 +73,7 @@ export const getProductsList = async (categoryId, limit, page = 1, sortBy, is_ac
     ));
 }
 
-export const getProductDetailsById = async (productId, limit, user) => {
+export const getProductDetailsById = async (productId, user, limit = 5) => {
     const productInfo = await getProductBaseInfoByIdRepo(productId);
     if (!productInfo) {
         throw new Error('Product not found');
@@ -84,7 +84,12 @@ export const getProductDetailsById = async (productId, limit, user) => {
     const topBidderId = await getTopBidderIdByProductId(productId);
     const topBidderInfo = topBidderId ? await getUserInfoById(topBidderId) : null;
     const sellerInfo = await getUserInfoById(productInfo.seller_id);
-    const otherProducts = await otherProductsByCategoryRepo(productInfo.category_id, productId, limit);
+    const productCategories = await getCategoriesByProductIdRepo(productId);
+    const otherProducts = await otherProductsByCategoryRepo(
+        productCategories.map(cat => cat.category_id),
+        productId,
+        limit
+    );
 
     for (let prod of otherProducts) {
         const countHistory = await countHistoryByProductId(prod.product_id);
@@ -100,7 +105,7 @@ export const getProductDetailsById = async (productId, limit, user) => {
         } 
     }
 
-    otherProducts.map(prod => otherProductsInfo(
+    otherProducts.map(prod => new otherProductsInfo(
         prod.product_id,
         prod.name,
         prod.image_cover_url,
@@ -145,7 +150,7 @@ export const postProduct = async (user, name, description, starting_price, step_
         throw new Error('Only sellers can create products');
     }
     const newProduct = await postProductRepo(
-        user.user_id,
+        user.id,
         name,
         description,
         starting_price,

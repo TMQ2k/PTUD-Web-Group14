@@ -34,9 +34,8 @@ router.get('/', async (req, res) => {
 router.get('/:productId', async (req, res) => {
     try {
         const productId = req.params.productId;
-        const limit = parseInt(req.query.limit);
         const user = req.user; // Assuming user info is attached to the request
-        const productDetails = await getProductDetailsById(productId, limit, user);
+        const productDetails = await getProductDetailsById(productId, user);
         res.json({
             code: 200,
             message: 'Product details retrieved successfully',

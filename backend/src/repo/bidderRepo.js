@@ -3,10 +3,10 @@ import { BidHistory, HighestBidInfo, TopBidder } from "../model/bidModel.js";
 
 export const getBidHistoryByProductId = async (productId) => {
   const result = await pool.query(
-    `SELECT bh.*, u.username, u.avatar_url
+    `SELECT bh.*, u.username, ui.avatar_url
     FROM product_history bh
     JOIN users u ON bh.user_id = u.user_id
-    JOIN user_
+    JOIN users_info ui ON u.user_id = ui.user_id
     WHERE bh.product_id = $1
     ORDER BY bh.bid_time DESC`,
     [productId]
