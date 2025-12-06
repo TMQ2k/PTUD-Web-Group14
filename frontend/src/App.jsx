@@ -10,12 +10,14 @@ import Home from "./pages/Home";
 import LoadingScreen from "./components/layouts/LoadingScreen";
 import RegisterForm from "./components/common/RegisterForm";
 import LoginForm from "./components/common/LoginForm";
+import ProductDetailPage from "./pages/ProductDetailPage";
+
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
   const [showLoading, setShowLoading] = useState(true);
   const [exiting, setExiting] = useState(false);
 
-  const loadDuration = 1600;
+  const loadDuration = 700;
   const exitDuration = 7000;
 
   useEffect(() => {
@@ -35,6 +37,7 @@ const App = () => {
         <Route path="register" element={<RegisterForm />} />
         <Route path="login" element={<LoginForm />} />
         <Route index element={<Home />} />
+        <Route path="/products/:id" element={<ProductDetailPage />} />
       </Route>
     )
   );
