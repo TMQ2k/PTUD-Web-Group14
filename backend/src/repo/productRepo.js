@@ -122,7 +122,7 @@ fnc_product_extra_images(
 
 
 */
-export const postProduct = async(seller_id, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_url) => {
+export const postProduct = async(seller_id, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_url, category_ids) => {
     const result =  await pool.query(
         `SELECT * FROM fnc_create_product($1, $2, $3, $4, $5, $6, $7, $8) AS product_id`,
         [seller_id, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time]
@@ -134,5 +134,35 @@ export const postProduct = async(seller_id, name, description, starting_price, s
             [productId, extra_image_url]
         );
     }
-    return result.rows[0].product
+
+    if (category_ids && category_ids.length > 0) {
+        await pool.query(
+            `SELECT fnc_product_categories($1, $2) AS number_of_categories`,
+            [productId, category_ids]
+        );
+    }
+    const message = 'Product created successfully';
+    return message;
+}
+
+export const updateProduct = async(productId, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_url) => {
+    await pool.query(
+        `UPDATE products
+        SET name = $1,
+            description = $2,
+            starting_price = $3,
+            step_price = $4,
+            buy_now_price = $5,
+            image_cover_url = $6,
+            end_time = $7
+        WHERE product_id = $8`,
+        [name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, productId]
+    );
+    if (extra_image_url && extra_image_url.length > 0) {
+        await pool.query(
+            `SELECT fnc_product_extra_images($1, $2)`,
+            [productId, extra_image_url]
+        );
+    }
+    return true;
 }

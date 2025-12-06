@@ -35,6 +35,13 @@ export class ProductProfile {
     }  
 }
 
+export class WatchList {
+  constructor(user_id, products = []) {
+    this.user_id = user_id;
+    this.products = products;
+  }
+}
+
 export class otherProductsInfo {
     constructor(product_id, name, image_cover_url, step_price, current_price, buy_now_price = null, is_active, created_at, end_time, top_bidder, history_count) {
         this.product_id = product_id;

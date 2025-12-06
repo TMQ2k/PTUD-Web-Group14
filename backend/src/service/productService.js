@@ -9,6 +9,8 @@ import {
     getSearchProducts as getSearchProductsRepo,
     getProductsList as getProductsListRepo,
     postProduct as postProductRepo,
+    updateProduct as updateProductRepo,
+    deleteProductById as deleteProductByIdRepo,
 } from '../repo/productRepo.js';
 
 import {
@@ -118,7 +120,7 @@ export const getProductDetailsById = async (productId, limit, user) => {
     }   
 
     return {
-        productId: productInfo.product_id,
+        product_id: productInfo.product_id,
         seller: sellerInfo,
         name: productInfo.name,
         description: productInfo.description,   
@@ -138,7 +140,7 @@ export const getProductDetailsById = async (productId, limit, user) => {
     };  
 }
 
-export const postProduct = async (user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls) => {
+export const postProduct = async (user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls, category_ids) => {
     if (user.role !== 'seller') {
         throw new Error('Only sellers can create products');
     }
@@ -152,6 +154,7 @@ export const postProduct = async (user, name, description, starting_price, step_
         image_cover_url,
         end_time,
         extra_image_urls,
+        category_ids
     );
     return newProduct;
 }
@@ -166,3 +169,21 @@ export const getProductBidHistoryService = async (productId) => {
     throw err;
   }
 };
+
+export const updateProduct = async (user, productId, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls) => {
+    if(user.role !== 'seller') {
+        throw new Error('Only sellers can update products');
+    }
+    const updatedProduct = await updateProductRepo(
+        productId, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls
+    );
+    return updatedProduct;
+}
+
+export const deleteProductById = async (user, productId) => {
+    if(user.role !== 'seller') {
+        throw new Error('Only sellers can delete products');
+    }
+    const deletedProduct = await deleteProductByIdRepo(productId);
+    return deletedProduct;
+}

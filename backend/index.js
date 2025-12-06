@@ -25,22 +25,3 @@ app.use("/api/categories", categoryController);
 app.use("/api/bidder", bidderController);
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-
-
-//print products columns
-
-import pool from "./src/config/db.js";
-
-const printProductColumns = async () => {
-  try {
-    const result = await pool.query("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'products'");
-    console.log("Products table columns:"); 
-    result.rows.forEach(row => {
-      console.log(`${row.column_name}: ${row.data_type}`);
-    });
-  } catch (error) {
-    console.error("Error fetching product columns:", error);
-  }
-};
-
-printProductColumns();

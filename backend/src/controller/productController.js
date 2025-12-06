@@ -3,9 +3,10 @@ import {
     getSearchProducts,
     getProductsList,
     getProductDetailsById,
-    postProduct
+    postProduct,
+    updateProduct,
 } from '../service/productService.js';
-import { authenticate } from "../middleware/auth.js";
+import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 router.get('/', async (req, res) => {
@@ -50,11 +51,11 @@ router.get('/:productId', async (req, res) => {
     }
 });
 
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, authorize("seller"), async (req, res) => {
     try {
         const user = req.user; 
-        const { name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls } = req.body;
-        const newProduct = await postProduct(user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls);
+        const { name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls, category_ids } = req.body;
+        const newProduct = await postProduct(user, name, description, starting_price, step_price, buy_now_price, image_cover_url, end_time, extra_image_urls, category_ids);
         res.status(201).json({
             code : 201,
             message : 'Product created successfully',
