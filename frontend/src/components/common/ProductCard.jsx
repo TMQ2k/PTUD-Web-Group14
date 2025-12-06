@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Clock, Tag, User, Heart } from "lucide-react";
+import { FaFire } from "react-icons/fa";
+import { watchlistApi } from "../../api/watchlist.api";
+import { useSelector } from "react-redux";
+import { toast } from "react-toastify";
 
 const ProductCard = ({
+  id,
   image,
   name,
   currentPrice,
@@ -11,9 +16,17 @@ const ProductCard = ({
   remainingTime,
   bidCount,
   onBuyNow,
+  isInWatchlist = false,
+  onRemoveFromWatchlist,
 }) => {
   const [timeLeft, setTimeLeft] = useState(remainingTime);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(isInWatchlist);
+  const [isToggling, setIsToggling] = useState(false);
+  const user = useSelector((state) => state.user);
+
+  useEffect(() => {
+    setIsFavorite(isInWatchlist);
+  }, [isInWatchlist]);
 
   useEffect(() => {
     const parseTime = (timeStr) => {
@@ -41,6 +54,47 @@ const ProductCard = ({
     return () => clearInterval(timer);
   }, [remainingTime]);
 
+  const handleToggleFavorite = async (e) => {
+    e.stopPropagation();
+
+    // Kiểm tra đăng nhập
+    if (!user.isLoggedIn) {
+      toast.error("Vui lòng đăng nhập để sử dụng tính năng này!");
+      return;
+    }
+
+    // Đang xử lý → Bỏ qua
+    if (isToggling) return;
+
+    setIsToggling(true);
+
+    try {
+      if (isFavorite) {
+        // Xóa khỏi watchlist
+        await watchlistApi.removeFromWatchlist(id);
+        setIsFavorite(false);
+        toast.success("Đã xóa khỏi danh sách yêu thích");
+
+        // Nếu đang ở trang WatchList, gọi callback để cập nhật danh sách
+        if (onRemoveFromWatchlist) {
+          onRemoveFromWatchlist();
+        }
+      } else {
+        // Thêm vào watchlist
+        await watchlistApi.addToWatchlist(id);
+        setIsFavorite(true);
+        toast.success("Đã thêm vào danh sách yêu thích");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi toggle watchlist:", err);
+      toast.error(
+        err.response?.data?.message || "Có lỗi xảy ra, vui lòng thử lại!"
+      );
+    } finally {
+      setIsToggling(false);
+    }
+  };
+
   return (
     <div className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
       {/* Ảnh sản phẩm với overlay gradient */}
@@ -56,17 +110,17 @@ const ProductCard = ({
 
         {/* Nút yêu thích */}
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFavorite(!isFavorite);
-          }}
-          className="absolute top-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-transform duration-200 z-10"
+          onClick={handleToggleFavorite}
+          disabled={isToggling}
+          className={`absolute top-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-all duration-200 z-10 ${
+            isToggling ? "opacity-50 cursor-not-allowed" : ""
+          }`}
           aria-label="Yêu thích"
         >
           <Heart
-            className={`w-5 h-5 transition-colors ${
+            className={`w-5 h-5 transition-all duration-300 ${
               isFavorite
-                ? "fill-red-500 stroke-red-500"
+                ? "fill-red-500 stroke-red-500 animate-pulse"
                 : "stroke-gray-600 hover:stroke-red-500"
             }`}
           />
@@ -87,7 +141,8 @@ const ProductCard = ({
         {/* Badge "Mua ngay" nếu có */}
         {buyNowPrice && (
           <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-            🔥 Mua ngay: {buyNowPrice}₫
+            <FaFire className="inline w-4 h-4 mr-1 mb-1 text-orange-500" />
+            Mua ngay: {buyNowPrice}₫
           </div>
         )}
       </div>

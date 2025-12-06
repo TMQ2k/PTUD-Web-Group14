@@ -14,28 +14,62 @@ import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import { useDispatch, useSelector } from "react-redux";
+import { logout, loginSuccess } from "../../store/userSlice";
+import { authStorage } from "../../utils/auth";
+import { userApi } from "../../api/user.api";
+import { HandCoins } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 export default function Header() {
+  const dispatch = useDispatch();
   const [showCats, setShowCats] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const navigate = useNavigate();
 
-  // TODO: Thay thế bằng Redux/Context API của bạn
-  // Ví dụ giả lập user đã đăng nhập
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const { isLoggedIn, userData } = useSelector((state) => state.user);
 
-  // Giả lập user data - Thay bằng logic thực tế từ Redux/Context
+  // ✅ Restore session khi app load (check token và fetch profile)
   useEffect(() => {
-    // Kiểm tra localStorage hoặc Redux store
-    const userData = localStorage.getItem("user");
-    if (userData) {
-      setIsLoggedIn(true);
-      setUser(JSON.parse(userData));
-    }
-  }, []);
+    const restoreSession = async () => {
+      // Nếu đã logged in trong Redux, không cần làm gì
+      if (isLoggedIn) return;
+
+      // Check có token không
+      const token = authStorage.getToken();
+      if (!token) return;
+
+      try {
+        console.log("🔄 Restoring session from token...");
+
+        // Fetch user profile từ API
+        const response = await userApi.getProfile();
+        const userProfile = response.data;
+
+        // Cập nhật Redux state
+        dispatch(
+          loginSuccess({
+            id: userProfile.user_id,
+            name:
+              `${userProfile.first_name || ""} ${
+                userProfile.last_name || ""
+              }`.trim() || "User",
+            email: userProfile.email,
+            role: userProfile.role || "bidder",
+            avatar: userProfile.avatar_url,
+          })
+        );
+      } catch (error) {
+        console.error("❌ Failed to restore session:", error);
+        // Token không hợp lệ hoặc hết hạn → xóa đi
+        authStorage.removeToken();
+      }
+    };
+
+    restoreSession();
+  }, [isLoggedIn, dispatch]);
 
   // Đóng overlay bằng ESC
   useEffect(() => {
@@ -64,12 +98,13 @@ export default function Header() {
 
   // Handle logout
   const handleLogout = () => {
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    setUser(null);
+    // Không cần xóa localStorage vì không dùng nữa
+    authStorage.removeToken();
+    dispatch(logout());
     setShowUserMenu(false);
-    // Refresh page để cập nhật UI
-    window.location.reload();
+    // KHÔNG cần window.location.reload() - UI tự động cập nhật
+    // Optional: Redirect về trang chủ sau logout
+    navigate("/");
   };
 
   // Handle switch between login/register modals
@@ -130,13 +165,14 @@ export default function Header() {
 
         {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
         <div className="hidden md:flex items-center gap-4 ml-auto">
-          <button
-            type="button"
-            className="p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Yêu thích"
+          <Link
+            to="/watchlist"
+            className="p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
+            aria-label="Danh sách yêu thích"
+            title="Danh sách yêu thích"
           >
-            <FaRegHeart className="w-5 h-5 text-blue-600" />
-          </button>
+            <FaRegHeart className="w-5 h-5 text-blue-600 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+          </Link>
 
           {!isLoggedIn ? (
             // Hiển thị nút đăng nhập/đăng ký khi chưa login
@@ -175,12 +211,18 @@ export default function Header() {
                 >
                   <img
                     src={
-                      user?.avatar ||
-                      "https://ui-avatars.com/api/?name=" +
-                        (user?.name || "User")
+                      userData?.avatar ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        userData?.name || "User"
+                      )}&size=128&background=4F46E5&color=fff`
                     }
-                    alt={user?.name || "User"}
+                    alt={userData?.name || "User"}
                     className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    onError={(e) => {
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        userData?.name?.charAt(0) || "U"
+                      )}&background=4F46E5&color=fff`;
+                    }}
                   />
                   <FaChevronDown
                     className={`w-3 h-3 text-gray-600 transition-transform duration-200 ${
@@ -201,12 +243,27 @@ export default function Header() {
                     >
                       {/* User Info */}
                       <div className="px-4 py-3 border-b border-gray-100">
-                        <p className="font-semibold text-gray-800">
-                          {user?.name || "User"}
+                        <p className="font-semibold text-gray-800 truncate">
+                          {userData?.name || "User"}
                         </p>
                         <p className="text-sm text-gray-500 truncate">
-                          {user?.email || "user@example.com"}
+                          {userData?.email || "user@example.com"}
                         </p>
+                        {userData?.role && (
+                          <p className="text-xs text-indigo-600 font-bold mt-1 capitalize">
+                            {userData.role === "seller" ? (
+                              <>
+                                <HandCoins className="inline-block w-4 h-4 mb-0.5" />
+                                Seller
+                              </>
+                            ) : (
+                              <>
+                                <ShoppingCart className="inline-block w-4 h-4 mb-0.5" />
+                                Bidder
+                              </>
+                            )}
+                          </p>
+                        )}
                       </div>
 
                       {/* Menu Items */}
@@ -266,6 +323,7 @@ export default function Header() {
                 onSelectCategory={(lv1, lv2) => {
                   console.log("Selected:", lv1, lv2);
                 }}
+                onClose={() => setShowCats(false)}
               />
             </motion.div>
           </motion.div>
