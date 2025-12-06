@@ -24,8 +24,8 @@ router.post('/:productId', authenticate, authorize(["bidder", "seller"]), async 
     try {
         const user = req.user;
         const productId = req.params.productId;
-        const { content, linkProduct, parentCommentId } = req.body;
-        const newComment = await postComment(user, productId, content, linkProduct, parentCommentId);
+        const { content, link_product, parent_comment_id } = req.body;
+        const newComment = await postComment(user, productId, content, link_product, parent_comment_id);
         res.json({
             code: 201,
             message: 'Comment posted successfully',
