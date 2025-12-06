@@ -14,6 +14,7 @@ import UserInformation from "./pages/UserInformation";
 import Admin from "./pages/AdminDashboard";
 import CategoryProducts from "./pages/CategoryProducts";
 import WatchList from "./pages/WatchList";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
@@ -97,6 +98,7 @@ const App = () => {
         <Route path="/" element={<MainLayouts />}>
           <Route path="register" element={<RegisterForm />} />
           <Route path="login" element={<LoginForm />} />
+          <Route path="products/:id" element={<ProductDetailPage />} />
           <Route index element={<Home />} />
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />

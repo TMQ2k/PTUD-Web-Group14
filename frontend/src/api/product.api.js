@@ -74,4 +74,11 @@ export const productApi = {
     );
     return response.data;
   },
+
+  getProductById: async (productId) => {
+    const response = await http.get(
+      `${productEndpoint.getAll}?/${productId}`
+    )
+    return response.data;
+  }
 };

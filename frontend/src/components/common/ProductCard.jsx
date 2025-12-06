@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Clock, Tag, User, Heart } from "lucide-react";
 import { FaFire } from "react-icons/fa";
 import { watchlistApi } from "../../api/watchlist.api";
@@ -23,6 +24,7 @@ const ProductCard = ({
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
   const [isToggling, setIsToggling] = useState(false);
   const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsFavorite(isInWatchlist);
@@ -218,7 +220,8 @@ const ProductCard = ({
               </button>
             </>
           ) : (
-            <button className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base">
+            <button onClick={() => navigate(`/products/${id}`)}
+                    className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base">
               Tham gia đấu giá
             </button>
           )}

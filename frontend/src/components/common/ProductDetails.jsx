@@ -1,4 +1,5 @@
 import { useState, useEffect, useReducer } from "react";
+import { useParams } from "react-router-dom";
 import ProductGalleryCard from "./ProductGalleryCard";
 import AuctionBidCard from "./AuctionBidCard";
 import {
@@ -6,10 +7,11 @@ import {
   ProductDispatchContext,
   productReducer,
 } from "../../context/ProductDetailsContext";
-import { http } from "../../utils/http";
+import { productApi } from "../../api/product.api";
 import ProductInfomation from "./ProductInfomation";
 
 const ProductDetails = () => {    
+  const params = useParams();
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -23,13 +25,14 @@ const ProductDetails = () => {
         setLoading(true);
         setError(null);
 
-        const url = "/products";
-        const res = await http.get(url);                
-        const { data: products } = res;
+        //const url = `/products/${params.id}`;
+        const product = await productApi.getProductById(params.id);   
+        console.log(product)             ;
+        //const { data: products } = res;
         if (isMounted) {          
           dispatch({
             type: "load",
-            payload: products[0],
+            payload: product,
           });
         }
       } catch (error) {
