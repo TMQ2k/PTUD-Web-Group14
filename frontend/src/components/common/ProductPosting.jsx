@@ -1,20 +1,21 @@
 import { useForm } from "react-hook-form";
+import { twMerge } from "tailwind-merge";
 import { useSelector } from "react-redux";
 import { productApi } from "../../api/product.api";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { convert, parseIntFromCurrency } from "../../utils/NumberHandler";
 import { categoryApi } from "../../api/category.api";
+import { sellerApi } from "../../api/seller.api";
 
 // --- 1. The Reusable Multi-Select Component ---
-const CategorySelector = ({ selected, onToggle, error, categories }) => {  
-
+const CategorySelector = ({ selected, onToggle, error, categories }) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-3">
         {categories.map((cat) => {
           // Check if this specific category is currently chosen
           const isActive = selected.includes(cat.category_id);
-          
+
           return (
             <button
               key={cat.category_id}
@@ -22,9 +23,10 @@ const CategorySelector = ({ selected, onToggle, error, categories }) => {
               onClick={() => onToggle(cat.category_id)}
               className={`
                 px-4 py-2 rounded-full text-sm font-medium transition-all border duration-400
-                ${isActive 
-                  ? 'bg-blue-500 border-blue-500 scale:102 text-white shadow-lg scale-105 ' 
-                  : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 duration-900'
+                ${
+                  isActive
+                    ? "border-blue-200 bg-linear-to-b from-blue-400 to-purple-600 scale:102 text-white shadow-lg scale-105 "
+                    : "bg-white border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 duration-900"
                 }
               `}
             >
@@ -33,7 +35,11 @@ const CategorySelector = ({ selected, onToggle, error, categories }) => {
           );
         })}
       </div>
-      {error && <span className="text-xs text-red-500 font-medium">{error.message}</span>}
+      {error && (
+        <span className="text-xs text-red-500 font-medium">
+          {error.message}
+        </span>
+      )}
     </div>
   );
 };
@@ -41,7 +47,10 @@ const CategorySelector = ({ selected, onToggle, error, categories }) => {
 // 1. Reusable Component to reduce clutter and ensure consistent styling
 const InputField = ({ label, id, error, children }) => (
   <div className="flex flex-col gap-1.5 w-full">
-    <label htmlFor={id} className="text-sm font-semibold text-blue-500">
+    <label
+      htmlFor={id}
+      className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text"
+    >
       {label}
     </label>
     {children}
@@ -60,20 +69,26 @@ const ProductPosting = () => {
     watch,
     setValue,
     trigger,
-    getValues
+    getValues,
   } = useForm({
     defaultValues: {
       images: [],
-      categories: []
+      categories: [],
     },
   });
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sellerStartTime, setSellerStartTime] = useState(null);
+  const currentDateTime = new Date(Date.now());
 
-  const onSubmit = (data) => {
-    console.log("Form Submitted:", data);
+  const onSubmit = (data) => {    
+    //console.log(JSON.stringify(getValues("images")));
+    const formData = FormData();
+    const product_data = {
+      
+    }
   };
 
   // Watch the images field so we can show the count (e.g., "2/4")
@@ -95,6 +110,7 @@ const ProductPosting = () => {
       file, // Keep original file for the form
     }));
 
+        
     // Update Local State (Visuals)
     setPreviews((prev) => [...prev, ...newPreviews]);
 
@@ -136,28 +152,31 @@ const ProductPosting = () => {
       setLoading(true);
 
       try {
-        const response = await categoryApi.getAllCategories();        
+        const response = await categoryApi.getAllCategories();
+        const sellerRespone = await sellerApi.getSellerStartTime();
         if (isMounted) {
-          setCategories(response.data.flatMap(parent => parent.children));
+          setCategories(response.data.flatMap((parent) => parent.children));
+          const rawtime = sellerRespone?.data?.fnc_get_seller_start_time;
+          const datetime = new Date(rawtime);
+          datetime.setDate(datetime.getDate() + 7);
+          setSellerStartTime(datetime);
         }
-      }
-      catch (error) {
+      } catch (error) {
         if (isMounted) {
           setError(error);
         }
-      }
-      finally {
+      } finally {
         if (isMounted) {
           setLoading(false);
         }
       }
-    }
+    };
 
     loadCategories();
     return () => {
       isMounted = false;
-    }
-  }, [])
+    };
+  }, []);
 
   // Watch categories to update UI
   const currentCategories = watch("categories");
@@ -169,7 +188,7 @@ const ProductPosting = () => {
 
     if (current.includes(catId)) {
       // Remove it
-      updated = current.filter(id => id !== catId);
+      updated = current.filter((id) => id !== catId);
     } else {
       // Add it
       updated = [...current, catId];
@@ -182,11 +201,12 @@ const ProductPosting = () => {
   // Common Tailwind classes for all inputs
   const inputClasses =
     "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm placeholder-gray-400";
-
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-100 my-10">
-      <div className="mb-6 border-b border-gray-200 pb-4">
-        <h2 className="text-2xl font-bold text-blue-600">Post new product</h2>
+      <div className="mb-6 border-b border-gray-200 pb-4 ">
+        <h2 className="text-3xl font-bold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
+          Post new product
+        </h2>
         <p className="text-sm text-gray-500 mt-1">
           Fill in the details to post your product for auction.
         </p>
@@ -211,21 +231,24 @@ const ProductPosting = () => {
         </InputField>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-semibold text-gray-700">
-            Select Categories <span className="text-gray-400 font-normal">(Pick at least 1)</span>
+          <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
+            Chọn danh mục{" "}
+            <span className="text-gray-400 font-normal">(Pick at least 1)</span>
           </label>
-          
+
           {/* Register a hidden input so Hook Form knows this field exists */}
-          <input 
-            type="hidden" 
-            {...register("categories", { 
-              validate: (val) => val && val.length > 0 || "Please select at least one category" 
-            })} 
+          <input
+            type="hidden"
+            {...register("categories", {
+              validate: (val) =>
+                (val && val.length > 0) ||
+                "Please select at least one category",
+            })}
           />
 
-          <CategorySelector 
-            selected={currentCategories} 
-            onToggle={handleCategoryToggle} 
+          <CategorySelector
+            selected={currentCategories}
+            onToggle={handleCategoryToggle}
             error={errors.categories}
             categories={categories}
           />
@@ -238,7 +261,7 @@ const ProductPosting = () => {
             id="starting_price"
             error={errors.startingPrice}
           >
-              <input
+            <input
               id="starting_price"
               type="text"
               placeholder="100,000"
@@ -247,8 +270,8 @@ const ProductPosting = () => {
                 required: "Starting price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue("startingPrice", convert(e.target.value.trim()))
-                }
+                  setValue("startingPrice", convert(e.target.value.trim()));
+                },
               })}
             />
           </InputField>
@@ -267,27 +290,28 @@ const ProductPosting = () => {
                 required: "Step price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue("stepPrice", convert(e.target.value.trim()))
-                }
+                  setValue("stepPrice", convert(e.target.value.trim()));
+                },
               })}
             />
           </InputField>
         </div>
 
         {/* Row 3: Date & Category (New Grid) */}
-        
-          {/* === THE NEW DATE FIELD === */}
+
+        {/* === THE NEW DATE FIELD === */}
         <InputField
-          label="Auction End Date"
+          label="Ngày kết thúc"
           id="end_date"
           error={errors.endDate}
         >
           <input
             id="end_date"
             type="datetime-local"
-            min={new Date(Date.now())}              
-            className={inputClasses}
-            // Set min to today's date to prevent past dates
+            //value={getValues("endDate")}                        
+            min={currentDateTime?.toISOString().slice(0, 16)}
+            max={sellerStartTime?.toISOString().slice(0, 16)}
+            className={twMerge(inputClasses, "text-indigo-700 font-semibold")}
             {...register("endDate", {
               required: "Please select an end date",
               validate: (value) => {
@@ -295,17 +319,17 @@ const ProductPosting = () => {
                 const today = new Date();
                 return selectedDate > today || "Date must be in the future";
               },
+              
             })}
           />
-        </InputField>          
-        
+        </InputField>
 
         {/* === SECTION: IMAGE UPLOAD === */}
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
-            <label className="text-sm font-semibold text-blue-500">
-              Product Images           
-            </label>            
+            <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
+              Ảnh sản phẩm
+            </label>
             <span
               className={`text-xs font-medium ${
                 currentImages?.length >= 4 ? "text-green-600" : "text-gray-400"
@@ -363,7 +387,7 @@ const ProductPosting = () => {
                 </div>
               ))}
 
-              {getValues("images")?.length < 4 && (                
+              {getValues("images")?.length < 4 && (
                 <button
                   type="button"
                   onClick={() => fileInputRef.current.click()}
