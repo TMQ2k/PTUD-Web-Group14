@@ -120,6 +120,7 @@ router.delete("/delete", authenticate, authorize("admin"), async (req, res) => {
 });
 
 router.put("/deactivate-expired", async (req, res) => {
+  console.log("🚀 Received request to deactivate expired products");
   try {
     const result = await deactiveProduct();
     return res.status(200).json({

@@ -22,7 +22,7 @@ delete from users where user_id in(2, 9, )
 update users
 set role = 'bidder'
 where user_id = 14
-
+delete from products where product_id = 6
 update users_rating
 set rating_plus = 1, rating_minus = 0
 where user_id = 29
@@ -34,7 +34,8 @@ values('')
  
 update users
 set verified = true
-where user_id = 29
+where user_id = 38
+
 select * from auto_bids
 
 update products

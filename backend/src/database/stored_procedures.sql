@@ -186,6 +186,82 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+SELECT fnc_product_categories(
+    p_product_id => 10,
+    p_category_ids => ARRAY[2, 5, 7]
+);
+
+CREATE OR REPLACE FUNCTION fnc_product_categories(
+    p_product_id   INT,        -- ID sản phẩm
+    p_category_ids INT[]       -- Mảng category cần gán
+)
+RETURNS INT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_category_id INT;               -- category đang duyệt
+    v_inserted_count INT := 0;       -- số category đã thêm
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra tham số đầu vào
+    --------------------------------------------------------------------
+    IF p_product_id IS NULL THEN
+        RAISE EXCEPTION 'Product ID (p_product_id) cannot be NULL';
+    END IF;
+
+    IF p_category_ids IS NULL OR array_length(p_category_ids, 1) IS NULL THEN
+        RAISE EXCEPTION 'Category list (p_category_ids) cannot be NULL or empty';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra sản phẩm có tồn tại
+    --------------------------------------------------------------------
+    IF NOT EXISTS (
+        SELECT 1
+        FROM products AS prod
+        WHERE prod.product_id = p_product_id
+    ) THEN
+        RAISE EXCEPTION 'Product with ID % does not exist', p_product_id;
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra toàn bộ category trong mảng có tồn tại
+    --------------------------------------------------------------------
+    PERFORM 1
+    FROM unnest(p_category_ids) AS u(cat_id)
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM categories AS cat
+        WHERE cat.category_id = u.cat_id
+    );
+
+    IF FOUND THEN
+        RAISE EXCEPTION 'Some category IDs in p_category_ids do not exist';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Xoá toàn bộ category cũ của sản phẩm
+    --------------------------------------------------------------------
+    DELETE FROM product_categories AS pc
+    WHERE pc.product_id = p_product_id;
+
+    --------------------------------------------------------------------
+    -- 5. Chèn category mới
+    --------------------------------------------------------------------
+    FOREACH v_category_id IN ARRAY p_category_ids
+    LOOP
+        INSERT INTO product_categories(product_id, category_id)
+        VALUES (p_product_id, v_category_id);
+
+        v_inserted_count := v_inserted_count + 1;
+    END LOOP;
+
+    --------------------------------------------------------------------
+    -- 6. Trả về số category đã thêm
+    --------------------------------------------------------------------
+    RETURN v_inserted_count;
+END;
+$$;
 
 
 CREATE OR REPLACE FUNCTION fnc_get_products_by_seller(p_seller_id INT)
@@ -984,7 +1060,6 @@ BEGIN
 
 END;
 $$;
-
 DROP FUNCTION fnc_delete_user(integer)
 CREATE OR REPLACE FUNCTION fnc_delete_user(p_user_id INTEGER)
 RETURNS BOOLEAN
@@ -1007,3 +1082,52 @@ BEGIN
     RETURN TRUE;
 END;
 $$;
+
+select * from users
+CREATE OR REPLACE FUNCTION fnc_deactivate_expired_sellers()
+RETURNS VOID AS $$
+BEGIN
+    UPDATE users u
+    SET 
+        status = FALSE,
+        role = 'bidder'
+    FROM user_upgrade_requests ur
+    WHERE 
+        u.user_id = ur.user_id
+        AND u.role = 'seller'
+        AND ur.status = 'approved'
+        AND ur.updated_at <= NOW() - INTERVAL '7 days';
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION fnc_get_seller_start_time(p_user_id BIGINT)
+RETURNS TIMESTAMPTZ AS $$
+DECLARE
+    seller_start TIMESTAMPTZ;
+    user_role VARCHAR(20);
+BEGIN
+    -- Lấy role hiện tại của user
+    SELECT role INTO user_role
+    FROM users
+    WHERE user_id = p_user_id;
+
+    -- Nếu không phải seller → trả về NULL
+    IF user_role <> 'seller' THEN
+        RETURN NULL;
+    END IF;
+
+    -- Lấy thời điểm được duyệt thành seller (bản ghi approved mới nhất)
+    SELECT updated_at INTO seller_start
+    FROM user_upgrade_requests
+    WHERE user_id = p_user_id
+      AND status = 'approved'
+    ORDER BY updated_at DESC
+    LIMIT 1;
+
+    RETURN seller_start;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT fnc_get_seller_start_time(36);
+

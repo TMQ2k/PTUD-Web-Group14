@@ -3,7 +3,7 @@ INSERT INTO products (
     image_cover_url, is_active, created_at, end_time
 )
 VALUES
-(NULL, 'Apple iPhone 12 64GB', 'Điện thoại iPhone 12 màu đen, còn mới 95%', 8000000, 100000, 8200000, 'https://example.com/iphone12.jpg', TRUE, NOW() - INTERVAL '10 days', '2025-12-05 23:59:59'),
+(NULL, 'Apple iPhone 12 64GB', 'Điện thoại iPhone 12 màu đen, còn mới 95%', 8000000, 100000, 8200000, 'https://example.com/iphone12.jpg', TRUE, NOW() - INTERVAL '10 days', '2025-12-10 23:59:59'),
 
 (NULL, 'Laptop Dell XPS 13', 'Laptop Dell XPS 13 core i7, 16GB RAM', 15000000, 200000, 15000000, 'https://example.com/dellxps13.jpg', TRUE, NOW() - INTERVAL '12 days', '2025-12-05 23:59:59'),
 
