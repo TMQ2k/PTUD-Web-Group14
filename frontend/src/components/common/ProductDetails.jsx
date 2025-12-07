@@ -68,9 +68,9 @@ const ProductDetails = () => {
             <ProductDispatchContext.Provider value={dispatch}>
               <ProductInfomation />
               <AuctionBidCard />
-              {product?.otherProducts?.map((p, i) => (
+              {/* {product?.otherProducts?.length > 0 &&  product?.otherProducts?.map((p, i) => (
                 <ProductCard key={i} {...product} />
-              ))}
+              ))} */}
             </ProductDispatchContext.Provider>
           </ProductContext.Provider>
         </div>
