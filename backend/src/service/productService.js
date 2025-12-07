@@ -9,9 +9,8 @@ import {
   getSearchProducts as getSearchProductsRepo,
   postProduct as postProductRepo,
   getProductBidHistory as getProductBidHistoryRepo,
-  deleteProductById as deleteProductByIdRepo,
-  getProductsList as getProductsListRepo,
-  postProduct as postProductRepo,
+  
+  getProductsList as getProductsListRepo,  
   deactiveProduct as deactiveProductRepo,
 } from "../repo/productRepo.js";
 
