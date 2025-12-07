@@ -21,6 +21,8 @@ import { loginSuccess, logout } from "./store/userSlice";
 import { userApi } from "./api/user.api";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProductPostingPage from "./pages/ProductPostingPage";
+
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
   const [showLoading, setShowLoading] = useState(true);
@@ -56,7 +58,7 @@ const App = () => {
           fullName ||
           userData.name ||
           userData.username ||
-          user.current.username;
+          userData.current.username;
 
         // Lưu vào Redux
         dispatch(
@@ -103,6 +105,7 @@ const App = () => {
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
+          <Route path="/productposting" element={<ProductPostingPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
@@ -117,7 +120,7 @@ const App = () => {
 
       {/* Toast notifications */}
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
