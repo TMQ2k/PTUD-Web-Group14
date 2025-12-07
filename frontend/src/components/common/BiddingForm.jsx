@@ -22,7 +22,6 @@ const BiddingForm = ({ price, steps }) => {
     console.log(data);
   };
 
-  const bidder_price = watch("bidder_price");
   //console.log(bidder_price);
 
   const onSubtract = () => {
@@ -58,7 +57,7 @@ const BiddingForm = ({ price, steps }) => {
           className="text-center text-2xl focus:outline-none max-w-40
                     font-semibold text-blue-500"
         />
-        <span className="w-[2px] h-8 bg-blue-500"></span>
+        <span className="w-0.5 h-8 bg-blue-500"></span>
         <div className="bg-linear-to-r from-[#8711c1] to-[#2472fc] text-transparent bg-clip-text">
           VND
         </div>

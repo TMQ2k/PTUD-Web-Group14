@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { PiMedalFill } from "react-icons/pi";
+import { useSelector } from "react-redux";
 import {
   useProduct,
   useProductDispatch,
@@ -11,14 +12,17 @@ import ProgressBar from "./ProgressBar";
 import Label from "./Label";
 import NavigateButton from "./NavigateButton";
 import BiddingForm from "./BiddingForm";
+import default_image from "../../../public/images/default/unavailable_item.jpeg";
 
 const BiddingStatus = ({ className = "" }) => {
   const product = useProduct();
   const dispatch = useProductDispatch();
+  const { user } = useSelector((state) => state.user);
+  const role = user?.role;
 
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(product.current_price);
-  const formattedProductSteps = formatNumberToCurrency(product.steps);
+  const formattedProductSteps = formatNumberToCurrency(product.step_price);
 
   const [expired, setExpired] = useState(false);
 
@@ -49,7 +53,7 @@ const BiddingStatus = ({ className = "" }) => {
         <section className="mt-6 flex flex-row gap-2">
           <div className="">
             <img
-              src={product.top_bidder.avatar_url}
+              src={product?.top_bidder?.avatar_url || default_image}
               alt="Highest payed Bidder"
               className="rounded-full object-cover w-24 h-24 border border-blue-400"
             />
@@ -62,12 +66,12 @@ const BiddingStatus = ({ className = "" }) => {
             <p className="font-bold text-xl text-blue-700">
               Bidder:
               <span className="font-normal text-black ml-2">
-                {product.top_bidder.name}
+                {product?.top_bidder?.name || "********"}
               </span>
             </p>
             <BidderRating
               className="w-fit"
-              points={product.top_bidder.points}
+              points={product?.top_bidder?.points || "NaN"}
             />
           </div>
         </section>
@@ -82,34 +86,38 @@ const BiddingStatus = ({ className = "" }) => {
                   Sản phẩm đã đấu giá xong
                 </div>
               ) : (
-                <>                  
-                  <BiddingForm
-                    price={product.bidder.maximum_price}
-                    steps={product.steps}
-                  />
+                <>
+                  {role === "bidder" && (
+                    <>
+                      <BiddingForm
+                        price={product?.bidder?.maximum_price || "NaN"}
+                        steps={product?.steps || "NaN"}
+                      />
 
-                  {/*If buy_now_price exists*/}
-                  {buy_now && (
-                    <NavigateButton
-                      to={`/products/${product.product_id}/bidding`}
-                      className="bg-linear-to-br from-blue-200 to-purple-400
+                      {/*If buy_now_price exists*/}
+                      {buy_now && (
+                        <NavigateButton
+                          to={`/products/${product?.product_id || ""}/bidding`}
+                          className="bg-linear-to-br from-blue-200 to-purple-400
                                  text-white text-center hover:from-blue-400 hover:to-purple-600
                                  font-bold rounded-md w-full py-2                                    
                                  relative group text-lg"
-                    >
-                      <p>
-                        Mua ngay {formatNumberToCurrency(product.buy_now_price)}{" "}
-                        đ
-                      </p>
-                      <span
-                        className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500 
+                        >
+                          <p>
+                            Mua ngay{" "}
+                            {formatNumberToCurrency(product?.buy_now_price || "NaN")} đ
+                          </p>
+                          <span
+                            className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500 
                                         animate-ping"
-                      ></span>
-                      <span
-                        className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500
+                          ></span>
+                          <span
+                            className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500
                                         "
-                      ></span>
-                    </NavigateButton>
+                          ></span>
+                        </NavigateButton>
+                      )}
+                    </>
                   )}
                 </>
               )}

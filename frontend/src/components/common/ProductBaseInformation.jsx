@@ -10,11 +10,11 @@ const ProductBaseInformation = () => {
     <div className="grid grid-cols-2 gap-5">
       <ProductBaseInformationCard
         title="Người bán"
-        value={product.seller.name}
+        value={product.seller ? product.seller.name : "None"}
       />
       <ProductBaseInformationCard
         title="Người đấu giá cao nhất"
-        value={product.top_bidder.name}
+        value={product.top_bidder ? product.top_bidder.name : "None"}
       />
       <ProductBaseInformationCard
         title="Ngày đăng bán"
@@ -26,11 +26,11 @@ const ProductBaseInformation = () => {
       />
       <ProductBaseInformationCard
         title="Giá khởi điểm"
-        value={formatNumberToCurrency(product.start_price) + " đ"}
+        value={formatNumberToCurrency(product.starting_price) + " đ"}
       />
       <ProductBaseInformationCard
         title="Bước giá"
-        value={formatNumberToCurrency(product.steps) + " đ"}
+        value={formatNumberToCurrency(product.step_price) + " đ"}
       />
       <ProductBaseInformationCard
         title="Giá cao nhất"

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Clock, Tag, User, Heart } from "lucide-react";
 import { FaFire } from "react-icons/fa";
 import { watchlistApi } from "../../api/watchlist.api";
@@ -98,7 +98,7 @@ const ProductCard = ({
   };
 
   return (
-    <div className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
+    <div onClick={() => navigate(`products/${id}`)} className="cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
       {/* Ảnh sản phẩm với overlay gradient */}
       <div className="relative w-full h-45 overflow-hidden bg-linear-to-br from-gray-100 to-gray-50">
         <img
@@ -220,8 +220,7 @@ const ProductCard = ({
               </button>
             </>
           ) : (
-            <button onClick={() => navigate(`/products/${id}`)}
-                    className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base">
+            <button className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base">
               Tham gia đấu giá
             </button>
           )}
