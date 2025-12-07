@@ -41,7 +41,7 @@ function parseIntFromCurrency(currency) {
 
 function convert(currency_str) {
   const regex = /[^0-9,]/g;
-  const isNegative = currency_str.startsWith("-");
+  //const isNegative = currency_str.startsWith("-");
   const regex_matching_array = currency_str.match(regex);
   if (regex_matching_array) {
     regex_matching_array.forEach((item) => currency_str = currency_str.replaceAll(item, ""));    
@@ -49,18 +49,13 @@ function convert(currency_str) {
 
   if (currency_str.length > 0) {
     const currency_value = parseIntFromCurrency(currency_str);
-    let formatted_currency = formatNumberToCurrency(currency_value);
-    if (isNegative) {
-      formatted_currency = "-" + formatted_currency.slice(0, formatted_currency.length);
-    }
+    let formatted_currency = formatNumberToCurrency(currency_value);   
 
     return formatted_currency;
   }
 
   return "0";
 }
-
-console.log(convert(""));
 
 // steps: 3
 // bid: 19
