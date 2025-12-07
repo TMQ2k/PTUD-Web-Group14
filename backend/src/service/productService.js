@@ -11,6 +11,8 @@ import {
   getProductBidHistory as getProductBidHistoryRepo,
   deleteProductById as deleteProductByIdRepo,
   getProductsList as getProductsListRepo,
+  postProduct as postProductRepo,
+  deactiveProduct as deactiveProductRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -220,35 +222,7 @@ export const deleteProductById = async (productId) => {
   return result;
 };
 
-export const getHighestPricedProducts = async (limit = 5) => {
-  const result = await pool.query(
-    "SELECT * FROM products ORDER BY current_price DESC LIMIT $1",
-    [limit]
-  );
-  return result.rows.map((row) => ({
-    product_id: row.product_id,
-    name: row.name,
-    image_cover_url: row.image_cover_url,
-    current_price: row.current_price,
-    buy_now_price: null,
-    is_active: row.is_active,
-    created_at: row.created_at,
-    end_time: row.end_time,
-  }));
-};
-
-export const getTopCurrentProducts = async (limit = 5) => {
-  const products = await getTopCurrentProductsRepo(limit);
-  if (!products) {
-    throw new Error("No products found");
-  }
-  return products;
-};
-
-export const getProductsByCategory = async (categoryId) => {
-  const products = await getProductsByCategoryRepo(categoryId);
-  if (!products) {
-    throw new Error("No products found for this category");
-  }
-  return products;
+export const deactiveProduct = async () => {
+  const result = await deactiveProductRepo();
+  return result;
 };

@@ -272,9 +272,16 @@ export const postProduct = async (
   return result.rows[0].product;
 };
 
+<<<<<<< HEAD
 export const deleteProductById = async (productId) => {
   const result = await pool.query("SELECT * FROM fnc_delete_product($1)", [
     productId,
   ]);
+=======
+export const deactiveProduct = async () => {
+  const result = await pool.query(
+    `SELECT * FROM fnc_deactivate_expired_products()`
+  );
+>>>>>>> c3e4a0f317400ce364fdc3455efba2a752630c80
   return result.rows[0];
 };
