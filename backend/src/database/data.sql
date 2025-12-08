@@ -1,3 +1,4 @@
+
 INSERT INTO products (
     seller_id, name, description, starting_price, step_price, current_price,
     image_cover_url, is_active, created_at, end_time
@@ -93,3 +94,48 @@ VALUES
     (1, 8, 3600000.00, '2025-11-12T18:46:18.065Z', 'active', NOW()),  -- Người "Tuấn" ra giá 3,600,000 cho sản phẩm ID 1
     (1, 1, 3000000.00, '2025-11-12T18:46:18.065Z', 'active', NOW());  -- Người "Vinh" ra giá 3,000,000 cho sản phẩm ID 1
 select * from users;
+select * from products
+update products
+set seller_id = 37
+where product_id in(30, 31, 32)
+INSERT INTO products (
+    seller_id,
+    name,
+    description,
+    starting_price,
+    step_price,
+    current_price,
+    image_cover_url,
+    end_time
+)
+VALUES
+(
+    13,
+    'Laptop Dell XPS 13',
+    'Laptop cao cấp, cấu hình mạnh, phù hợp công việc văn phòng.',
+    15000000,
+    500000,
+    15000000,
+    'https://example.com/images/xps13.jpg',
+    NOW() + INTERVAL '24 hours'
+),
+(
+    13,
+    'iPhone 14 Pro Max 256GB',
+    'Điện thoại flagship, tình trạng 98%.',
+    18000000,
+    300000,
+    18000000,
+    'https://example.com/images/iphone14promax.jpg',
+    NOW() + INTERVAL '30 hours'
+),
+(
+    13,
+    'Tai nghe Sony WH-1000XM4',
+    'Tai nghe chống ồn hàng đầu, âm thanh chất lượng.',
+    4000000,
+    100000,
+    4000000,
+    'https://example.com/images/sonyxm4.jpg',
+    NOW() + INTERVAL '48 hours'
+);

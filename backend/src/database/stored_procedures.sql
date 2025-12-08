@@ -471,76 +471,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
-    _user_id BIGINT,
-    _product_id BIGINT,
-    _new_max_bid NUMERIC(12,2)
-)
-RETURNS TEXT AS $$
-DECLARE
-    old_max_bid NUMERIC(12,2);
-    auction_end TIMESTAMPTZ;
-    user_rating NUMERIC(5,2);
-    current_price NUMERIC(12,2);
-    remaining INTERVAL;
-BEGIN
-    -- Kiểm tra sản phẩm còn trong thời gian đấu giá
-    SELECT p.end_time, p.current_price INTO auction_end, current_price
-    FROM products p
-    WHERE p.product_id = _product_id;
-
-    IF auction_end IS NULL THEN
-        RETURN 'Sản phẩm không tồn tại.';
-    ELSIF auction_end <= NOW() THEN
-        RETURN 'Sản phẩm đã hết thời gian đấu giá.';
-    END IF;
-
-    -- Kiểm tra điểm đánh giá
-    SELECT ur.rating_percent INTO user_rating
-    FROM users_rating ur
-    WHERE ur.user_id = _user_id;
-
-    IF user_rating IS NOT NULL AND user_rating < 80 THEN
-        RETURN format('Bạn không đủ điểm đánh giá (%s%%) để đấu giá.', user_rating);
-    END IF;
-
-    -- Lấy giá max_bid hiện tại (nếu có)
-    SELECT ab.max_bid_amount INTO old_max_bid
-    FROM auto_bids ab
-    WHERE ab.user_id = _user_id AND product_id = _product_id;
-
-    -- 📌 Kiểm tra điều kiện gia hạn 20 phút
-    remaining := auction_end - NOW();
-
-    IF _new_max_bid > current_price AND remaining <= INTERVAL '10 minutes' THEN
-        UPDATE products
-        SET end_time = end_time + INTERVAL '20 minutes'
-        WHERE product_id = _product_id;
-
-        RAISE NOTICE 'Đấu giá sắp kết thúc, thời gian đã được gia hạn thêm 20 phút.';
-    END IF;
-
-    -- Xử lý insert/update auto bid
-    IF NOT FOUND THEN
-        INSERT INTO auto_bids(user_id, product_id, max_bid_amount, current_bid_amount)
-        VALUES (_user_id, _product_id, _new_max_bid, 0);
-
-        RETURN 'Đặt auto bid thành công.';
-    ELSE
-        IF _new_max_bid <= old_max_bid THEN
-            RETURN format('Giá mới phải lớn hơn giá hiện tại (%s).', old_max_bid);
-        END IF;
-
-        UPDATE auto_bids
-        SET max_bid_amount = _new_max_bid,
-            updated_at = NOW()
-        WHERE user_id = _user_id AND product_id = _product_id;
-
-        RETURN 'Cập nhật auto bid thành công.';
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-
 
 drop function fnc_update_auto_bids;
 go
@@ -1131,3 +1061,377 @@ $$ LANGUAGE plpgsql;
 
 SELECT fnc_get_seller_start_time(36);
 
+
+CREATE OR REPLACE FUNCTION fnc_seller_rejects_bidder_on_product(
+    p_product_id BIGINT,
+    p_seller_id BIGINT,
+    p_bidder_id BIGINT,
+    p_reason VARCHAR
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_seller_of_product BIGINT;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra product có thuộc seller hay không
+    --------------------------------------------------------------------
+    SELECT p.seller_id
+    INTO v_seller_of_product
+    FROM products AS p
+    WHERE p.product_id = p_product_id;
+
+    IF v_seller_of_product IS NULL THEN
+        RETURN 'Product does not exist.';
+    END IF;
+
+    IF v_seller_of_product <> p_seller_id THEN
+        RETURN 'You are not the seller of this product.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra nếu bidder đã bị cấm và đang active
+    --------------------------------------------------------------------
+    IF EXISTS (
+        SELECT 1
+        FROM bid_rejections AS br
+        WHERE br.product_id = p_product_id
+          AND br.bidder_id = p_bidder_id
+    ) THEN
+        RETURN 'Bidder is already banned on this product.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra nếu trước đây đã từng bị cấm (is_active = FALSE)
+    --    Vì UNIQUE(product_id, bidder_id) → không thể thêm bản ghi mới
+    --------------------------------------------------------------------
+    IF EXISTS (
+        SELECT 1
+        FROM bid_rejections AS br
+        WHERE br.product_id = p_product_id
+          AND br.bidder_id = p_bidder_id
+    ) THEN
+        RETURN 'Bidder already has a ban record (inactive) and cannot be banned again.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Thêm bản ghi cấm
+    --------------------------------------------------------------------
+    INSERT INTO bid_rejections (
+        product_id,
+        bidder_id,
+        reason,
+        created_by
+    )
+    VALUES (
+        p_product_id,
+        p_bidder_id,
+        p_reason,
+        p_seller_id
+    );
+
+    RETURN 'Bidder banned successfully.';
+END;
+$$;
+select * from bid_rejections
+select * from products where product_id = 30
+select * from product_history
+
+select * from auto_bids
+CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
+    _user_id BIGINT,
+    _product_id BIGINT,
+    _new_max_bid NUMERIC(12,2)
+)
+RETURNS TEXT AS $$
+DECLARE
+    old_max_bid NUMERIC(12,2);
+    auction_end TIMESTAMPTZ;
+    user_rating NUMERIC(5,2);
+    current_price NUMERIC(12,2);
+    remaining INTERVAL;
+    is_banned BOOLEAN;
+    is_allowed BOOLEAN;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra sản phẩm còn trong thời gian đấu giá
+    --------------------------------------------------------------------
+    SELECT p.end_time, p.current_price
+    INTO auction_end, current_price
+    FROM products p
+    WHERE p.product_id = _product_id;
+
+    IF auction_end IS NULL THEN
+        RETURN 'Sản phẩm không tồn tại.';
+    ELSIF auction_end <= NOW() THEN
+        RETURN 'Sản phẩm đã hết thời gian đấu giá.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra người dùng có bị cấm đấu giá
+    --------------------------------------------------------------------
+    SELECT EXISTS (
+        SELECT 1
+        FROM bid_rejections br
+        WHERE br.product_id = _product_id
+          AND br.bidder_id = _user_id
+    ) INTO is_banned;
+
+    -- Kiểm tra nếu có “allowance” thì bỏ qua cấm
+    SELECT EXISTS (
+        SELECT 1
+        FROM bid_allowances ba
+        WHERE ba.product_id = _product_id
+          AND ba.bidder_id = _user_id
+    ) INTO is_allowed;
+
+    IF is_banned AND NOT is_allowed THEN
+        RETURN 'Bạn đã bị cấm tham gia đấu giá sản phẩm này.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra điểm đánh giá (rating < 80% bị chặn)
+    --------------------------------------------------------------------
+    SELECT ur.rating_percent
+    INTO user_rating
+    FROM users_rating ur
+    WHERE ur.user_id = _user_id;
+
+    IF user_rating IS NOT NULL AND user_rating < 80 AND NOT is_allowed THEN
+        RETURN format('Bạn không đủ điểm đánh giá (%s%%) để đấu giá.', user_rating);
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Lấy max_bid hiện tại (nếu có)
+    --------------------------------------------------------------------
+    SELECT ab.max_bid_amount
+    INTO old_max_bid
+    FROM auto_bids ab
+    WHERE ab.user_id = _user_id AND ab.product_id = _product_id;
+
+    --------------------------------------------------------------------
+    -- 5. Kiểm tra gia hạn 20 phút
+    --------------------------------------------------------------------
+    remaining := auction_end - NOW();
+
+    IF _new_max_bid > current_price AND remaining <= INTERVAL '10 minutes' THEN
+        UPDATE products
+        SET end_time = end_time + INTERVAL '20 minutes'
+        WHERE product_id = _product_id;
+
+        RAISE NOTICE 'Đấu giá sắp kết thúc, thời gian đã được gia hạn thêm 20 phút.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 6. INSERT hoặc UPDATE auto-bid
+    --------------------------------------------------------------------
+    IF old_max_bid IS NULL THEN
+        INSERT INTO auto_bids(user_id, product_id, max_bid_amount, current_bid_amount)
+        VALUES (_user_id, _product_id, _new_max_bid, 0);
+
+        RETURN 'Đặt auto bid thành công.';
+    ELSE
+        IF _new_max_bid <= old_max_bid THEN
+            RETURN format('Giá mới phải lớn hơn giá hiện tại (%s).', old_max_bid);
+        END IF;
+
+        UPDATE auto_bids
+        SET max_bid_amount = _new_max_bid,
+            updated_at = NOW()
+        WHERE user_id = _user_id AND product_id = _product_id;
+
+        RETURN 'Cập nhật auto bid thành công.';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION fnc_judge_bidder(
+    p_seller_id BIGINT,
+    p_bidder_id BIGINT,
+    p_value INT     -- chỉ nhận 1 hoặc -1
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    --------------------------------------------------------------------
+    -- 0. Kiểm tra giá trị chỉ được +1 hoặc -1
+    --------------------------------------------------------------------
+    IF p_value NOT IN (1, -1) THEN
+        RETURN 'Giá trị đánh giá chỉ được +1 hoặc -1.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 1. Không cho tự đánh giá chính mình
+    --------------------------------------------------------------------
+    IF p_seller_id = p_bidder_id THEN
+        RETURN 'Seller không thể tự đánh giá chính mình.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Nếu bidder chưa có record trong users_rating → tạo mới
+    --------------------------------------------------------------------
+    INSERT INTO users_rating (user_id, rating_plus, rating_minus)
+    VALUES (
+        p_bidder_id,
+        CASE WHEN p_value = 1 THEN 1 ELSE 0 END,
+        CASE WHEN p_value = -1 THEN 1 ELSE 0 END
+    )
+    ON CONFLICT (user_id)
+    DO UPDATE SET
+        rating_plus  = users_rating.rating_plus  + CASE WHEN p_value = 1 THEN 1 ELSE 0 END,
+        rating_minus = users_rating.rating_minus + CASE WHEN p_value = -1 THEN 1 ELSE 0 END;
+
+    RETURN 'Đánh giá bidder thành công.';
+END;
+$$;
+select * from bid_rejections
+CREATE OR REPLACE FUNCTION fnc_delete_rejection(
+    p_product_id BIGINT,
+    p_seller_id BIGINT,
+    p_bidder_id BIGINT
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_seller_of_product BIGINT;
+    v_exists BOOLEAN;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra product có thuộc seller hay không
+    --------------------------------------------------------------------
+    SELECT p.seller_id
+    INTO v_seller_of_product
+    FROM products AS p
+    WHERE p.product_id = p_product_id;
+
+    IF v_seller_of_product IS NULL THEN
+        RETURN 'Product does not exist.';
+    END IF;
+
+    IF v_seller_of_product <> p_seller_id THEN
+        RETURN 'You are not the seller of this product.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra bản ghi cấm tồn tại
+    --------------------------------------------------------------------
+    SELECT EXISTS (
+        SELECT 1
+        FROM bid_rejections AS br
+        WHERE br.product_id = p_product_id
+          AND br.bidder_id = p_bidder_id
+    ) INTO v_exists;
+
+    IF NOT v_exists THEN
+        RETURN 'No ban record found for this bidder on this product.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Xóa bản ghi cấm
+    --------------------------------------------------------------------
+    DELETE FROM bid_rejections
+    WHERE product_id = p_product_id
+      AND bidder_id = p_bidder_id;
+
+    RETURN 'Ban record deleted successfully.';
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION fnc_bidder_request_bids(
+    p_product_id BIGINT,
+    p_bidder_id BIGINT,
+    p_reason TEXT
+)
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_exists BOOLEAN;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Kiểm tra sản phẩm tồn tại
+    --------------------------------------------------------------------
+    SELECT EXISTS(
+        SELECT 1
+        FROM products
+        WHERE product_id = p_product_id
+    ) INTO v_exists;
+
+    IF NOT v_exists THEN
+        RETURN 'Product does not exist.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra bidder đã gửi request trước đó chưa
+    --------------------------------------------------------------------
+    SELECT EXISTS(
+        SELECT 1
+        FROM bid_allow_requests
+        WHERE product_id = p_product_id
+          AND bidder_id = p_bidder_id
+    ) INTO v_exists;
+
+    IF v_exists THEN
+        RETURN 'You have already sent a request for this product.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Thêm request mới
+    --------------------------------------------------------------------
+    INSERT INTO bid_allow_requests (
+        product_id,
+        bidder_id,
+        reason,
+        created_at
+    )
+    VALUES (
+        p_product_id,
+        p_bidder_id,
+        p_reason,
+        NOW()
+    );
+
+    RETURN 'Your request has been submitted successfully.';
+END;
+$$;
+
+drop function fnc_get_requests_by_seller_product
+CREATE OR REPLACE FUNCTION fnc_get_requests_by_seller_product(
+    p_seller_id BIGINT,
+    p_product_id BIGINT
+)
+RETURNS TABLE(
+    request_id BIGINT,
+    product_id BIGINT,
+    product_name VARCHAR,
+    bidder_id BIGINT,
+    bidder_username VARCHAR,
+    bidder_rating NUMERIC(5,2),
+    reason TEXT,
+    created_at TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT r.request_id,
+           r.product_id,
+           p.name AS product_name,
+           r.bidder_id,
+           u.username AS bidder_username,
+           ur.rating_percent AS bidder_rating,
+           r.reason,
+           r.created_at
+    FROM bid_allow_requests r
+    JOIN products p ON r.product_id = p.product_id
+    JOIN users u ON r.bidder_id = u.user_id
+    LEFT JOIN users_rating ur ON ur.user_id = r.bidder_id
+    WHERE p.seller_id = p_seller_id
+      AND r.product_id = p_product_id
+    ORDER BY r.created_at DESC;
+END;
+$$;

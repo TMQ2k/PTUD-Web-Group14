@@ -14,12 +14,7 @@ export const getBidHistoryByProductId = async (productId) => {
   );
   return result.rows.map(
     (row) =>
-      new BidHistory(
-        row.bid_time,
-        row.username,
-        row.avatar_url,
-        row.bid_amount
-      )
+      new BidHistory(row.bid_time, row.username, row.avatar_url, row.bid_amount)
   );
 };
 
@@ -29,7 +24,7 @@ export const countHistoryByProductId = async (productId) => {
     [productId]
   );
   return parseInt(result.rows[0].count, 10);
-}   
+};
 
 export const getHighestBidInfoofUserOnProduct = async (productId, userId) => {
   const result = await pool.query(
@@ -145,6 +140,23 @@ export const handleUpgradeRequest = async (userId, approve) => {
     return result.rows[0];
   } catch (err) {
     console.error("❌ [Repo] Lỗi khi xử lý yêu cầu nâng cấp:", err);
+    throw err;
+  }
+};
+
+export const requestBidderOnProductRepo = async (
+  productId,
+  bidderId,
+  reason
+) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM fnc_bidder_request_bids($1, $2, $3)`,
+      [productId, bidderId, reason]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi tạo yêu cầu đấu thầu trên sản phẩm:", err);
     throw err;
   }
 };

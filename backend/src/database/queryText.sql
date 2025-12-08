@@ -1,3 +1,6 @@
+update users
+set verified = true
+where user_id = 40
 select * from auto_bids
 select * from users_info 
 select * from categories
@@ -6,6 +9,7 @@ select * from users
 delete from user_upgrade_requests
 select * from product_categories
 select * from products
+select * from users_rating
 select * from product_descriptions
 select * from product_categories
 delete from products where product_id = 5
