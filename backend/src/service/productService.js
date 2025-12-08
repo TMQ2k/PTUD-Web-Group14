@@ -11,6 +11,7 @@ import {
   getProductsList as getProductsListRepo,
   deactiveProduct as deactiveProductRepo,
   getCategoriesByProductId as getCategoriesByProductIdRepo,
+  getProductBidHistory as getProductBidHistoryRepo,
 } from "../repo/productRepo.js";
 
 import {
