@@ -60,21 +60,26 @@ export const postComment = async (user, productId, content, linkProduct, parentC
     //Find all bidders and commenters emails on this product except the user who just commented
     const bidders = await getAllBiddersByProductIdRepo(productId);
     const commenters = await getAllCommentersByProductIdRepo(productId);
+    console.log("🔔 [Service] Commenters on product:", commenters);
     const userIdsToNotifySet = new Set();
     bidders.forEach(bidder => {
-        if (bidder.user_id !== user.user_id) {
+        if (bidder && bidder.user_id !== user.id) {
             userIdsToNotifySet.add(bidder.user_id);
         }
     });
+
     commenters.forEach(commenter => {
-        if (commenter.user_id !== user.id) {
-            userIdsToNotifySet.add(commenter.user_id);
+        if (commenter && commenter !== user.id) {
+            userIdsToNotifySet.add(commenter);
         }
     });
+
+     console.log("🔔 [Service] User profiles to notify about new comment:", userIdsToNotifySet);
     
     const userProfilesToNotify = await Promise.all(
         Array.from(userIdsToNotifySet).map(userId => getUserProfileRepo(userId))
     );
+
     //Truncate content if too long
 
     if (content.length > 50) {  
