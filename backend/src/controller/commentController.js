@@ -20,7 +20,7 @@ router.get('/:productId', async (req, res) => {
     }
 });
 
-router.post('/:productId', authenticate, authorize(["bidder", "seller"]), async (req, res) => {
+router.post('/:productId', authenticate, authorize("bidder", "seller"), async (req, res) => {
     try {
         const user = req.user;
         const productId = req.params.productId;
