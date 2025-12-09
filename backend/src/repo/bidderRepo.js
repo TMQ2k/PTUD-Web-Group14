@@ -49,6 +49,18 @@ export const getTopBidderIdByProductId = async (productId) => {
   return result.rows[0].user_id;
 };
 
+export const getAllBiddersByProductId = async (productId) => {
+  const result = await pool.query(
+    `SELECT DISTINCT *
+    FROM auto_bids ab
+    JOIN users u ON ab.user_id = u.user_id
+    JOIN users_info ui ON u.user_id = ui.user_id
+    WHERE ab.product_id = $1`,
+    [productId]
+  );
+  return result.rows
+};
+
 export const addItemToWatchlist = async (userId, productId) => {
   try {
     const result = await pool.query(
