@@ -15,7 +15,7 @@ export default function ProductComments({ productId }) {
     {
       comment_id: 1,
       user_id: 1,
-      user_name: "Alex Johnson",
+      username: "Alex Johnson",
       user_avatar_url: "https://i.pravatar.cc/150?u=1",
       content:
         "This is a great article! Really helped me understand React patterns.",
@@ -26,7 +26,7 @@ export default function ProductComments({ productId }) {
     {
       comment_id: 2,
       user_id: 2,
-      user_name: "Sarah Cornor",
+      username: "Sarah Cornor",
       user_avatar_url: "https://i.pravatar.cc/150?u=2",
       content:
         "Totally agree. The recursive component part was tricky but useful.",
@@ -37,10 +37,97 @@ export default function ProductComments({ productId }) {
     {
       comment_id: 3,
       user_id: 2,
-      user_name: "Sarah Cornor",
+      username: "Sarah Cornor",
       user_avatar_url: "https://i.pravatar.cc/150?u=2",
       content:
         "It's fine",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 3,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 4,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 5,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 6,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 7,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 8,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },{
+      comment_id: 9,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
+      posted_date: "2025-10-12T10:20:00Z",
+      parent_id: null,
+      replies: [],
+    },
+    {
+      comment_id: 10,
+      user_id: 1,
+      username: "Alex Johnson",
+      user_avatar_url: "https://i.pravatar.cc/150?u=1",
+      content:
+        "This is a great article! Really helped me understand React patterns.",
       posted_date: "2025-10-12T10:20:00Z",
       parent_id: null,
       replies: [],
@@ -89,7 +176,7 @@ export default function ProductComments({ productId }) {
     const newComment = {
       comment_id: new_comment_id,
       user_id: userData.id,
-      user_name: userData.username,
+      username: userData.username,
       user_avatar_url: userData.avatar,
       content: content,
       posted_date: new Date(Date.now()).toLocaleString(),
@@ -133,21 +220,13 @@ export default function ProductComments({ productId }) {
           submitLabel="Post Comment"
           handleSubmit={(text) => handleAddComment(text, null)}
         />
-      </div>
+      </div>      
 
       {/* Render Root Comments */}
-      <div className="space-y-6">
-        {/* {comments.map((comment) => comment.parent_id === null && (
-          <CommentItem
-            key={comment.comment_id}
-            comment={comment}
-            comments={comments}
-            addReply={handleAddComment}
-          />
-        ))} */}
-
+      <div className="space-y-6 max-h-100 overflow-auto overscroll-auto border-b border-r border-t border-blue-500">   
         {comments.map((comment, i, arr) => arr[arr.length - 1 - i].parent_id === null && (
           <CommentItem
+            //id={arr[arr.length - 1 - i].comment_id}
             key={arr[arr.length - 1 - i].comment_id}
             comment={arr[arr.length - 1 - i]}
             comments={comments}

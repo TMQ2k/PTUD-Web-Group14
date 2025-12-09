@@ -19,7 +19,7 @@ const CommentItem = ({ comment, comments, addReply, isShowReplying=true }) => {
         <img
           className="w-10 h-10 rounded-full object-cover"
           src={comment.user_avatar_url}
-          alt={comment.user_name}
+          alt={comment.username}
         />
       </div>
 
@@ -27,7 +27,7 @@ const CommentItem = ({ comment, comments, addReply, isShowReplying=true }) => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
           <span className="font-semibold text-blue-600">
-            {comment.user_name}
+            {comment.username}
           </span>
           <span className="text-sm text-gray-500">{formatCustomDate(comment.posted_date)}</span>
         </div>

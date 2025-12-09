@@ -22,6 +22,9 @@ const ProductFormContext = ({
     trigger,
   } = useFormContext();
 
+  const [descCount, setDescCount] = useState(0);
+  const max = 400;
+
   // Watch the images field so we can show the count (e.g., "2/4")
   const currentImages = watch("images");
 
@@ -106,9 +109,7 @@ const ProductFormContext = ({
         <h2 className="text-3xl font-bold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
           {label}
         </h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Điền đầy đủ thông tin
-        </p>
+        <p className="text-sm text-gray-500 mt-1">Điền đầy đủ thông tin</p>
       </div>
 
       <form onSubmit={onSubmit} className="flex flex-col gap-6">
@@ -133,7 +134,9 @@ const ProductFormContext = ({
         <div className="flex flex-col gap-2">
           <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
             Chọn danh mục{" "}
-            <span className="text-red-500 font-normal text-sm">(Pick at least 1)</span>
+            <span className="text-red-500 font-normal text-sm">
+              (Pick at least 1)
+            </span>
           </label>
 
           {/* Register a hidden input so Hook Form knows this field exists */}
@@ -171,7 +174,10 @@ const ProductFormContext = ({
                 required: "Starting price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue("starting_price", convert(e.target.value.trim()) || "0");
+                  setValue(
+                    "starting_price",
+                    convert(e.target.value.trim()) || "0"
+                  );
                 },
               })}
             />
@@ -225,10 +231,15 @@ const ProductFormContext = ({
         {/* Row 3: Date & Category (New Grid) */}
 
         {/* === THE NEW DATE FIELD === */}
-        <InputField label="Ngày kết thúc" id="end_date" error={errors.end_date} note="*" >
+        <InputField
+          label="Ngày kết thúc"
+          id="end_date"
+          error={errors.end_date}
+          note="*"
+        >
           <input
             id="end_date"
-            type="datetime-local"            
+            type="datetime-local"
             min={createdDate?.toISOString().slice(0, 16)}
             max={sellerExpiredTime?.toISOString().slice(0, 16)}
             className={twMerge(inputClasses, "text-indigo-700 font-semibold")}
@@ -311,7 +322,10 @@ const ProductFormContext = ({
                 <button
                   type="button"
                   onClick={() => fileInputRef.current.click()}
-                  className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50 transition-all gap-1"
+                  className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-lg flex 
+                             flex-col items-center justify-center text-gray-400 
+                             hover:border-blue-500 hover:text-blue-500 hover:bg-linear-to-br 
+                             hover:from-blue-200 hover:to-purple-200 transition-all gap-1"
                 >
                   <svg
                     className="w-6 h-6"
@@ -357,14 +371,22 @@ const ProductFormContext = ({
           note="(Tuỳ chọn)"
           noteClassName="text-green-500"
         >
+          <div className="text-gray-400 font-semibold">
+            {descCount}/<span className="text-blue-500">{max}</span>
+          </div>
           <textarea
             id="description"
             rows="5"
             placeholder="Describe the condition, features, and history of the item..."
             // Note: Removed 'h-10' so rows="5" actually works
             className={`${inputClasses} resize-none`}
+            maxLength={max}
             {...register("description", {
               required: false,
+              onChange: (e) => {
+                const length = e.target.value.length;                
+                setDescCount(length);
+              }
             })}
           />
         </InputField>
