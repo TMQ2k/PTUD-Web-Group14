@@ -28,7 +28,7 @@ export const getCommentsByProductId = async (productId) => {
     const comments = await getCommentsByProductIdRepo(productId);
     for (const comment of comments) {
         const userInfo =  await getUserInfoByIdRepo(comment.user_id);
-        comment.username = userInfo.name;
+        comment.username = userInfo.username;
         comment.user_avatar_url = userInfo.avatar_url;
         comment.posted_at = comment.created_at;
         comment.parent_id = comment.parent_comment_id;
