@@ -22,6 +22,8 @@ import { userApi } from "./api/user.api";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProductPostingPage from "./pages/ProductPostingPage";
+import ProductUpdatingPage from "./pages/ProductUpdatingPage";
+import RouterListner from "./hooks/RouterListner";
 
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
@@ -63,8 +65,9 @@ const App = () => {
         // Lưu vào Redux
         dispatch(
           loginSuccess({
-            id: userData.id,
+            id: userData.user_id,            
             name: displayName,
+            username: userData.username,
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url,
@@ -95,7 +98,7 @@ const App = () => {
 
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <>
+      <>        
         {/* Main Routes with Header + Footer */}
         <Route path="/" element={<MainLayouts />}>
           <Route path="register" element={<RegisterForm />} />
@@ -106,6 +109,7 @@ const App = () => {
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
+          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />          
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
@@ -117,7 +121,7 @@ const App = () => {
     <>
       {/* Render nội dung chính NGAY LẬP TỨC để khi overlay fade thì UI đã sẵn sàng */}
       <RouterProvider router={router} />
-
+      <RouterListner />
       {/* Toast notifications */}
       <ToastContainer
         position="bottom-right"

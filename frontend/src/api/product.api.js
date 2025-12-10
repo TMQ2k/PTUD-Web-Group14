@@ -2,6 +2,7 @@ import { http } from "../libs/http";
 
 const productEndpoint = {
   getAll: "/products",
+  postProduct: "/products"
 };
 
 export const productApi = {
@@ -81,8 +82,18 @@ export const productApi = {
   getProductById: async (productId, other_products_quantity) => {
     const response = await http.get(
       `${productEndpoint.getAll}/${productId}?limit=${other_products_quantity}`      
-    )
-    console.log(`${productEndpoint.getAll}?/${productId}?limit=${other_products_quantity}`);
+    );  
     return response.data;
+  },
+
+  postProduct: async (productFormData) => {
+    await http.post(
+      `${productEndpoint.postProduct}`, {
+        productFormData,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },      
+      }
+    );
   }
 };

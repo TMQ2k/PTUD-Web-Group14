@@ -3,13 +3,28 @@ import pool from "../config/db.js";
 
 export const getCommentsByProductId = async (productId) => {
     const result = await pool.query(
-        "SELECT * FROM comments WHERE product_id = $1 and parent_comment_id IS NULL ORDER BY created_at DESC",
+        "SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at DESC",
         [productId]
     );
-    for (let row of result.rows) {
-        row.replies = await getRepliesByCommentId(row.comment_id);
+    for (const row of result.rows) {
+        const repliesResult = await pool.query(
+            "SELECT comment_id FROM comments WHERE parent_comment_id = $1 ORDER BY created_at DESC",
+            [row.comment_id]
+        );
+        row.replies = repliesResult.rows.map(r => r.comment_id);
     }
     return result.rows;
+}
+
+export const getAllCommentersByProductId = async (productId) => {
+    const result = await pool.query(
+        `SELECT DISTINCT u.user_id
+        FROM comments c
+        JOIN users u ON c.user_id = u.user_id
+        WHERE c.product_id = $1`,
+        [productId]
+    );
+    return result.rows.map(row => row.user_id);
 }
 
 export const getParentCommentById = async (commentId) => {

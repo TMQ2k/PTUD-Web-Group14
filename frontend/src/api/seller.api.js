@@ -3,7 +3,7 @@ import { authStorage } from "../utils/auth";
 
 const sellerEndpoints = {
   getSellerStartTime: "/seller/seller-start-time",  
-  deactiveExpiredSeller: "/seller/deactivate-expired-seller"  
+  deactiveExpiredSeller: "/seller/deactivate-expired-sellers"  
 }
 
 export const sellerApi = {

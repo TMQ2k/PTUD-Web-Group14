@@ -11,6 +11,7 @@ import { productApi } from "../../api/product.api";
 import ProductInfomation from "./ProductInfomation";
 import { BlinkBlur } from "react-loading-indicators";
 import ProductCard from "./ProductCard";
+import ProductComments from "./ProductComments";
 
 const ProductDetails = () => {
   const params = useParams();
@@ -63,17 +64,31 @@ const ProductDetails = () => {
       )}
       {error && <div>{error}</div>}
       {!isLoading && !error && (
-        <div className="flex flex-row gap-4 my-4 px-5 justify-between h-full w-full">
-          <ProductContext.Provider value={product}>
-            <ProductDispatchContext.Provider value={dispatch}>
-              <ProductInfomation />
-              <AuctionBidCard />
-              {/* {product?.otherProducts?.length > 0 &&  product?.otherProducts?.map((p, i) => (
-                <ProductCard key={i} {...product} />
-              ))} */}
-            </ProductDispatchContext.Provider>
-          </ProductContext.Provider>
-        </div>
+        <>
+          <div className="flex flex-row gap-4 my-4 px-5 justify-between h-full w-full">
+            <ProductContext.Provider value={product}>
+              <ProductDispatchContext.Provider value={dispatch}>
+                <ProductInfomation />
+                <AuctionBidCard />
+                {/* {product?.otherProducts?.length > 0 &&  product?.otherProducts?.map((p, i) => (
+                  <ProductCard 
+                    key={i} 
+                    id={p.product_id}
+                    name={p.product_name}
+                    image={p.image_cover_url}
+                    currentPrice={p.current_price}
+                    highestBidder={p.top_bidder}
+                    buyNowPrice,
+                    postedDate,
+                    remainingTime,
+                    bidCount,                  
+                    />
+                ))} */}                            
+              </ProductDispatchContext.Provider>
+            </ProductContext.Provider>
+          </div>
+          <ProductComments productId={params.id}/>
+        </>
       )}
     </>
   );
