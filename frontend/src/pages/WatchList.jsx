@@ -63,6 +63,7 @@ const WatchList = () => {
           remainingTime: remainingTime,
           bidCount: item.bid_count || 0,
           isInWatchlist: true, // Đã biết chắc là trong watchlist
+          is_active: item.is_active,
         };
       });
 

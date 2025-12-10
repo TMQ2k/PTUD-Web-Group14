@@ -37,6 +37,7 @@ export const productApi = {
   getTop5HighestPrice: async () => {
     const response = await http.get(
       `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price&is_active=true`
     );
     return response.data;
   },
@@ -48,6 +49,7 @@ export const productApi = {
   getTop5EndingSoon: async () => {
     const response = await http.get(
       `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon&is_active=true`
     );
     return response.data;
   },
@@ -59,6 +61,7 @@ export const productApi = {
   getTop5MostBidded: async () => {
     const response = await http.get(
       `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded&is_active=true`
     );
     return response.data;
   },

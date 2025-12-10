@@ -95,6 +95,7 @@ const CategoryProducts = () => {
             postedDate: postedDate,
             remainingTime: remainingTime,
             bidCount: product.bid_count || 0,
+            is_active: product.is_active,
           };
         });
 

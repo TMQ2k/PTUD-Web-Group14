@@ -18,6 +18,7 @@ const ProductCard = ({
   onBuyNow,
   isInWatchlist = false,
   onRemoveFromWatchlist,
+  is_active = true,
 }) => {
   const [timeLeft, setTimeLeft] = useState(remainingTime);
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
@@ -108,6 +109,11 @@ const ProductCard = ({
         {/* Gradient overlay khi hover */}
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {/* Overlay khi hết hạn */}
+        {!is_active && (
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-[1px]" />
+        )}
+
         {/* Nút yêu thích */}
         <button
           onClick={handleToggleFavorite}
@@ -129,13 +135,15 @@ const ProductCard = ({
         {/* Thời gian còn lại */}
         <div
           className={`absolute top-3 right-3 flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md ${
-            timeLeft < "00:10:00"
+            !is_active
+              ? "bg-gray-500/95 text-white"
+              : timeLeft < "00:10:00"
               ? "bg-red-500/95 text-white animate-pulse"
               : "bg-white/95 text-gray-800"
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>{timeLeft}</span>
+          <span>{!is_active ? "Đã hết hạn" : timeLeft}</span>
         </div>
 
         {/* Badge "Mua ngay" nếu có */}
@@ -205,7 +213,14 @@ const ProductCard = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 pt-2">
-          {buyNowPrice ? (
+          {!is_active ? (
+            <button
+              disabled
+              className="w-full py-3 bg-gray-400 text-white font-bold rounded-lg cursor-not-allowed opacity-60 text-base"
+            >
+              Đã hết hạn
+            </button>
+          ) : buyNowPrice ? (
             <>
               <button
                 onClick={onBuyNow}

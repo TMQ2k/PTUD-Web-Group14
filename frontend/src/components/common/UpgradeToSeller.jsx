@@ -151,7 +151,7 @@ const UpgradeToSeller = () => {
 
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
         <h3 className="font-semibold text-blue-900 mb-3">
-          🎯 Lợi ích khi trở thành Seller:
+          Lợi ích khi trở thành Seller:
         </h3>
         <ul className="space-y-2 text-sm text-blue-800">
           <li className="flex items-start gap-2">
@@ -175,7 +175,7 @@ const UpgradeToSeller = () => {
 
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-6">
         <h3 className="font-semibold text-gray-800 mb-3">
-          📝 Quy trình nâng cấp:
+          Quy trình nâng cấp:
         </h3>
         <ol className="space-y-2 text-sm text-gray-600 list-decimal list-inside">
           <li>Gửi yêu cầu nâng cấp</li>
@@ -199,10 +199,6 @@ const UpgradeToSeller = () => {
           "Gửi yêu cầu nâng cấp"
         )}
       </button>
-
-      <p className="text-xs text-gray-500 text-center mt-4">
-        * Yêu cầu sẽ được xét duyệt dựa trên hoạt động và điểm đánh giá của bạn
-      </p>
     </div>
   );
 };

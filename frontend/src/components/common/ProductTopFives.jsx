@@ -262,10 +262,11 @@ const ProductTopFives = () => {
             postedDate: postedDate,
             remainingTime: remainingTime,
             bidCount: product.bid_count || 0,
+            is_active: product.is_active,
           };
         });
 
-        setTop5EndingProducts(transformedProducts);
+        setTop5MostBidProducts(transformedProducts);
       } catch (error) {
         console.error("❌ Lỗi khi fetch top 5 sản phẩm gần kết thúc:", error);
       }
@@ -317,6 +318,7 @@ const ProductTopFives = () => {
             postedDate: postedDate,
             remainingTime: remainingTime,
             bidCount: product.bid_count || 0,
+            is_active: product.is_active,
           };
         });
 
@@ -378,6 +380,7 @@ const ProductTopFives = () => {
             postedDate: postedDate,
             remainingTime: remainingTime,
             bidCount: product.bid_count || 0, // Backend chưa trả về
+            is_active: product.is_active,
           };
         });
 
