@@ -4,6 +4,7 @@ const productEndpoint = {
   getAll: "/products",
   postProduct: "/products",
   deactivateExpired: "/products/deactivate-expired",
+  search: "/search/products",
 };
 
 export const productApi = {
@@ -38,8 +39,8 @@ export const productApi = {
    */
   getTop5HighestPrice: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price`
-      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price&is_active=true`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price&is_active=true`
     );
     return response.data;
   },
@@ -50,8 +51,8 @@ export const productApi = {
    */
   getTop5EndingSoon: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon`
-      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon&is_active=true`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon&is_active=true`
     );
     return response.data;
   },
@@ -62,8 +63,8 @@ export const productApi = {
    */
   getTop5MostBidded: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded`
-      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded&is_active=true`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded&is_active=true`
     );
     return response.data;
   },
@@ -102,6 +103,31 @@ export const productApi = {
    */
   deactivateExpiredProducts: async () => {
     const response = await http.put(productEndpoint.deactivateExpired);
+    return response.data;
+  },
+
+  /**
+   * Tìm kiếm sản phẩm với full-text search
+   * @param {Object} params - Query parameters
+   * @param {string} params.q - Từ khóa tìm kiếm (tên sản phẩm)
+   * @param {number} params.limit - Số lượng sản phẩm mỗi trang (default: 8)
+   * @param {number} params.page - Trang hiện tại (default: 1)
+   * @param {string} params.sortBy - Sắp xếp: 'price_asc' | 'endtime_desc' (default)
+   * @param {boolean} params.is_active - true: active, false: hết hạn, undefined: cả hai
+   * @returns {Promise<Object>} Response chứa data
+   */
+  searchProducts: async (params = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.q) queryParams.append("q", params.q);
+    if (params.limit) queryParams.append("limit", params.limit);
+    if (params.page) queryParams.append("page", params.page);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.is_active !== undefined)
+      queryParams.append("is_active", params.is_active);
+
+    const url = `${productEndpoint.search}?${queryParams.toString()}`;
+    const response = await http.get(url);
     return response.data;
   },
 };

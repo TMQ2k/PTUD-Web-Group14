@@ -28,6 +28,7 @@ export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const { isLoggedIn, userData } = useSelector((state) => state.user);
@@ -119,6 +120,16 @@ export default function Header() {
     setShowLoginModal(true);
   };
 
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (query) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+      setSearchQuery("");
+    }
+  };
+
   return (
     <header className="bg-white shadow sticky top-0 z-50">
       <div className="container mx-auto flex items-center gap-5 py-3 px-4 md:px-6">
@@ -154,14 +165,19 @@ export default function Header() {
 
         {/* Search */}
         <div className="flex-1 md:flex-2 lg:flex-3 max-w-[820px]">
-          <div className="relative w-full bg-gray-100 rounded-md md:rounded-lg">
+          <form
+            onSubmit={handleSearch}
+            className="relative w-full bg-gray-100 rounded-md md:rounded-lg"
+          >
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600/75 pointer-events-none w-5 h-5" />
             <input
               type="text"
-              placeholder="Search for brand, model, artist..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm sản phẩm đấu giá..."
               className="w-full pl-10 pr-4 h-12 md:h-[52px] bg-transparent placeholder-gray-400 text-gray-800 focus:outline-blue-500 rounded-md md:rounded-lg"
             />
-          </div>
+          </form>
         </div>
 
         {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
@@ -196,17 +212,18 @@ export default function Header() {
           ) : (
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
             <>
-              {userData.role === "seller" ? 
-                (<AddProductButton />) :
-                (<Link
-                    to="/guide"
-                    className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
+              {userData.role === "seller" ? (
+                <AddProductButton />
+              ) : (
+                <Link
+                  to="/guide"
+                  className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
                                hover:opacity-80 transition-all text-[16px]"
-                  >
-                    Cách thao tác trên website
-                  </Link>)
-              }
-              
+                >
+                  Cách thao tác trên website
+                </Link>
+              )}
+
               <div className="relative user-menu-container">
                 <button
                   type="button"

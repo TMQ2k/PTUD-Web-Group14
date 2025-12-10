@@ -25,6 +25,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ProductPostingPage from "./pages/ProductPostingPage";
 import ProductUpdatingPage from "./pages/ProductUpdatingPage";
 import RouterListner from "./hooks/RouterListner";
+import SearchPage from "./pages/SearchPage";
 
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
@@ -129,6 +130,7 @@ const App = () => {
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
+          <Route path="search" element={<SearchPage />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
           <Route
             path="/productupdating/:id"
