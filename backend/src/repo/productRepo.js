@@ -294,16 +294,19 @@ export const postProduct = async (
   return message;
 };
 
+
 export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy = "endtime_desc", is_active) => {
   let offset = 0;
   if (page && limit) {
     offset = (page - 1) * limit;
   }
+  //Search products by name or category name and remove duplicates id
   let baseQuery = `SELECT DISTINCT p.*
     FROM products p
     LEFT JOIN product_categories pc ON p.product_id = pc.product_id
     LEFT JOIN categories c ON pc.category_id = c.category_id
-    WHERE p.name ILIKE $1 OR c.name ILIKE $1`;
+    WHERE p.name ILIKE $1 OR c.name ILIKE $1`; 
+
   const queryParams = [`%${query}%`]; 
   if (is_active !== undefined) {
     if (is_active == "true") {

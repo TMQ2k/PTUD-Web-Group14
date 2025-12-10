@@ -5,7 +5,7 @@ const router = express.Router();
 router.get("/products", async (req, res) => {
     try {
         const search = req.query.q || "";
-        const limit = parseInt(req.query.limit);
+        const limit = parseInt(req.query.limit) || 5;
         const page = parseInt(req.query.page) || 1;
         const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
         const products = await getProductListByQuery(search, limit, page, is_active);
