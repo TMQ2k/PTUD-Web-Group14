@@ -19,6 +19,7 @@ import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
 import { userApi } from "./api/user.api";
+import { productApi } from "./api/product.api";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ProductPostingPage from "./pages/ProductPostingPage";
@@ -33,6 +34,26 @@ const App = () => {
 
   const loadDuration = 700;
   const exitDuration = 7000;
+
+  // Deactivate expired products khi app mount và định kỳ mỗi 5 phút
+  useEffect(() => {
+    const deactivateExpired = async () => {
+      try {
+        await productApi.deactivateExpiredProducts();
+        console.log("Đã cập nhật trạng thái sản phẩm hết hạn");
+      } catch (error) {
+        console.error("Lỗi khi deactivate expired products:", error);
+      }
+    };
+
+    // Gọi ngay khi app load
+    deactivateExpired();
+
+    // Gọi lại mỗi 5 phút (300000ms)
+    const interval = setInterval(deactivateExpired, 300000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -65,7 +86,7 @@ const App = () => {
         // Lưu vào Redux
         dispatch(
           loginSuccess({
-            id: userData.user_id,            
+            id: userData.user_id,
             name: displayName,
             username: userData.username,
             email: userData.email,
@@ -98,7 +119,7 @@ const App = () => {
 
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <>        
+      <>
         {/* Main Routes with Header + Footer */}
         <Route path="/" element={<MainLayouts />}>
           <Route path="register" element={<RegisterForm />} />
@@ -109,7 +130,10 @@ const App = () => {
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
-          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />          
+          <Route
+            path="/productupdating/:id"
+            element={<ProductUpdatingPage />}
+          />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}

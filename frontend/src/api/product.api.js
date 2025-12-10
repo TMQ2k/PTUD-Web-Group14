@@ -2,7 +2,8 @@ import { http } from "../libs/http";
 
 const productEndpoint = {
   getAll: "/products",
-  postProduct: "/products"
+  postProduct: "/products",
+  deactivateExpired: "/products/deactivate-expired",
 };
 
 export const productApi = {
@@ -81,19 +82,26 @@ export const productApi = {
 
   getProductById: async (productId, other_products_quantity) => {
     const response = await http.get(
-      `${productEndpoint.getAll}/${productId}?limit=${other_products_quantity}`      
-    );  
+      `${productEndpoint.getAll}/${productId}?limit=${other_products_quantity}`
+    );
     return response.data;
   },
 
   postProduct: async (productFormData) => {
-    await http.post(
-      `${productEndpoint.postProduct}`, {
-        productFormData,
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },      
-      }
-    );
-  }
+    await http.post(`${productEndpoint.postProduct}`, {
+      productFormData,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
+  /**
+   * Hủy kích hoạt các sản phẩm đã hết hạn đấu giá
+   * @returns {Promise<Object>} Response từ server
+   */
+  deactivateExpiredProducts: async () => {
+    const response = await http.put(productEndpoint.deactivateExpired);
+    return response.data;
+  },
 };
