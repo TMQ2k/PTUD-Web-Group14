@@ -2,6 +2,7 @@ import express from "express";
 import {
   addProductToWatchlist,
   getUserWatchlistService,
+  getAllBidderInfosByProductId,
   removeProductFromWatchlist,
   updateAutoBidCurrentAmountService,
   upsertAutoBidService,
@@ -223,4 +224,24 @@ router.post(
     }
   }
 );
+
+router.get("/bidders/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params; 
+    const bidders = await getAllBidderInfosByProductId(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Bidders retrieved successfully",
+      data: bidders,
+    });
+  } catch (err) {
+    console.error("Error in /bidders/:productId route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to retrieve bidders",
+      data: null,
+    });
+  }
+});
+
 export default router;

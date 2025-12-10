@@ -1,6 +1,7 @@
 import {
   addItemToWatchlist,
   removeItemFromWatchlist,
+  getAllBiddersByProductId,
   getUserWatchlist,
   upsertAutoBid,
   updateAutoBidCurrentAmount,
@@ -10,12 +11,33 @@ import {
   requestBidderOnProductRepo,
 } from "../repo/bidderRepo.js";
 
+import {
+  getUserInfoById,
+}
+from "../repo/userRepo.js";
+
 export const addProductToWatchlist = async (userId, productId) => {
   try {
     const watchlistEntry = await addItemToWatchlist(userId, productId);
     return watchlistEntry;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi thêm sản phẩm vào watchlist:", err);
+    throw err;
+  }
+};
+
+export const getAllBidderInfosByProductId = async (productId) => {
+  try {
+    const bidders = await getAllBiddersByProductId(productId); 
+    for (let bidder of bidders) {
+      const userInfo = await getUserInfoById(bidder.user_id);
+      bidder.username = userInfo.username;
+      bidder.avatar_url = userInfo.avatar_url;
+      bidder.points = userInfo.points;
+    }
+    return bidders;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy tất cả bidder theo productId:", err);
     throw err;
   }
 };

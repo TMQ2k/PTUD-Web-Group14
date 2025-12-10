@@ -73,8 +73,6 @@ export const postComment = async (user, productId, content, linkProduct, parentC
             userIdsToNotifySet.add(commenter);
         }
     });
-
-     console.log("🔔 [Service] User profiles to notify about new comment:", userIdsToNotifySet);
     
     const userProfilesToNotify = await Promise.all(
         Array.from(userIdsToNotifySet).map(userId => getUserProfileRepo(userId))

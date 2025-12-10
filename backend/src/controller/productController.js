@@ -16,12 +16,7 @@ router.get("/", async (req, res) => {
     const sortBy = req.query.sortBy;
     const limit = parseInt(req.query.limit);
     const page = parseInt(req.query.page) || 1;
-    const is_active =
-      req.query.is_active === "true"
-        ? true
-        : req.query.is_active === "false"
-        ? false
-        : undefined;
+    const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
     const products = await getProductsList(
       categoryId,
       limit,
@@ -98,6 +93,9 @@ router.get("/:productId", async (req, res) => {
     });
   }
 });
+
+/* Create a new product */
+/*formdata imagesfile */
 
 router.post("/", authenticate, authorize("seller"), async (req, res) => {
   try {

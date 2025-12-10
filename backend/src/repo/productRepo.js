@@ -194,10 +194,19 @@ export const getProductsList = async (
     FROM products p
     LEFT JOIN product_categories pc ON p.product_id = pc.product_id
     WHERE 1=1`;
-  const queryParams = [];
+  let queryParams = [];
   if (categoryId) {
     queryParams.push(categoryId);
     baseQuery += ` AND pc.category_id = $${queryParams.length}`;
+  }
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    }
+    else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
   }
   if (sortBy === "highest_price") {
     baseQuery += ` ORDER BY p.current_price DESC`;
@@ -207,10 +216,21 @@ export const getProductsList = async (
         JOIN auto_bids ab ON p.product_id = ab.product_id
         LEFT JOIN product_categories pc ON p.product_id = pc.product_id
         WHERE 1=1`;
+    //Reset queryParams for this new query
+    queryParams = [];
     if (categoryId) {
       queryParams.push(categoryId);
       baseQuery += ` AND pc.category_id = $${queryParams.length}`;
     }
+    if (is_active !== undefined) {
+      if (is_active == "true") {
+        queryParams.push(true);
+      }
+      else {
+        queryParams.push(false);
+      }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
     baseQuery += ` GROUP BY p.product_id ORDER BY bid_count DESC`;
   } else if (sortBy === "ending_soon") {
     baseQuery += ` ORDER BY p.end_time ASC`;
@@ -220,10 +240,6 @@ export const getProductsList = async (
     baseQuery += ` LIMIT $${queryParams.length - 1} OFFSET $${
       queryParams.length
     }`;
-  }
-  if (is_active !== undefined) {
-    queryParams.push(is_active);
-    baseQuery += ` AND p.is_active = $${queryParams.length}`;
   }
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
@@ -277,3 +293,34 @@ export const postProduct = async (
   const message = "Product created successfully";
   return message;
 };
+
+export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy = "endtime_desc", is_active) => {
+  let offset = 0;
+  if (page && limit) {
+    offset = (page - 1) * limit;
+  }
+  let baseQuery = `SELECT DISTINCT p.*
+    FROM products p
+    LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+    LEFT JOIN categories c ON pc.category_id = c.category_id
+    WHERE p.name ILIKE $1 OR c.name ILIKE $1`;
+  const queryParams = [`%${query}%`]; 
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    }
+    else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  if (sortBy === "price_asc") {
+    baseQuery += ` ORDER BY p.current_price ASC`;
+  } else if (sortBy === "endtime_desc") {
+    baseQuery += ` ORDER BY p.end_time DESC`;
+  } 
+  baseQuery += ` LIMIT $2 OFFSET $3`;
+  queryParams.push(limit, offset);
+  const result = await pool.query(baseQuery, queryParams);
+  return result.rows;
+}
