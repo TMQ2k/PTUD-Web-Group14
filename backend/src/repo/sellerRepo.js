@@ -61,5 +61,21 @@ export const getAllRequestsRepo = async (sellerId, productId) => {
     `SELECT * FROM fnc_get_requests_by_seller_product($1, $2)`,
     [sellerId, productId]
   );
-  return result.rows;
+  const getNameOfProduct = await pool.query(
+    `SELECT name FROM products WHERE product_id = $1`,
+    [productId]
+  );
+  return {
+    productId: productId,
+    productName: getNameOfProduct.rows[0].name,
+    requests: result.rows,
+  };
+};
+
+export const enableAuctionExtensionRepo = async (sellerId, productId) => {
+  const result = await pool.query(
+    `SELECT * FROM fnc_enable_auction_extension($1, $2)`,
+    [sellerId, productId]
+  );
+  return result.rows[0];
 };

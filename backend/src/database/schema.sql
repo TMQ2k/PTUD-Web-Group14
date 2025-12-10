@@ -51,6 +51,12 @@ CREATE TABLE user_upgrade_requests (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 go
+
+CREATE TABLE auction_extensions (
+    product_id BIGINT PRIMARY KEY
+        REFERENCES products(product_id) ON DELETE CASCADE
+);
+
 CREATE TABLE products (
     product_id SERIAL PRIMARY KEY,
     seller_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
