@@ -167,7 +167,7 @@ export default function ProductComments({ productId }) {
     };
   }, [productId]);
 
-  const handleAddComment = (content, parentId) => {
+  const handleAddComment = async (content, parentId) => {
     const payload = {
       content: content,
       link_product: `${website_link}/${productId}`,

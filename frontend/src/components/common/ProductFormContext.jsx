@@ -384,9 +384,9 @@ const ProductFormContext = ({
             {...register("description", {
               required: false,
               onChange: (e) => {
-                const length = e.target.value.length;                
+                const length = e.target.value.length;
                 setDescCount(length);
-              }
+              },
             })}
           />
         </InputField>

@@ -17,8 +17,8 @@ import default_image from "../../../public/images/default/unavailable_item.jpeg"
 const BiddingStatus = ({ className = "" }) => {
   const product = useProduct();
   const dispatch = useProductDispatch();
-  const { user } = useSelector((state) => state.user);
-  const role = user?.role;
+  const { userData } = useSelector((state) => state.user);
+  const role = userData?.role;  
 
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(product.current_price);
@@ -87,6 +87,19 @@ const BiddingStatus = ({ className = "" }) => {
                 </div>
               ) : (
                 <>
+                  {role === "seller" && product?.seller?.seller_id === userData.id && (
+                    <>
+                      <NavigateButton
+                          to={`/productbidspending/${product?.product_id || ""}`}
+                          className="bg-linear-to-br from-blue-200 to-purple-400
+                                 text-white text-center hover:from-blue-400 hover:to-purple-600
+                                 font-bold rounded-md w-full py-2                                    
+                                 relative group text-lg"
+                        >
+                          Danh sách bidder cần duyệt
+                        </NavigateButton>
+                    </>
+                  )}
                   {role === "bidder" && (
                     <>
                       <BiddingForm

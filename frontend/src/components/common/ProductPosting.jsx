@@ -422,6 +422,8 @@ import { sellerApi } from "../../api/seller.api";
 import { productApi } from "../../api/product.api";
 import { BlinkBlur } from "react-loading-indicators";
 import { parseIntFromCurrency } from "../../utils/NumberHandler";
+import { CheckCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ProductPosting = () => {
   const [systemCategories, setSystemCategories] = useState([]);
@@ -429,6 +431,8 @@ const ProductPosting = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const createdDate = new Date(Date.now());
+
+  const [posted, setPosted] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -513,6 +517,7 @@ const ProductPosting = () => {
     console.log(formData.get("product_payload"));
 
     //productApi.postProduct(formData);
+    setPosted(true);
   }
 
   return (
@@ -524,6 +529,58 @@ const ProductPosting = () => {
       )}
       {error && <div className="text-4xl font-semibold text-red-500">{error}</div>}
       {!loading && !error && (
+        posted ? (
+          <div className="max-w-2xl mx-auto p-8 my-8 bg-white rounded-xl shadow-sm border border-gray-100 text-center animate-fade-in-up">
+            {/* Success Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="rounded-full bg-green-50 p-4">
+                <CheckCircle className="w-16 h-16 text-green-500" strokeWidth={1.5} />
+              </div>
+            </div>
+
+            {/* Main Heading */}
+            <h2 className="text-2xl font-bold text-blue-600 mb-2">
+              Đăng bán thành công!
+            </h2>
+
+            {/* Subtext */}
+            <p className="text-gray-500 mb-8 max-w-md mx-auto">
+              Sản phẩm <span className="font-semibold text-gray-700">"{methods.getValues("product_name")}"</span> của bạn đã được niêm yết và hiển thị với người mua.
+            </p>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              {/* Primary Action: View the new product */}
+              {/* <Link 
+                to="/products/latest" 
+                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm focus:ring-4 focus:ring-blue-100"
+              >
+                Xem bài đăng
+              </Link> */}
+
+              {/* Secondary Action: Post another or Go Home */}
+              <button
+                onClick={() => {
+                  setPosted(false);
+                  methods.reset();
+                }}
+                className="px-6 py-2.5 bg-white border border-gray-200 hover:bg-linear-to-r
+                         hover:from-blue-400 hover:to-purple-600 hover:text-white 
+                         text-gray-700 font-medium rounded-lg transition-all duration-400
+                         hover:scale-102 active:scale-98 hover:shadow-2xl"
+              >
+                Đăng sản phẩm khác
+              </button>
+            </div>
+            
+            {/* Optional: Return to home link */}
+            <div className="mt-6">
+              <Link to="/" className="text-sm text-gray-400 hover:text-blue-600 transition-colors">
+                  Về trang chủ
+              </Link>
+            </div>
+          </div>
+        ) : (
         <FormProvider {...methods}>
           <ProductFormContext 
             label="Đăng bán sản phẩm"
@@ -533,8 +590,8 @@ const ProductPosting = () => {
             createdDate={createdDate}
             defaultCategories={systemCategories}
             />
-      </FormProvider>
-      )}
+        </FormProvider>
+      ))}
     </>
   );
 };

@@ -24,6 +24,8 @@ import "react-toastify/dist/ReactToastify.css";
 import ProductPostingPage from "./pages/ProductPostingPage";
 import ProductUpdatingPage from "./pages/ProductUpdatingPage";
 import RouterListner from "./hooks/RouterListner";
+import PendingPage from "./pages/PendingPage";
+import { Pen } from "lucide-react";
 
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
@@ -109,7 +111,8 @@ const App = () => {
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
-          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />          
+          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    
+          <Route path="/productbidspending/:id" element={<PendingPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
