@@ -17,10 +17,9 @@ export const getCommentsByProductId = async (productId) => {
 }
 
 export const getAllCommentersByProductId = async (productId) => {
-    const result = await pool.query(
-        `SELECT DISTINCT u.user_id
+    const result = await pool.query(  
+        `SELECT DISTINCT c.user_id
         FROM comments c
-        JOIN users u ON c.user_id = u.user_id
         WHERE c.product_id = $1`,
         [productId]
     );

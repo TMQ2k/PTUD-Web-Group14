@@ -12,6 +12,7 @@ import {
   deactiveProduct as deactiveProductRepo,
   getCategoriesByProductId as getCategoriesByProductIdRepo,
   getProductBidHistory as getProductBidHistoryRepo,
+  getProductListByQuery as getProductListByQueryRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -234,3 +235,35 @@ export const deactiveProduct = async () => {
   const result = await deactiveProductRepo();
   return result;
 };
+
+export const getProductListByQuery = async(query, limit, page, sortBy, is_active) => {
+  const products = await getProductListByQueryRepo(query, limit, page, sortBy, is_active);
+  for (let prod of products) {
+    const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
+    if (top_bidder_id) {
+      prod.top_bidder = await getUserInfoById(top_bidder_id);
+    } else {
+      prod.top_bidder = null;
+    }
+    const countHistory = await countHistoryByProductId(prod.product_id);
+      prod.history_count = countHistory;
+  } 
+  if (!products) {
+    throw new Error("No products found");
+  }
+  return products.map(
+    (prod) =>
+      new ProductProfile(
+        prod.product_id,
+        prod.name,
+        prod.image_cover_url,
+        prod.current_price,
+        prod.buy_now_price,
+        prod.is_active,
+        prod.created_at,
+        prod.end_time,
+        prod.top_bidder,
+        prod.history_count
+      )
+  );
+}
