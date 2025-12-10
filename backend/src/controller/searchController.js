@@ -7,8 +7,9 @@ router.get("/products", async (req, res) => {
         const search = req.query.q || "";
         const limit = parseInt(req.query.limit) || 5;
         const page = parseInt(req.query.page) || 1;
+        const sortBy = req.query.sortBy || "endtime_desc";
         const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
-        const products = await getProductListByQuery(search, limit, page, is_active);
+        const products = await getProductListByQuery(search, limit, page, sortBy, is_active);
         res.status(200).json({
             code: 200, 
             message: "Products retrieved successfully",
