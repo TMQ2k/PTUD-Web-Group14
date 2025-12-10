@@ -14,19 +14,22 @@ import UserInformation from "./pages/UserInformation";
 import Admin from "./pages/AdminDashboard";
 import CategoryProducts from "./pages/CategoryProducts";
 import WatchList from "./pages/WatchList";
+import ProductDetailPage from "./pages/ProductDetailPage";
 import { useDispatch } from "react-redux";
 import { authStorage } from "./utils/auth";
 import { loginSuccess, logout } from "./store/userSlice";
 import { userApi } from "./api/user.api";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import ProductPostingPage from "./pages/ProductPostingPage";
+
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
   const [showLoading, setShowLoading] = useState(true);
   const [exiting, setExiting] = useState(false);
   const dispatch = useDispatch();
 
-  const loadDuration = 1600;
+  const loadDuration = 700;
   const exitDuration = 7000;
 
   useEffect(() => {
@@ -55,7 +58,7 @@ const App = () => {
           fullName ||
           userData.name ||
           userData.username ||
-          user.current.username;
+          userData.current.username;
 
         // Lưu vào Redux
         dispatch(
@@ -97,10 +100,12 @@ const App = () => {
         <Route path="/" element={<MainLayouts />}>
           <Route path="register" element={<RegisterForm />} />
           <Route path="login" element={<LoginForm />} />
+          <Route path="products/:id" element={<ProductDetailPage />} />
           <Route index element={<Home />} />
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />
           <Route path="watchlist" element={<WatchList />} />
+          <Route path="/productposting" element={<ProductPostingPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
@@ -115,7 +120,7 @@ const App = () => {
 
       {/* Toast notifications */}
       <ToastContainer
-        position="top-right"
+        position="bottom-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}

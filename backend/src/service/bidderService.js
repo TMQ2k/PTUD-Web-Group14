@@ -7,6 +7,7 @@ import {
   requestUpgradeToSeller,
   getUpgradeRequests,
   handleUpgradeRequest,
+  requestBidderOnProductRepo,
 } from "../repo/bidderRepo.js";
 
 export const addProductToWatchlist = async (userId, productId) => {
@@ -85,6 +86,24 @@ export const handleUpgradeRequestService = async (userId, approve) => {
     return result;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi xử lý yêu cầu nâng cấp:", err);
+    throw err;
+  }
+};
+
+export const requestBidderOnProductService = async (
+  productId,
+  bidderId,
+  reason
+) => {
+  try {
+    const result = await requestBidderOnProductRepo(
+      productId,
+      bidderId,
+      reason
+    );
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi yêu cầu đấu thầu sản phẩm:", err);
     throw err;
   }
 };

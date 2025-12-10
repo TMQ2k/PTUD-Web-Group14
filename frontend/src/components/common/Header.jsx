@@ -20,6 +20,7 @@ import { authStorage } from "../../utils/auth";
 import { userApi } from "../../api/user.api";
 import { HandCoins } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
+import AddProductButton from "./AddProductButton";
 
 export default function Header() {
   const dispatch = useDispatch();
@@ -195,13 +196,17 @@ export default function Header() {
           ) : (
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
             <>
-              <Link
-                to="/guide"
-                className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
-             hover:opacity-80 transition-all text-[16px]"
-              >
-                Cách thao tác trên website
-              </Link>
+              {userData.role === "seller" ? 
+                (<AddProductButton />) :
+                (<Link
+                    to="/guide"
+                    className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
+                               hover:opacity-80 transition-all text-[16px]"
+                  >
+                    Cách thao tác trên website
+                  </Link>)
+              }
+              
               <div className="relative user-menu-container">
                 <button
                   type="button"

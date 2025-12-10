@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Clock, Tag, User, Heart } from "lucide-react";
 import { FaFire } from "react-icons/fa";
 import { watchlistApi } from "../../api/watchlist.api";
@@ -24,6 +25,7 @@ const ProductCard = ({
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
   const [isToggling, setIsToggling] = useState(false);
   const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsFavorite(isInWatchlist);
@@ -97,7 +99,7 @@ const ProductCard = ({
   };
 
   return (
-    <div className="group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
+    <div onClick={() => navigate(`products/${id}`)} className="cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
       {/* Ảnh sản phẩm với overlay gradient */}
       <div className="relative w-full h-45 overflow-hidden bg-linear-to-br from-gray-100 to-gray-50">
         <img

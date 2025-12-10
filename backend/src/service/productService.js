@@ -8,9 +8,10 @@ import {
   otherProductsByCategory as otherProductsByCategoryRepo,
   getSearchProducts as getSearchProductsRepo,
   postProduct as postProductRepo,
-  getProductBidHistory as getProductBidHistoryRepo,
-  deleteProductById as deleteProductByIdRepo,
   getProductsList as getProductsListRepo,
+  deactiveProduct as deactiveProductRepo,
+  getCategoriesByProductId as getCategoriesByProductIdRepo,
+  getProductBidHistory as getProductBidHistoryRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -21,7 +22,11 @@ import {
 } from "../repo/bidderRepo.js";
 
 import { getUserInfoById } from "../repo/userRepo.js";
-import { Product, ProductProfile } from "../model/productModel.js";
+import {
+  otherProductsInfo,
+  Product,
+  ProductProfile,
+} from "../model/productModel.js";
 
 export const getSearchProducts = async (
   search,
@@ -98,7 +103,7 @@ export const getProductsList = async (
   );
 };
 
-export const getProductDetailsById = async (productId, limit, user) => {
+export const getProductDetailsById = async (productId, user, limit = 5) => {
   const productInfo = await getProductBaseInfoByIdRepo(productId);
   if (!productInfo) {
     throw new Error("Product not found");
@@ -109,8 +114,9 @@ export const getProductDetailsById = async (productId, limit, user) => {
   const topBidderId = await getTopBidderIdByProductId(productId);
   const topBidderInfo = topBidderId ? await getUserInfoById(topBidderId) : null;
   const sellerInfo = await getUserInfoById(productInfo.seller_id);
+  const productCategories = await getCategoriesByProductIdRepo(productId);
   const otherProducts = await otherProductsByCategoryRepo(
-    productInfo.category_id,
+    productCategories.map((cat) => cat.category_id),
     productId,
     limit
   );
@@ -129,20 +135,21 @@ export const getProductDetailsById = async (productId, limit, user) => {
     }
   }
 
-  otherProducts.map((prod) =>
-    otherProductsInfo(
-      prod.product_id,
-      prod.name,
-      prod.image_cover_url,
-      prod.step_price,
-      prod.current_price,
-      prod.buy_now_price,
-      prod.is_active,
-      prod.created_at,
-      prod.end_time,
-      prod.top_bidder,
-      prod.history_count
-    )
+  otherProducts.map(
+    (prod) =>
+      new otherProductsInfo(
+        prod.product_id,
+        prod.name,
+        prod.image_cover_url,
+        prod.step_price,
+        prod.current_price,
+        prod.buy_now_price,
+        prod.is_active,
+        prod.created_at,
+        prod.end_time,
+        prod.top_bidder,
+        prod.history_count
+      )
   );
 
   let userHighestBidInfo = null;
@@ -154,7 +161,7 @@ export const getProductDetailsById = async (productId, limit, user) => {
   }
 
   return {
-    productId: productInfo.product_id,
+    product_id: productInfo.product_id,
     seller: sellerInfo,
     name: productInfo.name,
     description: productInfo.description,
@@ -183,13 +190,14 @@ export const postProduct = async (
   buy_now_price,
   image_cover_url,
   end_time,
-  extra_image_urls
+  extra_image_urls,
+  category_ids
 ) => {
   if (user.role !== "seller") {
     throw new Error("Only sellers can create products");
   }
   const newProduct = await postProductRepo(
-    user.user_id,
+    user.id,
     name,
     description,
     starting_price,
@@ -197,8 +205,10 @@ export const postProduct = async (
     buy_now_price,
     image_cover_url,
     end_time,
-    extra_image_urls
+    extra_image_urls,
+    category_ids
   );
+
   return newProduct;
 };
 
@@ -220,35 +230,7 @@ export const deleteProductById = async (productId) => {
   return result;
 };
 
-export const getHighestPricedProducts = async (limit = 5) => {
-  const result = await pool.query(
-    "SELECT * FROM products ORDER BY current_price DESC LIMIT $1",
-    [limit]
-  );
-  return result.rows.map((row) => ({
-    product_id: row.product_id,
-    name: row.name,
-    image_cover_url: row.image_cover_url,
-    current_price: row.current_price,
-    buy_now_price: null,
-    is_active: row.is_active,
-    created_at: row.created_at,
-    end_time: row.end_time,
-  }));
-};
-
-export const getTopCurrentProducts = async (limit = 5) => {
-  const products = await getTopCurrentProductsRepo(limit);
-  if (!products) {
-    throw new Error("No products found");
-  }
-  return products;
-};
-
-export const getProductsByCategory = async (categoryId) => {
-  const products = await getProductsByCategoryRepo(categoryId);
-  if (!products) {
-    throw new Error("No products found for this category");
-  }
-  return products;
+export const deactiveProduct = async () => {
+  const result = await deactiveProductRepo();
+  return result;
 };

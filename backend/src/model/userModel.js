@@ -8,9 +8,9 @@ export class User {
 }
 
 export class UserSimpleProfile {
-  constructor(username, avatar_url, rating_percent) {
+  constructor(username, avatar_url, points) {
     this.username = username;
     this.avatar_url = avatar_url;
-    this.rating_percent = rating_percent;
+    this.points = points;
   }
 }

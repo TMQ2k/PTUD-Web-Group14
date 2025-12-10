@@ -91,6 +91,17 @@ export const getProductImages = async (productId) => {
   return result.rows.map((row) => row.image_url);
 };
 
+export const getCategoriesByProductId = async (productId) => {
+  const result = await pool.query(
+    `SELECT c.category_id, c.name, c.parent_id
+        FROM categories c
+        JOIN product_categories pc ON c.category_id = pc.category_id
+        WHERE pc.product_id = $1`,
+    [productId]
+  );
+  return result.rows;
+};
+
 export const getProductBaseInfoById = async (productId) => {
   const result = await pool.query(
     "SELECT * FROM products WHERE product_id = $1",
@@ -116,20 +127,19 @@ export const getProductBidHistory = async (productId) => {
   );
   return result.rows;
 };
-
 export const otherProductsByCategory = async (
-  categoryId,
+  categoryIds,
   excludeProductId,
   limit = 5
 ) => {
   const result = await pool.query(
-    `SELECT p.*
+    `SELECT DISTINCT p.*
         FROM products p
         JOIN product_categories pc ON p.product_id = pc.product_id
-        WHERE pc.category_id = $1 AND p.product_id != $2
-        LIMIT $3
-        `,
-    [categoryId, excludeProductId, limit]
+        WHERE pc.category_id = ANY($1)
+        AND p.product_id != $2
+        LIMIT $3`,
+    [categoryIds, excludeProductId, limit]
   );
   return result.rows;
 };
@@ -218,26 +228,13 @@ export const getProductsList = async (
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 };
-/*
-fnc_create_product
-(
-    p_seller_id INTEGER,
-    p_name VARCHAR,
-    p_description TEXT,
-    p_starting_price NUMERIC(15,2),
-    p_step_price NUMERIC(15,2),
-    p_buy_now_price NUMERIC(15, 2),
-    p_image_cover_url TEXT,
-    p_end_time TIMESTAMP
-)
 
-fnc_product_extra_images(
-    _product_id INTEGER,
-    _image_urls TEXT[]
-)
-
-
-*/
+export const deactiveProduct = async () => {
+  const result = await pool.query(
+    `SELECT * FROM fnc_deactivate_expired_products()`
+  );
+  return result.rows[0];
+};
 export const postProduct = async (
   seller_id,
   name,
@@ -247,7 +244,8 @@ export const postProduct = async (
   buy_now_price,
   image_cover_url,
   end_time,
-  extra_image_url
+  extra_image_url,
+  category_ids
 ) => {
   const result = await pool.query(
     `SELECT * FROM fnc_create_product($1, $2, $3, $4, $5, $6, $7, $8) AS product_id`,
@@ -269,12 +267,13 @@ export const postProduct = async (
       extra_image_url,
     ]);
   }
-  return result.rows[0].product;
-};
 
-export const deleteProductById = async (productId) => {
-  const result = await pool.query("SELECT * FROM fnc_delete_product($1)", [
-    productId,
-  ]);
-  return result.rows[0];
+  if (category_ids && category_ids.length > 0) {
+    await pool.query(
+      `SELECT fnc_product_categories($1, $2) AS number_of_categories`,
+      [productId, category_ids]
+    );
+  }
+  const message = "Product created successfully";
+  return message;
 };

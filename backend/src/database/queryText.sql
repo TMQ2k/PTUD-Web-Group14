@@ -1,3 +1,6 @@
+update users
+set verified = true
+where user_id = 40
 select * from auto_bids
 select * from users_info 
 select * from categories
@@ -6,6 +9,7 @@ select * from users
 delete from user_upgrade_requests
 select * from product_categories
 select * from products
+select * from users_rating
 select * from product_descriptions
 select * from product_categories
 delete from products where product_id = 5
@@ -17,17 +21,15 @@ select * from users_rating;
 select * from product_history;
 update products
 set current_price = starting_price
-update users
-set verified = true
-where user_id = 14
+delete from users where user_id in(2, 9, )
 
 update users
 set role = 'bidder'
 where user_id = 14
-
+delete from products where product_id = 6
 update users_rating
 set rating_plus = 1, rating_minus = 0
-where user_id = 14
+where user_id = 29
 
 
 insert into categories
@@ -36,7 +38,16 @@ values('')
  
 update users
 set verified = true
-where user_id = 9
+where user_id = 38
+
+select * from auto_bids
+
+update products
+set current_price = starting_price
+where product_id in (10, 11)
+
+delete from auto_bids
+delete from product_history
 
 SELECT indexname, indexdef 
 FROM pg_indexes 
@@ -45,3 +56,5 @@ WHERE tablename = 'auto_bids';
 update users
 set role = 'seller'
 where user_id = 1
+
+

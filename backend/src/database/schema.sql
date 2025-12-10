@@ -64,9 +64,7 @@ CREATE TABLE products (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP NOT NULL,
 );
-insert into products 
-(seller_id, name, description, starting_price, step_price, current_price, image_cover_url, is_active, end_time)
-values(null, 'hi', 'hi', 123, 123, 123, 'hi', true, '2025-12-05 23:59:59')
+
 ALTER TABLE products
 ADD CONSTRAINT chk_is_active_end_time
 CHECK (
@@ -145,6 +143,7 @@ CREATE TABLE auto_bids (
     UNIQUE (user_id, product_id)
 );
 go
+select * from bid_rejections
 CREATE TABLE bid_rejections (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -154,12 +153,6 @@ CREATE TABLE bid_rejections (
     reason VARCHAR(255) DEFAULT NULL,      -- lý do bị cấm ra giá
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by BIGINT DEFAULT NULL,        -- admin hoặc seller ban
-
-    -- bidder có thể được gỡ cấm
-    is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    lifted_at TIMESTAMP DEFAULT NULL,      -- thời điểm gỡ cấm
-    lifted_by BIGINT DEFAULT NULL,         -- người gỡ cấm
-    lift_reason VARCHAR(255) DEFAULT NULL, -- lý do gỡ cấm
 
     CONSTRAINT fk_bid_rej_product 
         FOREIGN KEY (product_id) REFERENCES products(product_id)
@@ -172,13 +165,34 @@ CREATE TABLE bid_rejections (
     CONSTRAINT fk_bid_rej_created_by
         FOREIGN KEY (created_by) REFERENCES users(user_id),
 
-    CONSTRAINT fk_bid_rej_lifted_by
-        FOREIGN KEY (lifted_by) REFERENCES users(user_id),
-
     -- Mỗi bidder chỉ bị cấm 1 lần trên 1 product (để tránh trùng record)
     CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
 );
 go
+select * from bid_allowances
+delete from bid_allowances
+CREATE TABLE bid_allowances (
+    id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    bidder_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_by BIGINT NOT NULL REFERENCES users(user_id), -- seller
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (product_id, bidder_id)
+);
+go
+drop table bid_allow_requests
+CREATE TABLE bid_allow_requests (
+    request_id BIGSERIAL PRIMARY KEY,
+    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+    bidder_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    reason TEXT DEFAULT NULL,            -- lý do bidder muốn được phép
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    
+    -- mỗi bidder chỉ được request 1 lần trên 1 sản phẩm để tránh trùng
+    CONSTRAINT uq_bid_allow_request UNIQUE (product_id, bidder_id)
+);
+
+
 CREATE TABLE product_questions (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
