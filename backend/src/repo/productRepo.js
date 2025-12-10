@@ -300,13 +300,14 @@ export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy =
   if (page && limit) {
     offset = (page - 1) * limit;
   }
-  //Search products by name or category name and remove duplicates id
+  //Search products by name or category name or category parent name and remove duplicates id
   let baseQuery = `SELECT DISTINCT p.*
     FROM products p
     LEFT JOIN product_categories pc ON p.product_id = pc.product_id
     LEFT JOIN categories c ON pc.category_id = c.category_id
-    WHERE p.name ILIKE $1 OR c.name ILIKE $1`; 
-
+    WHERE (p.name ILIKE $1 OR c.name ILIKE $1 OR c.parent_id IN (
+      SELECT category_id FROM categories WHERE name ILIKE $1
+    ))`; 
   const queryParams = [`%${query}%`]; 
   if (is_active !== undefined) {
     if (is_active == "true") {
