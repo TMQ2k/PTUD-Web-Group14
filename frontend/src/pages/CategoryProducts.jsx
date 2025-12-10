@@ -18,6 +18,8 @@ const CategoryProducts = () => {
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState("default"); // default, price-asc, price-desc, time
   const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 8;
   const user = useSelector((state) => state.user);
   // Scroll to top khi component mount (reload trang)
   useEffect(() => {
@@ -44,6 +46,7 @@ const CategoryProducts = () => {
   useEffect(() => {
     // Scroll to top khi thay đổi categoryId
     window.scrollTo({ top: 0, behavior: "smooth" });
+    setCurrentPage(1); // Reset về trang 1 khi đổi category
 
     const fetchData = async () => {
       try {
@@ -185,6 +188,20 @@ const CategoryProducts = () => {
 
   const sortedProducts = sortProducts(products);
 
+  // Pagination logic
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = sortedProducts.slice(
+    indexOfFirstProduct,
+    indexOfLastProduct
+  );
+  const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -259,41 +276,96 @@ const CategoryProducts = () => {
           </p>
         </div>
 
-        {/* Filter & Sort Bar */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-700 font-medium">Lọc và sắp xếp:</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <SortAsc className="w-5 h-5 text-gray-600" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-600 bg-white text-gray-700 font-medium"
-              >
-                <option value="default">Mặc định</option>
-                <option value="price-asc">Giá: Thấp đến cao</option>
-                <option value="price-desc">Giá: Cao đến thấp</option>
-                <option value="time">Sắp kết thúc</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
         {/* Products Grid */}
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                {...product}
-                isInWatchlist={watchlistIds.has(product.id)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {currentProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  {...product}
+                  isInWatchlist={watchlistIds.has(product.id)}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-10">
+                {/* Previous Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    currentPage === 1
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-purple-600 hover:bg-purple-50 shadow-md hover:shadow-lg"
+                  }`}
+                >
+                  ← Trước
+                </button>
+
+                {/* Page Numbers */}
+                <div className="flex gap-2">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (pageNum) => {
+                      // Hiển thị: trang đầu, trang cuối, trang hiện tại và 2 trang xung quanh
+                      const showPage =
+                        pageNum === 1 ||
+                        pageNum === totalPages ||
+                        (pageNum >= currentPage - 1 &&
+                          pageNum <= currentPage + 1);
+
+                      if (!showPage) {
+                        // Hiển thị dấu ... giữa các nhóm trang
+                        if (
+                          pageNum === currentPage - 2 ||
+                          pageNum === currentPage + 2
+                        ) {
+                          return (
+                            <span
+                              key={pageNum}
+                              className="px-3 py-2 text-gray-400"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => handlePageChange(pageNum)}
+                          className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                            currentPage === pageNum
+                              ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110"
+                              : "bg-white text-gray-700 hover:bg-purple-50 shadow-md hover:shadow-lg"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+
+                {/* Next Button */}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-lg font-semibold transition-all ${
+                    currentPage === totalPages
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-white text-purple-600 hover:bg-purple-50 shadow-md hover:shadow-lg"
+                  }`}
+                >
+                  Sau →
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="text-gray-400 text-6xl mb-4">📦</div>
