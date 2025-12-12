@@ -28,6 +28,7 @@ import PendingPage from "./pages/PendingPage";
 import { Pen } from "lucide-react";
 import ProductHistoryPage from "./pages/ProductHistoryPage";
 import AuctionManegementPage from "./pages/AuctionManagementPage";
+import ProductCheckoutPage from "./pages/ProductCheckoutPage";
 
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
@@ -117,6 +118,7 @@ const App = () => {
           {/* <Route path="/productbidspending/:id" element={<PendingPage />} />
           <Route path="/producthistory/:id" element={<ProductHistoryPage />} /> */}
           <Route path="/auctionmanagement/:id" element={<AuctionManegementPage />} />
+          <Route path="/productcheckout" element={<ProductCheckoutPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}

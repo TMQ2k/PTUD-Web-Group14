@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { MdPersonOutline } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
@@ -174,7 +174,7 @@ export default function Header() {
             <FaRegHeart className="size-6 text-blue-600 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
           </Link>
           <Link
-            to="/watchlist"
+            to="/productcheckout"
             className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
             aria-label="Danh sách yêu thích"
             title="Danh sách yêu thích"
