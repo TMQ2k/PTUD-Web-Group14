@@ -215,7 +215,11 @@ export default function ProductComments({ productId }) {
 
   return (
     <>
-      {loading && (<FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />)}
+      {loading && (
+        <div className="h-fit w-full mt-10 flex items-center justify-center">
+          <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+        </div>
+      )}
       {!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">
