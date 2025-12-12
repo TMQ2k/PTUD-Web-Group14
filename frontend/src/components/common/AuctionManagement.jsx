@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { productApi } from "../../api/product.api";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { sellerApi } from "../../api/seller.api";
 import { BlinkBlur } from "react-loading-indicators";
 import ProductHistory from "./ProductHistory";
@@ -8,12 +9,15 @@ import PendingBidsList from "./PendingBidsList";
 
 const AuctionManagement = () => {
   const params = useParams();
+  const { state } = useLocation();  
+  const sellerId = state?.sellerId;
+  const { userData } = useSelector((state) => state.user);
   const [history, setHistory] = useState([]);
   const [pendingList, setPendingList] = useState();
-  const [productName, setProductName] = useState("");
+  const [productName, setProductName] = useState("");  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  //const [bannedList, setBannedList] = useState([]);
+  //const [bannedList, setBannedList] = useState([]);  
 
   const mockData = [
     {
@@ -159,7 +163,7 @@ const AuctionManagement = () => {
         setLoading(true);
         setError(null);        
         const pendingRespone = await sellerApi.getBiddersPendingList(params.id);
-        const historyRespone = await productApi.getProductBiddingHistory(params.id);        
+        const historyRespone = await productApi.getProductBiddingHistory(params.id);                
         if (isMounted) {          
           setPendingList(pendingRespone?.data?.requests || []);
           setProductName(pendingRespone?.data?.productName);
@@ -190,12 +194,14 @@ const AuctionManagement = () => {
       {!loading && !error && (
         <>
           <ProductHistory auctionHistory={MOCK_BIDS} productName={productName} />
-          <PendingBidsList
+          {userData.role === "seller" &&  userData.id === sellerId && (
+            <PendingBidsList
             requests={mockData}
             bidderList={MOCK_BIDS}
             bannedBidders={[]}
             productName={productName}
           />
+          )}
         </>
       )}
     </>
