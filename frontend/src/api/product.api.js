@@ -2,7 +2,8 @@ import { http } from "../libs/http";
 
 const productEndpoint = {
   getAll: "/products",
-  postProduct: "/products"
+  postProduct: "/products",
+  productBiddingHistory: "/products/bid-history"
 };
 
 export const productApi = {
@@ -92,5 +93,10 @@ export const productApi = {
         },      
       }
     );
+  },
+
+  getProductBiddingHistory: async (product_id) => {
+    const respone = await http.get(`${productEndpoint.productBiddingHistory}/${product_id}`);
+    return respone.data;
   }
 };

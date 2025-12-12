@@ -82,7 +82,7 @@ const BiddingStatus = ({ className = "" }) => {
           <div className="flex flex-col gap-2">
             <div className="flex flex-col w-full gap-4 mx-auto my-3 justify-center align-center">
               {expired ? (
-                <div className="bg-[#A1AFFF] text-white text-center rounded-3xl w-full py-1">
+                <div className="bg-none text-red-500 text-xl text-center rounded-lg w-full py-1">
                   Sản phẩm đã đấu giá xong
                 </div>
               ) : (
@@ -134,6 +134,20 @@ const BiddingStatus = ({ className = "" }) => {
                   )}
                 </>
               )}
+              <NavigateButton
+                to={`/auctionmanagement/${product?.product_id}`}
+                className="bg-linear-to-br from-[#8711c1] to-[#2472fc] px-4 py-2 rounded-xl text-center text-white relative group"
+              >
+                {role === "seller" ? "Quản lý đấu giá" : "Lịch sử đấu giá"}
+                <span
+                  className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
+                              animate-ping"
+                ></span>
+                <span
+                  className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
+                              "
+                ></span>
+              </NavigateButton>
             </div>
           </div>
         </section>

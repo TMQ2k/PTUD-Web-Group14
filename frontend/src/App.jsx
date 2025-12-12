@@ -26,6 +26,8 @@ import ProductUpdatingPage from "./pages/ProductUpdatingPage";
 import RouterListner from "./hooks/RouterListner";
 import PendingPage from "./pages/PendingPage";
 import { Pen } from "lucide-react";
+import ProductHistoryPage from "./pages/ProductHistoryPage";
+import AuctionManegementPage from "./pages/AuctionManagementPage";
 
 const App = () => {
   // Mặc định hiển thị overlay nhưng vẫn render Router phía sau
@@ -112,7 +114,9 @@ const App = () => {
           <Route path="watchlist" element={<WatchList />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
           <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    
-          <Route path="/productbidspending/:id" element={<PendingPage />} />
+          {/* <Route path="/productbidspending/:id" element={<PendingPage />} />
+          <Route path="/producthistory/:id" element={<ProductHistoryPage />} /> */}
+          <Route path="/auctionmanagement/:id" element={<AuctionManegementPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}
