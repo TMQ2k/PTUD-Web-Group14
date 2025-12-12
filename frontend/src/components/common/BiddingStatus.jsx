@@ -13,8 +13,11 @@ import Label from "./Label";
 import NavigateButton from "./NavigateButton";
 import BiddingForm from "./BiddingForm";
 import default_image from "../../../public/images/default/unavailable_item.jpeg";
+import { useNavigate } from "react-router-dom";
+import { bidderApi } from "../../api/bidder.api";
 
 const BiddingStatus = ({ className = "" }) => {
+  const navigate = useNavigate();
   const product = useProduct();
   const dispatch = useProductDispatch();
   const { userData } = useSelector((state) => state.user);
@@ -41,6 +44,14 @@ const BiddingStatus = ({ className = "" }) => {
       clearInterval(interval_id);
     };
   }, [product.end_time]);
+
+  const handleAutobidUpdate = async () => {
+    const respone = await bidderApi.autobidUpdate(product?.product_id);
+    dispatch({
+      type: "autobid-update",
+      payload: respone.data,
+    })
+  }
 
   return (
     <>
@@ -100,11 +111,13 @@ const BiddingStatus = ({ className = "" }) => {
                         </NavigateButton>
                     </>
                   )}
-                  {role === "bidder" && (
+                  {(role === "bidder" || role === "seller") && product?.seller?.seller_id === userData.id && (
                     <>
                       <BiddingForm
                         price={product?.bidder?.maximum_price || "NaN"}
                         steps={product?.steps || "NaN"}
+                        productId={product?.product_id || ""}
+                        onAutobidUpdate={handleAutobidUpdate}
                       />
 
                       {/*If buy_now_price exists*/}
@@ -133,12 +146,18 @@ const BiddingStatus = ({ className = "" }) => {
                     </>
                   )}
                 </>
-              )}
-              <NavigateButton
-                to={`/auctionmanagement/${product?.product_id}`}
-                className="bg-linear-to-br from-[#8711c1] to-[#2472fc] px-4 py-2 rounded-xl text-center text-white relative group"
+              )}              
+              <button 
+                className="bg-linear-to-br from-[#8711c1] to-[#2472fc] px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200"  
+                onClick={() => {
+                  navigate(`/auctionmanagement/${product?.product_id}`, {
+                    state: {
+                      sellerId: product?.seller?.seller_id || null,
+                    }
+                  });                  
+                }}
               >
-                {role === "seller" ? "Quản lý đấu giá" : "Lịch sử đấu giá"}
+                {(role === "seller" && userData === product?.seller?.id) ? "Quản lý đấu giá" : "Lịch sử đấu giá"}
                 <span
                   className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
                               animate-ping"
@@ -147,7 +166,7 @@ const BiddingStatus = ({ className = "" }) => {
                   className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
                               "
                 ></span>
-              </NavigateButton>
+              </button>
             </div>
           </div>
         </section>

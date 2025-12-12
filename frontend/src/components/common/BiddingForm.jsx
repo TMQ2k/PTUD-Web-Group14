@@ -9,17 +9,19 @@ import {
   parseIntFromCurrency,
   convert,
 } from "../../utils/NumberHandler";
+import { bidderApi } from "../../api/bidder.api";
 import { GrSubtractCircle, GrAddCircle } from "react-icons/gr";
 
-const BiddingForm = ({ price, steps }) => {
-  const { register, handleSubmit, watch, setValue, getValues } = useForm({
+const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) => {
+  const { register, handleSubmit, setValue, getValues } = useForm({
     defaultValues: {
       bidder_price: formatNumberToCurrency(price),
     },
   });
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const respone = await bidderApi.autobid(productId, parseIntFromCurrency(getValues("bidder_price")));
+    await onAutobidUpdate();
   };
 
   //console.log(bidder_price);
@@ -87,6 +89,6 @@ const BiddingForm = ({ price, steps }) => {
       </button>
     </form>
   );
-};
+});
 
 export default BiddingForm;
