@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { MdPersonOutline } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
-import { AnimatePresence, } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
