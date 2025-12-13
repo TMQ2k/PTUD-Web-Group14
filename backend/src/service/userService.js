@@ -11,6 +11,7 @@ import {
   changePassword,
   getAllUsers,
   deleteUserById,
+  updateQRUrl,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -324,4 +325,12 @@ export const deleteUserByIdService = async (userId) => {
     console.error("❌ [Service] Lỗi khi xóa user theo ID:", err);
     throw err;
   }
+};
+
+export const updateUserQRUrlService = async (user_id, qr_url) => {
+  const updatedUser = await updateQRUrl(user_id, qr_url);
+  if (!updatedUser) {
+    throw new Error("Không tìm thấy user hoặc cập nhật QR URL thất bại.");
+  }
+  return updatedUser;
 };

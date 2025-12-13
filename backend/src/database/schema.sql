@@ -7,6 +7,7 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
+select * from users
 go
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
@@ -20,6 +21,9 @@ CREATE TABLE users_info (
     avatar_url TEXT,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+ALTER TABLE users_info
+ADD COLUMN qr_url VARCHAR(255);
+select * from users_info
 
 go
 CREATE TABLE users_rating (
