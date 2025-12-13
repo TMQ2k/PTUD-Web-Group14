@@ -242,9 +242,9 @@ router.patch(
 
       return res.status(200).json({
         code: 200,
-        message: "Upload QR thành công",
+        message: "Upload avatar thành công",
         data: {
-          qr_url: uploadResult.secure_url,
+          avatar_url: uploadResult.secure_url,
         },
       });
     } catch (err) {
@@ -290,9 +290,9 @@ router.patch(
 
       return res.status(200).json({
         code: 200,
-        message: "Upload avatar thành công",
+        message: "Upload qr thành công",
         data: {
-          avatar_url: uploadResult.secure_url,
+          qr_url: uploadResult.secure_url,
         },
       });
     } catch (err) {
