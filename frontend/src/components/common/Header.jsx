@@ -61,6 +61,7 @@ export default function Header() {
             email: userProfile.email,
             role: userProfile.role || "bidder",
             avatar: userProfile.avatar_url,
+            qr_url: userProfile.qr_url,
           })
         );
       } catch (error) {

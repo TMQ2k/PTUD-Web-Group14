@@ -1,9 +1,29 @@
 import { useFormContext } from "react-hook-form";
 import { twMerge } from "tailwind-merge";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, forwardRef } from "react";
 import { convert } from "../../utils/NumberHandler";
 import InputField from "./InputField";
 import CategorySelector from "./CategorySelector";
+import DatePicker from "react-datepicker";
+import { Calendar } from "lucide-react";
+import "react-datepicker/dist/react-datepicker.css";
+
+// Custom DateTimeInput giữ nguyên UI như datetime-local
+const DateTimeInput = forwardRef(
+  ({ value, onClick, onChange, className, placeholder }, ref) => (
+    <input
+      ref={ref}
+      type="text"
+      value={value || ""}
+      onClick={onClick}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+      readOnly
+    />
+  )
+);
+DateTimeInput.displayName = "DateTimeInput";
 
 const ProductFormContext = ({
   label,
@@ -23,10 +43,14 @@ const ProductFormContext = ({
   } = useFormContext();
 
   const [descCount, setDescCount] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const max = 400;
 
   // Watch the images field so we can show the count (e.g., "2/4")
   const currentImages = watch("images");
+
+  const datePickerRef = useRef(null);
 
   // Local state for Preview URLs (visual only)
   const [previews, setPreviews] = useState([]);
@@ -238,20 +262,63 @@ const ProductFormContext = ({
           note="*"
         >
           <input
-            id="end_date"
-            type="datetime-local"
-            min={createdDate?.toISOString().slice(0, 16)}
-            max={sellerExpiredTime?.toISOString().slice(0, 16)}
-            className={twMerge(inputClasses, "text-indigo-700 font-semibold")}
+            type="hidden"
             {...register("end_date", {
               required: "Please select an end date",
               validate: (value) => {
+                if (!value) return "Please select an end date";
                 const selectedDate = new Date(value);
                 const today = new Date();
                 return selectedDate > today || "Date must be in the future";
               },
             })}
           />
+          <div className="relative w-full">
+            <DatePicker
+              ref={datePickerRef}
+              selected={selectedDate}
+              onChange={(date) => {
+                setSelectedDate(date);
+                if (date) {
+                  setValue("end_date", date.toISOString());
+                  trigger("end_date");
+                } else {
+                  setValue("end_date", "");
+                  trigger("end_date");
+                }
+              }}
+              onBlur={() => trigger("end_date")}
+              onInputClick={() => setIsCalendarOpen(false)}
+              onClickOutside={() => setIsCalendarOpen(false)}
+              open={isCalendarOpen}
+              showTimeSelect
+              timeFormat="HH:mm"
+              timeIntervals={15}
+              dateFormat="dd/MM/yyyy HH:mm"
+              minDate={createdDate || new Date()}
+              maxDate={sellerExpiredTime}
+              placeholderText="dd/mm/yyyy --:--"
+              wrapperClassName="w-full"
+              customInput={
+                <DateTimeInput
+                  className={twMerge(
+                    inputClasses,
+                    "text-indigo-700 font-semibold pr-12"
+                  )}
+                />
+              }
+            />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                setIsCalendarOpen(!isCalendarOpen);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-blue-50 rounded transition-colors z-10 pointer-events-auto"
+            >
+              <Calendar className="w-5 h-5 text-blue-600" />
+            </button>
+          </div>
         </InputField>
 
         {/* === SECTION: IMAGE UPLOAD === */}
@@ -384,9 +451,9 @@ const ProductFormContext = ({
             {...register("description", {
               required: false,
               onChange: (e) => {
-                const length = e.target.value.length;                
+                const length = e.target.value.length;
                 setDescCount(length);
-              }
+              },
             })}
           />
         </InputField>

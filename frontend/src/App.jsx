@@ -93,6 +93,7 @@ const App = () => {
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url,
+            qr_url: userData.qr_url,
           })
         );
       } catch (error) {

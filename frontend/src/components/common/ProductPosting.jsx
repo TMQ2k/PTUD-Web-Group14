@@ -11,7 +11,6 @@
 
 // // --- 1. The Reusable Multi-Select Component ---
 
-
 // const ProductPosting = () => {
 //   const {
 //     register,
@@ -34,11 +33,11 @@
 //   const [sellerStartTime, setSellerStartTime] = useState(null);
 //   const currentDateTime = new Date(Date.now());
 
-//   const onSubmit = (data) => {    
+//   const onSubmit = (data) => {
 //     //console.log(JSON.stringify(getValues("images")));
 //     const formData = FormData();
 //     const product_data = {
-      
+
 //     }
 //   };
 
@@ -61,7 +60,6 @@
 //       file, // Keep original file for the form
 //     }));
 
-        
 //     // Update Local State (Visuals)
 //     setPreviews((prev) => [...prev, ...newPreviews]);
 
@@ -259,7 +257,7 @@
 //           <input
 //             id="end_date"
 //             type="datetime-local"
-//             //value={getValues("endDate")}                        
+//             //value={getValues("endDate")}
 //             min={currentDateTime?.toISOString().slice(0, 16)}
 //             max={sellerStartTime?.toISOString().slice(0, 16)}
 //             className={twMerge(inputClasses, "text-indigo-700 font-semibold")}
@@ -270,7 +268,7 @@
 //                 const today = new Date();
 //                 return selectedDate > today || "Date must be in the future";
 //               },
-              
+
 //             })}
 //           />
 //         </InputField>
@@ -445,19 +443,19 @@ const ProductPosting = () => {
           const sellerData = sellerRes?.data;
           //console.log(parentCategoriesRes);
           //console.log(parentCategoriesData);
-          setSystemCategories(parentCategoriesData?.flatMap((parent) => parent.children));
+          setSystemCategories(
+            parentCategoriesData?.flatMap((parent) => parent.children)
+          );
           const rawtime = sellerData?.fnc_get_seller_start_time;
           const datetime = new Date(rawtime);
           datetime.setDate(datetime.getDate() + 7);
           setSellerExpiredDate(datetime);
         }
-      }
-      catch (error) {
+      } catch (error) {
         if (isMounted) {
           setError(error);
         }
-      }
-      finally {
+      } finally {
         if (isMounted) {
           setLoading(false);
         }
@@ -468,8 +466,8 @@ const ProductPosting = () => {
 
     return () => {
       isMounted = false;
-    }
-  }, [])
+    };
+  }, []);
 
   const methods = useForm({
     defaultValues: {
@@ -481,7 +479,7 @@ const ProductPosting = () => {
       end_date: null,
       images: [],
       description: "",
-    },    
+    },
   });
 
   const onSubmit = (data) => {
@@ -491,18 +489,20 @@ const ProductPosting = () => {
       product_name: data.product_name,
       category_ids: data.categories,
       starting_price: parseIntFromCurrency(data.starting_price),
-      step_price: parseIntFromCurrency(data.step_price),   
-      buy_now_price: data.buy_now_price ? parseIntFromCurrency(data.step_price) : null,
+      step_price: parseIntFromCurrency(data.step_price),
+      buy_now_price: data.buy_now_price
+        ? parseIntFromCurrency(data.buy_now_price)
+        : null,
       end_date: new Date(data.end_date).toISOString(),
       //images: data.images,
       description: data.description,
-    }
+    };
 
     if (data.images && data.images.length > 0) {
-        Array.from(data.images).forEach((imageFile) => {
-            // "images" is the key name the backend looks for (e.g. req.files['images'])
-            formData.append("images", imageFile); 
-        });
+      Array.from(data.images).forEach((imageFile) => {
+        // "images" is the key name the backend looks for (e.g. req.files['images'])
+        formData.append("images", imageFile);
+      });
     }
 
     //console.log(formData.get("images"));
@@ -513,27 +513,29 @@ const ProductPosting = () => {
     console.log(formData.get("product_payload"));
 
     //productApi.postProduct(formData);
-  }
+  };
 
   return (
     <>
       {loading && (
-      <div className="h-screen w-full flex items-center justify-center">
+        <div className="h-screen w-full flex items-center justify-center">
           <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
       )}
-      {error && <div className="text-4xl font-semibold text-red-500">{error}</div>}
+      {error && (
+        <div className="text-4xl font-semibold text-red-500">{error}</div>
+      )}
       {!loading && !error && (
         <FormProvider {...methods}>
-          <ProductFormContext 
+          <ProductFormContext
             label="Đăng bán sản phẩm"
             buttonLabel="Đăng sản phẩm"
             onSubmit={methods.handleSubmit(onSubmit)}
             sellerExpiredTime={sellerExpiredDate}
             createdDate={createdDate}
             defaultCategories={systemCategories}
-            />
-      </FormProvider>
+          />
+        </FormProvider>
       )}
     </>
   );

@@ -5,6 +5,7 @@ const userEndpoint = {
   login: "/users/login",
   profile: "/users/profile",
   updateAvatar: "/users/update-avatar",
+  updateQR: "/users/update-url",
   verifyOtp: "/users/verify-otp",
   updateProfile: "/users/update-info",
   changePassword: "/users/change-password",
@@ -114,6 +115,20 @@ export const userApi = {
    */
   resetPassword: async (resetData) => {
     const response = await http.put(userEndpoint.resetPassword, resetData);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật QR code cho seller
+   * @param {FormData} formData - Dữ liệu FormData chứa file ảnh QR
+   * @returns {Promise<Object>} Thông tin sau khi cập nhật QR
+   */
+  updateQR: async (formData) => {
+    const response = await http.patch(userEndpoint.updateQR, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
     return response.data;
   },
 };
