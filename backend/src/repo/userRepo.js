@@ -84,6 +84,19 @@ export const updateAvatar = async (userId, avatar_url) => {
   }
 };
 
+export const updateQRUrl = async (userId, qr_url) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users_info SET qr_url = $1 WHERE user_id = $2 RETURNING *`,
+      [qr_url, userId]
+    );
+    return result.rows[0]; // Trả về user đã được cập nhật
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật qr_url user:", err);
+    throw err;
+  }
+};
+
 // Tìm user theo username để service thực hiện bcrypt.compare
 export const findUserByUsername = async (username) => {
   const result = await pool.query(

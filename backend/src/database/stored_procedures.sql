@@ -341,7 +341,8 @@ RETURNS TABLE(
 	avatar_url TEXT,
 	updated_at TIMESTAMPTZ,
 	first_name varchar(50),
-	last_name varchar(50)
+	last_name varchar(50),
+	qr_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -360,7 +361,8 @@ BEGIN
 		ui.avatar_url,
 		ui.updated_at,
 		ui.first_name,
-		ui.last_name
+		ui.last_name,
+		ui.qr_url
     FROM users u
 		JOIN users_info ui ON ui.user_id = u.user_id
     WHERE u.user_id = p_user_id
@@ -597,6 +599,7 @@ $$ LANGUAGE plpgsql;
 drop function fnc_history_bids_product
 CREATE OR REPLACE FUNCTION fnc_history_bids_product(_product_id BIGINT)
 RETURNS TABLE (
+	bidder_id INTEGER,
     bid_time TIMESTAMPTZ,
     masked_username VARCHAR,
     bid_amount NUMERIC(12,2)
@@ -604,6 +607,7 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
+		u.user_id,
         ph.bid_time,
         CASE 
             WHEN u.username IS NULL THEN NULL
@@ -1153,6 +1157,7 @@ DECLARE
     remaining INTERVAL;
     is_banned BOOLEAN;
     is_allowed BOOLEAN;
+    is_extendable BOOLEAN;
 BEGIN
     --------------------------------------------------------------------
     -- 1. Kiểm tra sản phẩm còn trong thời gian đấu giá
@@ -1213,14 +1218,21 @@ BEGIN
     --------------------------------------------------------------------
     -- 5. Kiểm tra gia hạn 20 phút
     --------------------------------------------------------------------
-    remaining := auction_end - NOW();
+    SELECT EXISTS (
+        SELECT 1 FROM auction_extensions WHERE product_id = _product_id
+    ) INTO is_extendable;
+    
+	remaining := auction_end - NOW();
 
-    IF _new_max_bid > current_price AND remaining <= INTERVAL '10 minutes' THEN
+    IF is_extendable
+       AND _new_max_bid > current_price
+       AND remaining <= INTERVAL '10 minutes'
+    THEN
         UPDATE products
         SET end_time = end_time + INTERVAL '20 minutes'
         WHERE product_id = _product_id;
 
-        RAISE NOTICE 'Đấu giá sắp kết thúc, thời gian đã được gia hạn thêm 20 phút.';
+        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 20 phút.';
     END IF;
 
     --------------------------------------------------------------------
@@ -1406,8 +1418,6 @@ CREATE OR REPLACE FUNCTION fnc_get_requests_by_seller_product(
 )
 RETURNS TABLE(
     request_id BIGINT,
-    product_id BIGINT,
-    product_name VARCHAR,
     bidder_id BIGINT,
     bidder_username VARCHAR,
     bidder_rating NUMERIC(5,2),
@@ -1419,8 +1429,6 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT r.request_id,
-           r.product_id,
-           p.name AS product_name,
            r.bidder_id,
            u.username AS bidder_username,
            ur.rating_percent AS bidder_rating,
@@ -1435,3 +1443,54 @@ BEGIN
     ORDER BY r.created_at DESC;
 END;
 $$;
+select * from products
+CREATE OR REPLACE FUNCTION fnc_enable_auction_extension(
+    _seller_id BIGINT,
+    _product_id BIGINT
+)
+RETURNS TEXT AS $$
+DECLARE
+    v_seller_id BIGINT;
+    exists_extension BOOLEAN;
+BEGIN
+    --------------------------------------------------------------------
+    -- 1. Lấy seller_id của product (nếu không có → product không tồn tại)
+    --------------------------------------------------------------------
+    SELECT p.seller_id
+    INTO v_seller_id
+    FROM products p
+    WHERE p.product_id = _product_id;
+
+    IF v_seller_id IS NULL THEN
+        RETURN 'Sản phẩm không tồn tại.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 2. Kiểm tra sản phẩm có thuộc seller này hay không
+    --------------------------------------------------------------------
+    IF v_seller_id <> _seller_id THEN
+        RETURN 'Bạn không phải chủ sở hữu sản phẩm này.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 3. Kiểm tra đã bật gia hạn chưa
+    --------------------------------------------------------------------
+    SELECT EXISTS (
+        SELECT 1
+        FROM auction_extensions ae
+        WHERE ae.product_id = _product_id
+    ) INTO exists_extension;
+
+    IF exists_extension THEN
+        RETURN 'Tính năng gia hạn đã được bật trước đó.';
+    END IF;
+
+    --------------------------------------------------------------------
+    -- 4. Thêm vào bảng auction_extensions
+    --------------------------------------------------------------------
+    INSERT INTO auction_extensions(product_id)
+    VALUES (_product_id);
+
+    RETURN 'Đã bật tính năng gia hạn cho sản phẩm.';
+END;
+$$ LANGUAGE plpgsql;

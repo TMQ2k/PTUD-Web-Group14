@@ -15,9 +15,11 @@ import {
   resetPassword,
   getAllUsersService,
   deleteUserByIdService,
+  updateUserQRUrlService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
+import { updateQRUrl } from "../repo/userRepo.js";
 
 const router = express.Router();
 
@@ -243,6 +245,54 @@ router.patch(
         message: "Upload avatar thành công",
         data: {
           avatar_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload avatar:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
+
+router.patch(
+  "/update-url",
+  authenticate,
+  upload.single("qr_url"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "qr_url" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+      const userId = req.user.id; // Lấy user_id từ token
+      console.log(userId);
+
+      // Cập nhật avatar_url trong DB
+      await updateQRUrl(userId, uploadResult.secure_url);
+
+      return res.status(200).json({
+        code: 200,
+        message: "Upload qr thành công",
+        data: {
+          qr_url: uploadResult.secure_url,
         },
       });
     } catch (err) {
