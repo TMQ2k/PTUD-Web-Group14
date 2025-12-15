@@ -1,19 +1,39 @@
 //comments(comment_id, user_id, product_id, content, created_at, parent_comment_id)
 import pool from "../config/db.js";
 
+
 export const getCommentsByProductId = async (productId) => {
     const result = await pool.query(
-        "SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at DESC",
+        `SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at ASC`,
         [productId]
     );
+    //Build comment list to have nested replies
+    //Replies = [id1, id2, ...]
+    const commentsList = [];
+    const commentMap = new Map();
     for (const row of result.rows) {
-        const repliesResult = await pool.query(
-            "SELECT comment_id FROM comments WHERE parent_comment_id = $1 ORDER BY created_at DESC",
-            [row.comment_id]
-        );
-        row.replies = repliesResult.rows.map(r => r.comment_id);
+        const comment = {
+            comment_id: row.comment_id,
+            user_id: row.user_id,
+            content: row.content,
+            created_at: row.created_at,
+            parent_comment_id: row.parent_comment_id,
+            replies: []
+        };
+        commentMap.set(comment.comment_id, comment);
+        if (comment.parent_comment_id === null) {
+            commentsList.push(comment);
+        } else {
+            const parentComment = commentMap.get(comment.parent_comment_id);
+            if (parentComment) {
+                parentComment.replies.push(comment.comment_id);
+            }
+            commentsList.push(comment);
+        }
     }
-    return result.rows;
+
+    return commentsList
+
 }
 
 export const getAllCommentersByProductId = async (productId) => {
