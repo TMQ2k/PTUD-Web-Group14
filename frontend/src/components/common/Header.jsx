@@ -167,19 +167,19 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-4 ml-auto">
           <Link
             to="/watchlist"
-            className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
+            className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all relative group"
             aria-label="Danh sách yêu thích"
             title="Danh sách yêu thích"
           >
-            <FaRegHeart className="size-6 text-blue-600 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+            <FaRegHeart className="size-6 text-blue-600 group-focus:fill-red-500 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
           </Link>
           <Link
             to="/productcheckout"
-            className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
+            className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:text-green-600 focus:ring-2 focus:ring-green-500 transition-all relative group"
             aria-label="Danh sách yêu thích"
             title="Danh sách yêu thích"
           >
-            <Package className="size-6 text-blue-600 group-hover:text-green-600"/>
+            <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600"/>
           </Link>
 
           {!isLoggedIn ? (

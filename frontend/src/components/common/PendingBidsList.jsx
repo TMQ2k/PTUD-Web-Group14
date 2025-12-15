@@ -453,7 +453,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
               Banned List
             </h2>
             <div className="overflow-auto max-h-[80vh]">
-              {pendingList &&
+              {bannedList &&
                 bannedList.map((b) => (
                   <div
                     key={b.bidder_id}
