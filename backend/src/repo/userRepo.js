@@ -127,26 +127,17 @@ export const changePassword = async (userId, newPasswordHashed) => {
 };
 
 export const getUserInfoById = async (user_id) => {
-  const userResult = await pool.query(
-    `SELECT username FROM users WHERE user_id = $1`,
-    [user_id]
-  );
-  if (userResult.rows.length === 0) {
-    return null;
-  }
-  const userRow = userResult.rows[0];
-  const userInfoResult = await pool.query(
-    `SELECT avatar_url FROM users_info WHERE user_id = $1`,
-    [user_id]
-  );
-  const userRatingResult = await pool.query(
-    `SELECT rating_percent FROM users_rating WHERE user_id = $1`,
+  const userRow = await pool.query(
+    `SELECT username FROM users
+    JOIN users_info ui ON users.user_id = ui.user_id
+    JOIN users_rating ur ON users.user_id = ur.user_id
+    WHERE users.user_id = $1`,
     [user_id]
   );
   return new UserSimpleProfile(
-    userRow.username,
-    userInfoResult.rows[0].avatar_url,
-    userRatingResult.rows[0].rating_percent
+    userRow.rows[0]?.username || null,
+    userRow.rows[0]?.avatar_url || null,
+    userRow.rows[0]?.rating_percent || null
   );
 };
 
