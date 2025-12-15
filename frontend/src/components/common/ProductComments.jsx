@@ -123,7 +123,7 @@ const ProductComments = React.memo(({ productId }) => {
                 [&::-webkit-scrollbar-thumb]:bg-blue-200
                 [&::-webkit-scrollbar-thumb]:rounded-full
                 hover:[&::-webkit-scrollbar-thumb]:bg-blue-400">   
-            {comments.map((comment, i, arr) => arr[arr.length - 1 - i].parent_id === null && (
+            {comments.map((_, i, arr) => arr[arr.length - 1 - i].parent_id === null && (
               <CommentItem
                 //id={arr[arr.length - 1 - i].comment_id}
                 key={arr[arr.length - 1 - i].comment_id}
