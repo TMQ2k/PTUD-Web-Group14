@@ -86,6 +86,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
           email: userData.email,
           role: userData.role || "buyer",
           avatar: userData.avatar || null,
+          qr_url: userData.qr_url || null,
         })
       );
 
@@ -198,6 +199,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url || null,
+            qr_url: userData.qr_url || null,
           })
         );
 

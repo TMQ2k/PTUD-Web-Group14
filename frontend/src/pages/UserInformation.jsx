@@ -30,13 +30,7 @@ const UserInformation = () => {
     {
       key: "sellerWon",
       label: "Sản phẩm đã có người thắng đấu giá",
-      requiresSeller: true,
     },
-    // {
-    //   key: "uploadProduct",
-    //   label: "Đăng sản phẩm mới",
-    //   requiresSeller: true,
-    // },
   ];
 
   // Badges (chấm đỏ thông báo) - có thể thay đổi động
@@ -91,16 +85,6 @@ const UserInformation = () => {
             {/* TODO: Thêm danh sách sản phẩm */}
           </div>
         );
-
-      // case "uploadProduct":
-      //   return (
-      //     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      //       <h2 className="text-2xl font-bold mb-4">Đăng sản phẩm mới</h2>
-      //       <p className="text-gray-600 mb-4">
-      //         Mẫu để đăng sản phẩm mới lên đấu giá...
-      //       </p>
-      //     </div>
-      //   );
 
       default:
         return (
