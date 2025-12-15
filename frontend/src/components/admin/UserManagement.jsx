@@ -149,9 +149,6 @@ const UserManagement = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Vai trò
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ngày tạo
-                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Hành động
                   </th>
@@ -161,7 +158,7 @@ const UserManagement = () => {
                 {filteredUsers.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="6"
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       Không tìm thấy người dùng nào
@@ -201,13 +198,6 @@ const UserManagement = () => {
                             ? "Bidder"
                             : user.role}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.created_at
-                          ? new Date(user.created_at).toLocaleDateString(
-                              "vi-VN"
-                            )
-                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">

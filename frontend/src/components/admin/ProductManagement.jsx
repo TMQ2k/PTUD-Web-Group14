@@ -169,9 +169,6 @@ const ProductManagement = () => {
                     Tên sản phẩm
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Danh mục
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Giá khởi điểm
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -189,7 +186,7 @@ const ProductManagement = () => {
                 {filteredProducts.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="7"
+                      colSpan="6"
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       Không tìm thấy sản phẩm nào
@@ -206,9 +203,6 @@ const ProductManagement = () => {
                       </td>
                       <td className="px-6 py-4 text-sm font-medium text-gray-900">
                         <div className="max-w-xs truncate">{product.name}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {product.category_name || "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {formatPrice(product.starting_price)}
