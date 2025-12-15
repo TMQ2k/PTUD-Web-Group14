@@ -115,7 +115,7 @@ export const changePassword = async (userId, newPasswordHashed) => {
 
 export const getUserInfoById = async (user_id) => {
   const userRow = await pool.query(
-    `SELECT username FROM users
+    `SELECT username, avatar_url, rating_percent FROM users
     JOIN users_info ui ON users.user_id = ui.user_id
     JOIN users_rating ur ON users.user_id = ur.user_id
     WHERE users.user_id = $1`,

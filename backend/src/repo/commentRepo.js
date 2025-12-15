@@ -26,7 +26,7 @@ export const getCommentsByProductId = async (productId) => {
         } else {
             const parentComment = commentMap.get(comment.parent_comment_id);
             if (parentComment) {
-                parentComment.replies.push(Number(comment.comment_id));
+                parentComment.replies.push(comment.comment_id);
             }
             commentsList.push(comment);
         }
