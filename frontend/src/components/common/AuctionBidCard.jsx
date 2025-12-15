@@ -9,7 +9,7 @@ const AuctionBidCard = () => {
   
   return (
     <>
-      <main className="sticky inset-y-24 h-fit w-[70%] shadow-2xl font-bold rounded-lg">
+      <main className="sticky inset-y-21 h-fit w-[70%] shadow-2xl font-bold rounded-lg">
         <header className="bg-linear-to-br from-blue-400 to-purple-600
                            rounded-t-lg text-white text-center w-full pb-2">          
           <TimeCountDown />          

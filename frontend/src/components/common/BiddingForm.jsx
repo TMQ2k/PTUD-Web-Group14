@@ -14,10 +14,10 @@ import { GrSubtractCircle, GrAddCircle } from "react-icons/gr";
 
 const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) => {
   const { register, handleSubmit, setValue, getValues } = useForm({
-    defaultValues: {
-      bidder_price: formatNumberToCurrency(price),
+    values: {
+      bidder_price: formatNumberToCurrency(price) || 0,
     },
-  });
+  });  
 
   const onSubmit = async (data) => {
     const respone = await bidderApi.autobid(productId, parseIntFromCurrency(getValues("bidder_price")));
@@ -37,7 +37,7 @@ const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) =>
   };
   const onAdd = () => {
     const value = parseIntFromCurrency(getValues("bidder_price"));
-    setValue("bidder_price", formatNumberToCurrency(value + steps));
+    setValue("bidder_price", formatNumberToCurrency(value + steps));    
   };
 
   return (
@@ -53,7 +53,7 @@ const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) =>
           type="text"
           {...register("bidder_price", {
             onChange: (e) => {
-              setValue("bidder_price", convert(e.target.value.trim()));
+              setValue("bidder_price", convert(e.target.value.trim()) || 0);
             },
           })}
           className="text-center text-2xl focus:outline-none max-w-40
@@ -76,7 +76,7 @@ const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) =>
         onClick={onSubtract}
         type="button"
       >
-        <GrSubtractCircle className="size-8 group-hover:scale-110 stroke-blue-400" />
+        <GrSubtractCircle className="size-8 group-hover:scale-110 stroke-blue-500" />
       </button>
       <button
         type="submit"

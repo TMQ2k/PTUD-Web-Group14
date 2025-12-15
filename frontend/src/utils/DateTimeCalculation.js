@@ -127,7 +127,7 @@ function formatCustomDate(dateString) {
   const year = date.getFullYear();
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
+  const seconds = pad(date.getSeconds());  
 
   // 4. Return the constructed string using Template Literals
   return `${dayName}, ${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;

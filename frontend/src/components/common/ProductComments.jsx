@@ -1,139 +1,18 @@
-import { useState, useEffect } from "react";
+import React,{ useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { commentApi } from "../../api/comment.api";
 import { FourSquare } from "react-loading-indicators";
 
-export default function ProductComments({ productId }) {
+const ProductComments = React.memo(({ productId }) => {
   const { userData } = useSelector((state) => state.user);
   const website_link =
     import.meta.env.WEBSITE_BASE_URL || "http://localhost:3000/products";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [comments, setComments] = useState([
-    // {
-    //   comment_id: 1,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [2],
-    // },
-    // {
-    //   comment_id: 2,
-    //   user_id: 2,
-    //   username: "Sarah Cornor",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=2",
-    //   content:
-    //     "Totally agree. The recursive component part was tricky but useful.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: 1,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 3,
-    //   user_id: 2,
-    //   username: "Sarah Cornor",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=2",
-    //   content:
-    //     "It's fine",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 3,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 4,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 5,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 6,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 7,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 8,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },{
-    //   comment_id: 9,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-    // {
-    //   comment_id: 10,
-    //   user_id: 1,
-    //   username: "Alex Johnson",
-    //   user_avatar_url: "https://i.pravatar.cc/150?u=1",
-    //   content:
-    //     "This is a great article! Really helped me understand React patterns.",
-    //   posted_date: "2025-10-12T10:20:00Z",
-    //   parent_id: null,
-    //   replies: [],
-    // },
-  ]);
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -145,13 +24,13 @@ export default function ProductComments({ productId }) {
       try {
         const respone = await commentApi.getAllComments(productId);
         console.log(respone.data);
-        if (isMounted) {
-          
+        if (isMounted) {          
           setComments(respone.data);
         }
-      } catch (error) {
+      } catch (err) {
+        console.log(err);
         if (isMounted) {
-          setError(error);
+          setError(err);          
         }
       } finally {
         if (isMounted) {
@@ -220,6 +99,7 @@ export default function ProductComments({ productId }) {
           <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
       )}
+      {error && <div className="text-2xl font-bold text-red-500 text-center w-full">Can not get comments</div>}
       {!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">
@@ -235,7 +115,14 @@ export default function ProductComments({ productId }) {
           </div>      
 
           {/* Render Root Comments */}
-          <div className="space-y-6 py-4 px-2 max-h-100 overflow-auto overscroll-auto border-b border-r border-t border-blue-500">   
+          <div className="space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
+                bg-white rounded-xl border border-blue-100
+                shadow-[0_8px_30px_rgb(0,0,0,0.04)]                
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-track]:bg-blue-50
+                [&::-webkit-scrollbar-thumb]:bg-blue-200
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                hover:[&::-webkit-scrollbar-thumb]:bg-blue-400">   
             {comments.map((comment, i, arr) => arr[arr.length - 1 - i].parent_id === null && (
               <CommentItem
                 //id={arr[arr.length - 1 - i].comment_id}
@@ -250,4 +137,6 @@ export default function ProductComments({ productId }) {
       )}
     </>
   );
-}
+})
+
+export default ProductComments;

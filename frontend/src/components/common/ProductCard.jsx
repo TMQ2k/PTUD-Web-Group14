@@ -101,7 +101,7 @@ const ProductCard = ({
 
   return (
     <div
-      onClick={() => navigate(`products/${id}`)}
+      onClick={() => navigate(`/products/${id}`)}
       className={`cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col ${
         isNew
           ? "border-2 border-yellow-400 ring-4 ring-yellow-100 shadow-yellow-200/50"
@@ -126,7 +126,7 @@ const ProductCard = ({
 
         {/* Badge NEW cho sản phẩm mới */}
         {isNew && (
-          <div className="absolute top-3 left-3 bg-gradient-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse z-20 flex items-center gap-1">
+          <div className="absolute top-3 left-3 bg-linear-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse z-20 flex items-center gap-1">
             <span className="text-lg">✨</span>
             <span>MỚI</span>
           </div>
@@ -244,11 +244,11 @@ const ProductCard = ({
             <>
               <button
                 onClick={onBuyNow}
-                className="flex-1 py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
+                className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
               >
                 Đấu giá
               </button>
-              <button className="px-5 py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
+              <button className="w-full py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
                 Mua ngay
               </button>
             </>

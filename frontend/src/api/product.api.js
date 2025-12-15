@@ -3,12 +3,7 @@ import { http } from "../libs/http";
 const productEndpoint = {
   getAll: "/products",
   postProduct: "/products",
-<<<<<<< HEAD
   productBiddingHistory: "/products/bid-history"
-=======
-  deactivateExpired: "/products/deactivate-expired",
-  search: "/search/products",
->>>>>>> 4546f07cc1a38fb3c1cbf9c200cb0f39a3c65afd
 };
 
 export const productApi = {
@@ -93,22 +88,6 @@ export const productApi = {
   },
 
   postProduct: async (productFormData) => {
-<<<<<<< HEAD
-    await http.post(
-      `${productEndpoint.postProduct}`, {
-        productFormData,
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },      
-      }
-    );
-  },
-
-  getProductBiddingHistory: async (product_id) => {
-    const respone = await http.get(`${productEndpoint.productBiddingHistory}/${product_id}`);
-    return respone.data;
-  }
-=======
     await http.post(`${productEndpoint.postProduct}`, {
       productFormData,
       headers: {
@@ -150,5 +129,4 @@ export const productApi = {
     const response = await http.get(url);
     return response.data;
   },
->>>>>>> 4546f07cc1a38fb3c1cbf9c200cb0f39a3c65afd
 };
