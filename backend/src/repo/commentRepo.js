@@ -3,17 +3,33 @@ import pool from "../config/db.js";
 
 export const getCommentsByProductId = async (productId) => {
     const result = await pool.query(
-        "SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at DESC",
+        `SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at ASC`,
         [productId]
     );
-    for (const row of result.rows) {
-        const repliesResult = await pool.query(
-            "SELECT comment_id FROM comments WHERE parent_comment_id = $1 ORDER BY created_at DESC",
-            [row.comment_id]
-        );
-        row.replies = repliesResult.rows.map(r => r.comment_id);
-    }
-    return result.rows;
+    const commentsMap = new Map();
+    result.rows.forEach(row => {
+        commentsMap.set(row.comment_id, {
+            comment_id: row.comment_id,
+            user_id: row.user_id,
+            content: row.content,
+            posted_at: row.created_at,
+            parent_id: row.parent_comment_id,
+            replies: []
+        });
+    });
+    // Build the comment tree
+    const commentsTree = [];
+    commentsMap.forEach(comment => {
+        if (comment.parent_id) {
+            const parentComment = commentsMap.get(comment.parent_id);
+            if (parentComment) {
+                parentComment.replies.push(comment);
+            }
+        } else {
+            commentsTree.push(comment);
+        }
+    });
+    return commentsTree;
 }
 
 export const getAllCommentersByProductId = async (productId) => {
