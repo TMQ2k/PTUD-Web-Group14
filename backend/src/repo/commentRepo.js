@@ -1,35 +1,39 @@
 //comments(comment_id, user_id, product_id, content, created_at, parent_comment_id)
 import pool from "../config/db.js";
 
+
 export const getCommentsByProductId = async (productId) => {
     const result = await pool.query(
         `SELECT * FROM comments WHERE product_id = $1 ORDER BY created_at ASC`,
         [productId]
     );
-    const commentsMap = new Map();
-    result.rows.forEach(row => {
-        commentsMap.set(row.comment_id, {
+    //Build comment list to have nested replies
+    //Replies = [id1, id2, ...]
+    const commentsList = [];
+    const commentMap = new Map();
+    for (const row of result.rows) {
+        const comment = {
             comment_id: row.comment_id,
             user_id: row.user_id,
             content: row.content,
-            posted_at: row.created_at,
-            parent_id: row.parent_comment_id,
+            created_at: row.created_at,
+            parent_comment_id: row.parent_comment_id,
             replies: []
-        });
-    });
-    // Build the comment tree
-    const commentsTree = [];
-    commentsMap.forEach(comment => {
-        if (comment.parent_id) {
-            const parentComment = commentsMap.get(comment.parent_id);
-            if (parentComment) {
-                parentComment.replies.push(comment);
-            }
+        };
+        commentMap.set(comment.comment_id, comment);
+        if (comment.parent_comment_id === null) {
+            commentsList.push(comment);
         } else {
-            commentsTree.push(comment);
+            const parentComment = commentMap.get(comment.parent_comment_id);
+            if (parentComment) {
+                parentComment.replies.push(Number(comment.comment_id));
+            }
+            commentsList.push(comment);
         }
-    });
-    return commentsTree;
+    }
+
+    return commentsList
+
 }
 
 export const getAllCommentersByProductId = async (productId) => {
