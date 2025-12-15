@@ -61,7 +61,7 @@ const BiddingStatus = ({ className = "" }) => {
       <main className={className}>
         <section>
           <h2 className="text-slate-400 text-md font-normal uppercase">
-            {product?.current_price && product?.top_bidder ? "Current bid" : "Starting price"}
+            {product?.current_price && product?.top_bidder ? "Giá hiện tại" : "Giá khởi điểm"}
           </h2>
           <p className="text-3xl font-semibold">{formattedCurrentBid} đ</p>
           <ProgressBar className="mt-2" />

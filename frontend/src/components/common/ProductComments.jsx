@@ -103,13 +103,13 @@ const ProductComments = React.memo(({ productId }) => {
       {!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">
-            Comments ({comments.length})
+            Bình luận ({comments.length})
           </h3>
 
           {/* Root Comment Form */}
           <div className="mb-8">
             <CommentForm
-              submitLabel="Post Comment"
+              submitLabel="Đăng bình luận"
               handleSubmit={(text) => handleAddComment(text, null)}
             />
           </div>      

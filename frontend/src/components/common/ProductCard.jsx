@@ -113,7 +113,7 @@ const ProductCard = ({
         <img
           src={image}
           alt={name}
-          className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+          className="object-cover object-top w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
         {/* Gradient overlay khi hover */}
