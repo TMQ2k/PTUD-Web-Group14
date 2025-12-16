@@ -20,7 +20,10 @@ const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) =>
   });  
 
   const onSubmit = async (data) => {
-    const respone = await bidderApi.autobid(productId, parseIntFromCurrency(getValues("bidder_price")));
+    const currentBidPrice = parseIntFromCurrency(getValues("bidder_price"));
+    const formattedPrice = currentBidPrice - (currentBidPrice % steps);
+    setValue("bidder_price", formatNumberToCurrency(formattedPrice));
+    const respone = await bidderApi.autobid(productId, formattedPrice);    
     await onAutobidUpdate();
   };
 
@@ -52,7 +55,7 @@ const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) =>
         <input
           type="text"
           {...register("bidder_price", {
-            onChange: (e) => {
+            onChange: (e) => {              
               setValue("bidder_price", convert(e.target.value.trim()) || 0);
             },
           })}

@@ -155,6 +155,8 @@ const AuctionManagement = () => {
       },
     ];
 
+  const isSeller = userData?.role === "seller";
+
   useEffect(() => {
     let isMounted = true;
 
@@ -162,7 +164,7 @@ const AuctionManagement = () => {
       try {
         setLoading(true);
         setError(null);        
-        const pendingRespone = await sellerApi.getBiddersPendingList(params.id);
+        const pendingRespone = isSeller ? await sellerApi.getBiddersPendingList(params.id) : null;
         const historyRespone = await productApi.getProductBiddingHistory(params.id);                
         if (isMounted) {          
           setPendingList(pendingRespone?.data?.requests || []);
@@ -181,7 +183,7 @@ const AuctionManagement = () => {
     return () => {
       isMounted = false;
     };
-  }, [params.id]);
+  }, [params.id, isSeller]);
 
   return (
     <>
@@ -190,11 +192,11 @@ const AuctionManagement = () => {
           <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
       )}
-      {error && <div>{error}</div>}
+      {error && <div>{error.message}</div>}
       {!loading && !error && (
         <>
           <ProductHistory auctionHistory={MOCK_BIDS} productName={productName} />
-          {userData.role === "seller" &&  userData.id === sellerId && (
+          {userData?.role === "seller" &&  userData?.id === sellerId && (
             <PendingBidsList
             requests={mockData}
             bidderList={MOCK_BIDS}

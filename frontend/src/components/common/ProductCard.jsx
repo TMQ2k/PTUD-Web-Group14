@@ -98,7 +98,7 @@ const ProductCard = ({
       setIsToggling(false);
     }
   };
-
+    
   return (
     <div
       onClick={() => navigate(`/products/${id}`)}
@@ -203,7 +203,7 @@ const ProductCard = ({
               </span>
             </div>
             <p className="text-sm font-bold text-gray-900 truncate">
-              {highestBidder
+              {highestBidder !== null
                 ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
                 : "Chưa có"}
             </p>

@@ -422,6 +422,8 @@ import { BlinkBlur } from "react-loading-indicators";
 import { parseIntFromCurrency } from "../../utils/NumberHandler";
 import { CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProductPosting = () => {
   const [systemCategories, setSystemCategories] = useState([]);
@@ -431,6 +433,7 @@ const ProductPosting = () => {
   const createdDate = new Date(Date.now());
 
   const [posted, setPosted] = useState(false);
+  const {userData} = useSelector((state) => state.user);
 
   useEffect(() => {
     let isMounted = true;
@@ -522,6 +525,7 @@ const ProductPosting = () => {
 
   return (
     <>
+      {userData.role !== "seller" && <Navigate to="/" />}
       {loading && (
         <div className="h-screen w-full flex items-center justify-center">
           <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />

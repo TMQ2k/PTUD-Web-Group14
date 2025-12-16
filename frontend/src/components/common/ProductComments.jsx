@@ -14,6 +14,8 @@ const ProductComments = React.memo(({ productId }) => {
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
 
+  const role = userData?.role || "guest";
+
   useEffect(() => {
     let isMounted = true;
 
@@ -108,10 +110,12 @@ const ProductComments = React.memo(({ productId }) => {
 
           {/* Root Comment Form */}
           <div className="mb-8">
-            <CommentForm
-              submitLabel="Đăng bình luận"
-              handleSubmit={(text) => handleAddComment(text, null)}
-            />
+            {role !== "guest" && (
+              <CommentForm
+                submitLabel="Đăng bình luận"
+                handleSubmit={(text) => handleAddComment(text, null)}
+              />
+            )}
           </div>      
 
           {/* Render Root Comments */}
@@ -130,6 +134,7 @@ const ProductComments = React.memo(({ productId }) => {
                 comment={arr[arr.length - 1 - i]}
                 comments={comments}
                 addReply={handleAddComment}
+                userRole={role}
               />
             ))}
           </div>

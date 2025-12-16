@@ -97,6 +97,7 @@ const App = () => {
             role: userData.role,
             avatar: userData.avatar_url,
             qr_url: userData.qr_url,
+            rating_percent: userData.rating_percent,
           })
         );
       } catch (error) {

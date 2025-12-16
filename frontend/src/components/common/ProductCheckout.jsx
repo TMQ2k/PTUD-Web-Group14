@@ -1,8 +1,13 @@
 import React from "react";
 import ProductCheckoutCard from "./ProductCheckoutCard"; // Adjust path as needed
 import { Package } from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const ProductCheckout = () => {
+  const { userData } = useSelector((state) => state.user);
+  const role = userData?.role || "guest";
+
   const data = [
     {
       id: 101,
@@ -38,6 +43,7 @@ const ProductCheckout = () => {
 
   return (
     <>
+      {role === "guest" && <Navigate to="/" />}
       <h1 className="flex flex-row gap-2 justify-center items-center h-fit p-1 mt-4 text-center text-4xl font-bold text-transparent bg-linear-to-br from-blue-400 to-purple-600 bg-clip-text ">
         <Package className="size-12 stroke-purple-500 bg-purple-200 p-2 rounded-full"/>
         Sản phẩm đã thắng

@@ -67,7 +67,7 @@ const ProductDetails = () => {
       {error && <div>{error}</div>}
       {!isLoading && !error && (
         <>
-          <div className="flex flex-row gap-4 my-4 px-5 justify-between h-full w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-4 px-5 justify-center justify-items-center h-full w-full">
             <ProductContext.Provider value={product}>
               <ProductDispatchContext.Provider value={dispatch}>
                 <ProductInfomation />
@@ -80,7 +80,7 @@ const ProductDetails = () => {
               <AiFillProduct />
               Sản phẩm liên quan
             </h2>
-            <div className="grid grid-cols-5 gap-2 justify-start items-center">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-2 justify-start items-center">
               {product?.otherProducts?.length > 0 &&
                 product.otherProducts.map((p, i) => {
                   const endTime = new Date(p.end_time);
@@ -106,7 +106,7 @@ const ProductDetails = () => {
                       currentPrice={
                         formatNumberToCurrency(p.current_price) || -1
                       }
-                      highestBidder={p.top_bidder}
+                      highestBidder={p?.top_bidder?.name || null}
                       buyNowPrice={
                         formatNumberToCurrency(p.buy_now_price) || -1
                       }

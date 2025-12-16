@@ -16,13 +16,15 @@ import default_image from "../../../public/images/default/unavailable_item.jpeg"
 import { useNavigate } from "react-router-dom";
 import { bidderApi } from "../../api/bidder.api";
 import { FaShippingFast } from "react-icons/fa";
+import BiddingRequestForm from "./BiddingRequestForm";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
   const product = useProduct();
   const dispatch = useProductDispatch();
   const { userData } = useSelector((state) => state.user);
-  const role = userData?.role;
+  const role = userData?.role || "guest";
+  const rating_percent = userData?.rating_percent || 0.00;
 
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(
@@ -127,12 +129,19 @@ const BiddingStatus = ({ className = "" }) => {
                     )}
                   {(role === "bidder" || role === "seller") && (
                     <>
-                      <BiddingForm
-                        price={product?.bidder?.maximum_price || 0}
-                        steps={parseInt(product?.step_price) || 0}
-                        productId={product?.product_id || ""}
-                        onAutobidUpdate={handleAutobidUpdate}
-                      />
+                      {rating_percent < 80.00 ? (
+                        <BiddingRequestForm 
+                          productId={product?.product_id || ""}
+                          state={false}
+                        />
+                      ) : (
+                        <BiddingForm
+                          price={product?.bidder?.maximum_price || 0}
+                          steps={parseInt(product?.step_price) || 0}
+                          productId={product?.product_id || ""}
+                          onAutobidUpdate={handleAutobidUpdate}
+                        />
+                      )}
 
                       {/*If buy_now_price exists*/}
                       {buy_now && (
