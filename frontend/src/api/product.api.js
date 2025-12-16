@@ -129,4 +129,9 @@ export const productApi = {
     const response = await http.get(url);
     return response.data;
   },
+
+  getProductBiddingHistory: async (productId) => {
+    const respone = await http.get(`${productEndpoint.productBiddingHistory}/${productId}`);
+    return respone.data;
+  },
 };
