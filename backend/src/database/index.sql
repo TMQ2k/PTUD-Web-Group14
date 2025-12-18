@@ -59,3 +59,28 @@ CREATE INDEX idx_parent_comment_id ON comments(parent_comment_id);
 
 CREATE INDEX idx_watchlist_user ON watchlist(user_id);
 CREATE INDEX idx_watchlist_product ON watchlist(product_id);
+
+-- bid_allowances
+CREATE INDEX idx_bid_allowances_product ON bid_allowances(product_id)
+CREATE INDEX idx_bid_allowances_user ON bid_allowances(bidder_id)
+
+
+-- product_questions
+create INDEX idx_questions_product ON product_questions(product_id)
+create INDEX idx_questions_user ON product_questions(user_id)
+
+-- product_answers
+create INDEX idx_answers_question ON product_answers(question_id)
+create INDEX idx_answers_seller ON product_answers(seller_id)
+
+-- comments
+create INDEX idx_comments_user ON comments(user_id)
+create INDEX idx_comments_product ON comments(product_id)
+
+-- product_history
+create INDEX idx_history_product ON product_history(product_id)
+
+
+
+
+

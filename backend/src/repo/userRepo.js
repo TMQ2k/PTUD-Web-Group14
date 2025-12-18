@@ -184,3 +184,46 @@ export const deleteUserById = async (userId) => {
     throw err;
   }
 };
+
+export const judgeUserRepo = async (
+  from_user_id,
+  to_user_id,
+  value,
+  content
+) => {
+  const result = await pool.query(
+    "SELECT * FROM fnc_judge_user($1, $2, $3, $4)",
+    [from_user_id, to_user_id, value, content]
+  );
+  return result.rows[0];
+};
+
+export const getUserRatingRepo = async (userId) => {
+  const result = await pool.query("SELECT * FROM fnc_user_reviewed($1)", [
+    userId,
+  ]);
+  return result.rows;
+};
+
+export const getUserWonProductsRepo = async (userId) => {
+  const result = await pool.query("SELECT * FROM fnc_user_won_product($1)", [
+    userId,
+  ]);
+  return result.rows;
+};
+
+export const getSellerDeactivatedProductsRepo = async (sellerId) => {
+  const result = await pool.query(
+    "SELECT * FROM fnc_seller_deactive_product($1)",
+    [sellerId]
+  );
+  return result.rows;
+};
+
+export const changeStatusWonProductsRepo = async (wonId, status) => {
+  const result = await pool.query(
+    "SELECT * FROM fnc_seller_change_status_won_product($1, $2)",
+    [wonId, status]
+  );
+  return result.rows[0];
+};

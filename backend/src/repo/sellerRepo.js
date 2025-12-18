@@ -28,14 +28,6 @@ export const sellerRejectBidderRepo = async (
   return result.rows[0];
 };
 
-export const sellerJudgeBidderRepo = async (sellerId, bidderId, value) => {
-  const result = await pool.query(
-    "SELECT * FROM fnc_judge_bidder($1, $2, $3)",
-    [sellerId, bidderId, value]
-  );
-  return result.rows[0];
-};
-
 export const sellerDeleteBannedBidderRepo = async (
   productId,
   sellerId,

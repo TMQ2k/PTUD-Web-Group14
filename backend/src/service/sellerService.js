@@ -2,7 +2,6 @@ import {
   deactivateAllSellerExpiredRepo,
   getSellerStartTimeRepo,
   sellerRejectBidderRepo,
-  sellerJudgeBidderRepo,
   sellerDeleteBannedBidderRepo,
   sellerAllowBidderRepo,
   getAllRequestsRepo,
@@ -49,19 +48,6 @@ export const sellerRejectBidderService = async (
   } catch (err) {
     console.error(
       "❌ [Service] Lỗi khi người bán từ chối người đấu thầu:",
-      err
-    );
-    throw err;
-  }
-};
-
-export const sellerJudgeBidderService = async (sellerId, bidderId, value) => {
-  try {
-    const result = await sellerJudgeBidderRepo(sellerId, bidderId, value);
-    return result;
-  } catch (err) {
-    console.error(
-      "❌ [Service] Lỗi khi người bán đánh giá người đấu thầu:",
       err
     );
     throw err;

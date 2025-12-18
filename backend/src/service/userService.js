@@ -12,6 +12,11 @@ import {
   getAllUsers,
   deleteUserById,
   updateQRUrl,
+  judgeUserRepo,
+  getUserRatingRepo,
+  changeStatusWonProductsRepo,
+  getUserWonProductsRepo,
+  getSellerDeactivatedProductsRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -333,4 +338,75 @@ export const updateUserQRUrlService = async (user_id, qr_url) => {
     throw new Error("Không tìm thấy user hoặc cập nhật QR URL thất bại.");
   }
   return updatedUser;
+};
+
+export const judgeUserService = async (
+  from_user_id,
+  to_user_id,
+  value,
+  content
+) => {
+  try {
+    const result = await judgeUserRepo(
+      from_user_id,
+      to_user_id,
+      value,
+      content
+    );
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi đánh giá người dùng:", err);
+    throw err;
+  }
+};
+
+export const getUserRatingsService = async (userId) => {
+  try {
+    const ratings = await getUserRatingRepo(userId);
+    return ratings;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy đánh giá người dùng:", err);
+    throw err;
+  }
+};
+
+export const changeStatusWonProductsService = async (won_id, status) => {
+  try {
+    const result = await changeStatusWonProductsRepo(won_id, status);
+    return result;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi thay đổi trạng thái sản phẩm thắng:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getUserWonProductsService = async (userId) => {
+  try {
+    const wonProducts = await getUserWonProductsRepo(userId);
+    return wonProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm thắng của người dùng:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getSellerDeactivatedProductsService = async (sellerId) => {
+  try {
+    const deactivatedProducts = await getSellerDeactivatedProductsRepo(
+      sellerId
+    );
+    return deactivatedProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm đã hủy kích hoạt của người bán:",
+      err
+    );
+    throw err;
+  }
 };

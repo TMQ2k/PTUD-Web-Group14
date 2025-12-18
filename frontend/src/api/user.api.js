@@ -12,6 +12,7 @@ const userEndpoint = {
   sendOtpResetPassword: "/users/send-otp",
   verifyOtpResetPassword: "/users/verify-otp-reset-pass",
   resetPassword: "/users/reset-password",
+  userRatings: "/users/user-ratings",
 };
 
 export const userApi = {
@@ -129,6 +130,15 @@ export const userApi = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách đánh giá của người dùng
+   * @returns {Promise<Object>} Danh sách đánh giá
+   */
+  getUserRatings: async () => {
+    const response = await http.get(userEndpoint.userRatings);
     return response.data;
   },
 };

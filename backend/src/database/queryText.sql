@@ -1,6 +1,9 @@
-update users
-set verified = true
-where user_id = 40
+select * from users where username = 'seller'
+select * from products where end_time < now()
+	select * from products where seller_id = 37
+
+select * from bid_allowances
+
 select * from auto_bids
 select * from users_info 
 select * from categories
@@ -29,7 +32,7 @@ where user_id = 14
 delete from products where product_id = 6
 update users_rating
 set rating_plus = 1, rating_minus = 0
-where user_id = 29
+where user_id = 42
 
 
 insert into categories
@@ -38,7 +41,7 @@ values('')
  
 update users
 set verified = true
-where user_id = 38
+where user_id = 43
 
 select * from auto_bids
 
