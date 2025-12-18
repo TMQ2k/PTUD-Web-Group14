@@ -12,7 +12,7 @@ const ProductCheckoutCard = React.memo(
     winningPrice,
     sellerName,
     qrCodeUrl,
-    status,
+    status,    
     className = "",
   }) => {    
 
