@@ -141,4 +141,23 @@ export const userApi = {
     const response = await http.get(userEndpoint.userRatings);
     return response.data;
   },
+
+  /**
+   * Lấy danh sách sản phẩm đã thắng đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã thắng
+   */
+  getUserWonProducts: async () => {
+    const response = await http.get("/users/user-won-products");
+    return response.data;
+  },
+
+  /**
+   * Đánh giá người bán sau khi thắng đấu giá
+   * @param {Object} ratingData - { to_user_id, value, content }
+   * @returns {Promise<Object>} Kết quả đánh giá
+   */
+  judgeUser: async (ratingData) => {
+    const response = await http.post("/users/judge-user", ratingData);
+    return response.data;
+  },
 };

@@ -1,5 +1,7 @@
 import React from "react";
 import { useState } from "react";
+import { userApi } from "../../api/user.api";
+import { toast } from "react-toastify";
 
 // Kiểu rating: +1 (Like) | -1 (Dislike) | null (chưa chọn)
 const RATING_VALUES = {
@@ -7,42 +9,38 @@ const RATING_VALUES = {
   DISLIKE: -1,
 };
 
-const WonAuctionCard = ({ product }) => {
+const WonAuctionCard = ({ product, onRatingSuccess }) => {
   const [rating, setRating] = useState(null); // 1, -1 hoặc null
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  // TODO [API-INTEGRATION-2]:
-  //  - Thay logic giả lập dưới đây bằng gọi API thật, ví dụ:
-  //    await fetch(`/api/sellers/${product.id}/rating`, {
-  //      method: "POST",
-  //      headers: { "Content-Type": "application/json" },
-  //      body: JSON.stringify({ score: rating, comment }),
-  //    });
-  //  - Tùy API thực tế: có thể gửi sellerId, auctionId, productId...
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!rating) return; // bắt buộc phải chọn +1 / -1
 
+    if (!product.sellerId) {
+      toast.error("Không tìm thấy thông tin người bán");
+      return;
+    }
+
     try {
       setSubmitting(true);
 
-      // Giả lập delay API
-      await new Promise((resolve) => setTimeout(resolve, 800));
-
-      console.log("[DEBUG] Gửi đánh giá:", {
-        productId: product.id,
-        sellerName: product.sellerName,
-        rating,
-        comment,
+      await userApi.judgeUser({
+        to_user_id: product.sellerId.toString(),
+        value: rating.toString(),
+        content: comment || "",
       });
 
+      toast.success("Đã gửi đánh giá thành công!");
       setSubmitted(true);
+
+      // Callback để refresh list nếu cần
+      onRatingSuccess?.();
     } catch (error) {
       console.error("Lỗi khi gửi đánh giá", error);
-      // TODO [API-INTEGRATION-3]:
-      //  - Xử lý hiển thị lỗi (toast / thông báo UI)
+      toast.error(error.response?.data?.message || "Gửi đánh giá thất bại");
     } finally {
       setSubmitting(false);
     }
@@ -56,7 +54,7 @@ const WonAuctionCard = ({ product }) => {
     <article className="bg-linear-to-br from-gray-50 to-blue-50/30 border border-gray-200 rounded-xl p-5 sm:p-6 flex flex-col gap-4 hover:shadow-md transition-shadow">
       {/* Thông tin sản phẩm & giá thắng */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <div>
+        <div className="flex-1">
           <h3 className="text-base sm:text-lg font-bold text-gray-900">
             {product.name}
           </h3>
@@ -66,6 +64,16 @@ const WonAuctionCard = ({ product }) => {
               {product.sellerName}
             </span>
           </p>
+          {product.sellerQrUrl && (
+            <a
+              href={product.sellerQrUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline mt-1 inline-block"
+            >
+              Xem mã QR thanh toán →
+            </a>
+          )}
         </div>
 
         <div className="text-right">
@@ -73,7 +81,7 @@ const WonAuctionCard = ({ product }) => {
             Giá thắng đấu giá
           </p>
           <p className="text-lg sm:text-xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {product.winningPrice.toLocaleString("vi-VN")} đ
+            {product.winningPrice?.toLocaleString("vi-VN")} đ
           </p>
         </div>
       </div>
