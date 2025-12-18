@@ -489,6 +489,8 @@ const ProductPosting = () => {
     },
   });
 
+  const [quillContents, setQuillContents] = useState(null);
+
   const onSubmit = (data) => {
     //console.log(new Date(data.end_date).toISOString());
     const formData = new FormData();
@@ -502,7 +504,7 @@ const ProductPosting = () => {
         : null,
       end_date: new Date(data.end_date).toISOString(),
       //images: data.images,
-      description: data.description,
+      description: quillContents,
     };
 
     if (data.images && data.images.length > 0) {
@@ -517,11 +519,12 @@ const ProductPosting = () => {
     console.log(formData.getAll("images"));
 
     formData.append("product_payload", JSON.stringify(productPayload));
-    console.log(formData.get("product_payload"));
+    console.log(formData.get("product_payload"));    
 
     //productApi.postProduct(formData);
     setPosted(true);
   }
+  
 
   return (
     <>
@@ -595,6 +598,7 @@ const ProductPosting = () => {
             sellerExpiredTime={sellerExpiredDate}
             createdDate={createdDate}
             defaultCategories={systemCategories}
+            setQuillContents={setQuillContents}
             />
         </FormProvider>
       ))}
