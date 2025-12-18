@@ -87,8 +87,9 @@ const ProductHistory = React.memo(({auctionHistory, productName}) => {
                   />
                 </svg>
               </div>
-              <div className="flex flex-col items-start justify-start">
-                <h2 className="font-bold text-white text-2xl">Lịch sử đấu giá</h2>
+              <div className="flex flex-col items-start justify-start gap-1">
+                <h2 className="font-bold text-2xl text-white">{productName}</h2>
+                <h2 className="font-bold text-indigo-900 text-xl">Lịch sử đấu giá</h2>
                 <span className="text-xs font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-full border border-slate-200">
                   {auctionHistory.length} Total Bids
                 </span>

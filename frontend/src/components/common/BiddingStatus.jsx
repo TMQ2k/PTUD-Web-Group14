@@ -56,7 +56,7 @@ const BiddingStatus = ({ className = "" }) => {
       type: "autobid-update",
       payload: respone.data,
     });
-  };
+  };  
 
   return (
     <>
@@ -180,6 +180,7 @@ const BiddingStatus = ({ className = "" }) => {
                   navigate(`/auctionmanagement/${product?.product_id}`, {
                     state: {
                       sellerId: product?.seller?.seller_id || null,
+                      productName: product?.name || "",
                     },
                   });
                 }}

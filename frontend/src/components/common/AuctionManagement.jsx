@@ -11,10 +11,10 @@ const AuctionManagement = () => {
   const params = useParams();
   const { state } = useLocation();  
   const sellerId = state?.sellerId;
+  const productName = state?.productName;  
   const { userData } = useSelector((state) => state.user);
   const [history, setHistory] = useState([]);
-  const [pendingList, setPendingList] = useState();
-  const [productName, setProductName] = useState("");  
+  const [pendingList, setPendingList] = useState();  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   //const [bannedList, setBannedList] = useState([]);  
@@ -167,8 +167,7 @@ const AuctionManagement = () => {
         const pendingRespone = isSeller ? await sellerApi.getBiddersPendingList(params.id) : null;
         const historyRespone = await productApi.getProductBiddingHistory(params.id);                
         if (isMounted) {          
-          setPendingList(pendingRespone?.data?.requests || []);
-          setProductName(pendingRespone?.data?.productName);
+          setPendingList(pendingRespone?.data?.requests || []);          
           setHistory(historyRespone?.data || []);
         }
       } catch (err) {
@@ -195,11 +194,11 @@ const AuctionManagement = () => {
       {error && <div>{error.message}</div>}
       {!loading && !error && (
         <>
-          <ProductHistory auctionHistory={MOCK_BIDS} productName={productName} />
+          <ProductHistory auctionHistory={history || MOCK_BIDS} productName={productName} />
           {userData?.role === "seller" &&  userData?.id === sellerId && (
             <PendingBidsList
-            requests={mockData}
-            bidderList={MOCK_BIDS}
+            requests={pendingList || mockData}
+            bidderList={history || MOCK_BIDS}
             bannedBidders={[]}
             productName={productName}
           />

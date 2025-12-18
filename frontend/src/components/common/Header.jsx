@@ -281,15 +281,15 @@ export default function Header() {
                         {userData?.role && (
                           <p className="text-xs text-indigo-600 font-bold mt-1 capitalize">
                             {userData.role === "seller" ? (
-                              <>
+                              <div className="flex flex-row gap-1">
                                 <HandCoins className="inline-block w-4 h-4 mb-0.5" />
                                 Seller
-                              </>
+                              </div>
                             ) : (
-                              <>
+                              <div className="flex flex-row gap-1">
                                 <ShoppingCart className="inline-block w-4 h-4 mb-0.5" />
                                 Bidder
-                              </>
+                              </div>
                             )}
                           </p>
                         )}
@@ -300,7 +300,7 @@ export default function Header() {
                         <Link
                           to="/profile"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-blue-50 transition-colors"
                         >
                           <FaUser className="w-4 h-4 text-blue-600" />
                           <span>Trang cá nhân</span>

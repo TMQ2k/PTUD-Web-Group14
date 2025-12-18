@@ -1,10 +1,10 @@
 import React, { useState, useRef } from "react";
 import { ImagePlus } from "lucide-react";
 import { FourSquare } from "react-loading-indicators";
+import Image from "./Image";
 
 const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
-  const [pending, setPending] = useState(status);
-  const [isQrZoomed, setIsQrZoomed] = useState(false);  
+  const [pending, setPending] = useState(status);  
   const [previewImages, setPreviewImages] = useState(null);
   const [image, setImage] = useState(null);
   const ref = useRef();  
@@ -89,23 +89,7 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
       ) : (
         <div className="flex flex-row gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">         
           <div className="flex flex-col items-center">
-            <div
-              onClick={() => setIsQrZoomed(true)}
-              className="p-2 bg-white rounded-xl shadow-sm border border-gray-100 group relative cursor-pointer"
-            >
-              <img
-                src={qrCodeUrl}
-                alt="Scan to Pay"
-                className="size-24 object-contain rounded-lg group-hover:opacity-90 transition-opacity"
-              />              
-              <div className="absolute inset-0 bg-blue-900/80 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-white text-xs font-bold text-center">
-                  Click to
-                  <br />
-                  Enlarge
-                </span>
-              </div>
-            </div>
+            <Image src={qrCodeUrl} alt={"QR Code"}/>
             <div className="mt-3 text-center">
               <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
                 Pay to Seller
@@ -142,43 +126,7 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
             />
           </div>
         </div>
-      ))}
-      
-
-      {isQrZoomed && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 transition-opacity animate-in fade-in duration-200"
-          onClick={() => setIsQrZoomed(false)} // Clicking anywhere closes it
-        >
-          <div
-            className="relative bg-white p-4 rounded-3xl shadow-2xl max-w-sm w-full text-center"
-            onClick={(e) => e.stopPropagation()} // Prevent click inside modal from closing it
-          >
-            <h3 className="text-lg font-bold text-gray-800 mb-2">
-              Scan to Pay
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              Open your banking app and scan this code
-            </p>
-
-            {/* The Large QR Code */}
-            <div className="bg-white rounded-xl overflow-hidden border border-gray-100 mx-auto">
-              <img
-                src={qrCodeUrl}
-                alt="Full Size QR"
-                className="w-full h-auto object-contain"
-              />
-            </div>
-
-            <button
-              onClick={() => setIsQrZoomed(false)}
-              className="mt-6 w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors"
-            >
-              Done / Close
-            </button>
-          </div>
-        </div>
-      )}
+      ))}          
     </>
   );
 });
