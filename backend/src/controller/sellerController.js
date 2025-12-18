@@ -2,7 +2,6 @@ import {
   getSellerStartTimeService,
   deactivateAllSellerExpiredService,
   sellerRejectBidderService,
-  sellerJudgeBidderService,
   sellerDeleteBannedBidderService,
   sellerAllowBidderService,
   getAllRequestsService,
@@ -72,31 +71,6 @@ router.post(
       res.status(400).json({
         code: 400,
         message: err.message || "Failed to reject bidder",
-        data: null,
-      });
-    }
-  }
-);
-
-router.patch(
-  "/seller-judge-bidder",
-  authenticate,
-  authorize("seller"),
-  async (req, res) => {
-    try {
-      const { bidderId, value } = req.body;
-      const sellerId = req.user.id;
-      const result = await sellerJudgeBidderService(sellerId, bidderId, value);
-      res.status(200).json({
-        code: 200,
-        message: "Successfully judged bidder",
-        data: result,
-      });
-    } catch (err) {
-      console.error("❌ Error in /seller-judge-bidder route:", err);
-      res.status(400).json({
-        code: 400,
-        message: err.message || "Failed to judge bidder",
         data: null,
       });
     }

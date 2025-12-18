@@ -16,10 +16,14 @@ import {
   getAllUsersService,
   deleteUserByIdService,
   updateUserQRUrlService,
+  judgeUserService,
+  getUserRatingsService,
+  getSellerDeactivatedProductsService,
+  getUserWonProductsService,
+  changeStatusWonProductsService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
-import { updateQRUrl } from "../repo/userRepo.js";
 
 const router = express.Router();
 
@@ -286,7 +290,7 @@ router.patch(
       console.log(userId);
 
       // Cập nhật avatar_url trong DB
-      await updateQRUrl(userId, uploadResult.secure_url);
+      await updateUserQRUrlService(userId, uploadResult.secure_url);
 
       return res.status(200).json({
         code: 200,
@@ -463,5 +467,106 @@ router.delete(
     }
   }
 );
+
+router.post("/judge-user", authenticate, async (req, res) => {
+  try {
+    const from_user_id = req.user.id;
+    const { to_user_id, value, content } = req.body;
+    const result = await judgeUserService(
+      from_user_id,
+      to_user_id,
+      value,
+      content
+    );
+    res.status(200).json({
+      code: 200,
+      message: "Successfully judged user",
+      data: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /judge-user route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to judge user",
+      data: null,
+    });
+  }
+});
+
+router.get("/user-ratings", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const ratings = await getUserRatingsService(userId);
+    res.status(200).json({
+      code: 200,
+      message: "Lấy đánh giá người dùng thành công",
+      data: ratings,
+    });
+  } catch (err) {
+    console.error("❌ Error in /user-ratings/:userId route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to get user ratings",
+      data: null,
+    });
+  }
+});
+
+router.get("/seller-deactivated-products", authenticate, async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await getSellerDeactivatedProductsService(sellerId);
+    res.status(200).json({
+      code: 200,
+      message: "Lấy sản phẩm đã hủy thành công",
+      data: products,
+    });
+  } catch (err) {
+    console.error("❌ Error in /seller-deactivated-products route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to get deactivated products",
+      data: null,
+    });
+  }
+});
+
+router.get("/user-won-products", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const products = await getUserWonProductsService(userId);
+    res.status(200).json({
+      code: 200,
+      message: "Lấy sản phẩm đã thắng thành công",
+      data: products,
+    });
+  } catch (err) {
+    console.error("❌ Error in /user-won-products route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to get won products",
+      data: null,
+    });
+  }
+});
+
+router.put("/change-won-product-status", async (req, res) => {
+  try {
+    const { wonId, status } = req.body;
+    const result = await changeStatusWonProductsService(wonId, status);
+    res.status(200).json({
+      code: 200,
+      message: "Successfully changed won product status",
+      data: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /change-won-product-status route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to change won product status",
+      data: null,
+    });
+  }
+});
 
 export default router;

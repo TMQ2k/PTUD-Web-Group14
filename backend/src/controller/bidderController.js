@@ -9,6 +9,7 @@ import {
   getUpgradeRequestsService,
   handleUpgradeRequestService,
   requestBidderOnProductService,
+  isBidsOnProductService,
 } from "../service/bidderService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -218,6 +219,31 @@ router.post(
       res.status(400).json({
         code: 400,
         message: err.message || "Failed to submit bidder request on product",
+        data: null,
+      });
+    }
+  }
+);
+
+router.get(
+  "/is-bids-on-product/:productId",
+  authenticate,
+  authorize("bidder"),
+  async (req, res) => {
+    try {
+      const bidderId = req.user.id;
+      const { productId } = req.params;
+      const result = await isBidsOnProductService(productId, bidderId);
+      res.status(200).json({
+        code: 200,
+        message: "Checked bids on product successfully",
+        data: result,
+      });
+    } catch (err) {
+      console.error("Error in /is-bids-on-product/:productId route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to check bids on product",
         data: null,
       });
     }
