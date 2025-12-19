@@ -41,6 +41,9 @@ http.interceptors.response.use(
       // Xóa token
       authStorage.removeToken();
 
+      // Dispatch custom event để thông báo cho App.jsx logout Redux state
+      window.dispatchEvent(new CustomEvent("auth:logout"));
+
       // Redirect về trang chủ (hoặc login)
       if (window.location.pathname !== "/") {
         window.location.href = "/";
