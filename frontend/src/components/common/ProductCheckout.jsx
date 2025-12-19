@@ -36,7 +36,7 @@ const ProductCheckout = () => {
       },      
       paymentQrUrl:
         "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:RetroOptics:ACC123456",
-      status: null, // null - "invalid" - "sent" - "paid" - "received"
+      status: "invalid", // "invalid" - "sent" - "paid" - "received"
     },
   ];
 

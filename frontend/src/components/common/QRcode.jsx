@@ -27,7 +27,7 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
   const handleRemove = () => {
     setPreviewImages(null);
     setImage(null);
-    setPending(null);
+    setPending("invalid");
   };
 
   const handleClick = (e) => {
@@ -46,7 +46,7 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
           </div>
         </div>
       )}
-      {(pending === null || pending === "invalid") && (image ? (
+      {(pending === "invalid") && (image ? (
        <div className="flex flex-col gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
           {previewImages.map((img) => (
             <div
@@ -111,12 +111,7 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
             </button>
             <p className="font-bold text-blue-400 bg-gray-100 border border-gray-200 text-sm px-2 py-1 rounded-full">
               Gửi ảnh giao dịch
-            </p>
-            {pending === "invalid" && (
-              <p className="text-red-500 font-bold text-xs rounded-full bg-red-100 px-2 py-1">
-                Ảnh thanh toán không hợp lệ
-              </p>
-            )}
+            </p>            
             <input
               hidden
               type="file"

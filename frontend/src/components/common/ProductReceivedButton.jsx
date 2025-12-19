@@ -19,7 +19,7 @@ const ProductReceivedButton = React.memo(({ productId, status }) => {
       </div>
       {received === "received" ? (
         <div className="text-green-500 text-lg font-bold">
-          Hàng đã được giao
+          Bạn đã nhận hàng
         </div>
       ) : (
         <button

@@ -1,7 +1,7 @@
 import { twMerge } from "tailwind-merge";
 import { formatNumberToCurrency } from "../../utils/NumberHandler";
 import Image from "./Image";
-import { CheckCheck } from "lucide-react";
+import { CheckCheck, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
 const SellerProductCheckoutCard = ({
@@ -62,12 +62,23 @@ const SellerProductCheckoutCard = ({
         </div>
         {productStatus && (
           <div className="flex flex-col gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
-            {productStatus === "paid" && (
+            {productStatus === "invalid" && (
+              <div className="flex max-w-58 items-start gap-3 p-4 mb-4 text-sm text-yellow-800 border border-yellow-200 rounded-lg bg-yellow-50">
+                <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-yellow-900">Chưa xác nhận giao dịch</h3>
+                  <p className="mt-1">
+                    Người đấu giá cao nhất chưa gửi ảnh giao dịch cho bạn.
+                  </p>
+                </div>
+              </div>
+            )}
+            {productStatus === "sent" && (
               <div className="grid grid-cols-2">
                 <Image src={transactionImage} alt="Transaction" />
                 <div className="flex flex-col gap-4 justify-center items-center">
                   <button
-                    onClick={() => setProductStatus("received")}
+                    onClick={() => setProductStatus("paid")}
                     className="bg-linear-to-br from-teal-400 to-green-600 text-white 
                               rounded-lg py-2 px-2 hover:scale-102 active:scale-98 hover:shadow-lg
                               transition-all duration-300 font-semibold"
@@ -75,7 +86,7 @@ const SellerProductCheckoutCard = ({
                     Xác nhận giao dịch
                   </button>
                   <button
-                    //onClick={() => setProductStatus("received")}
+                    onClick={() => setProductStatus("invalid")}
                     className="w-full text-red-500 border-2 border-red-400 hover:bg-red-50 
                               rounded-lg py-1 px-2 hover:scale-102 active:scale-98 hover:shadow-lg
                               transition-all duration-300 font-semibold"
@@ -85,8 +96,8 @@ const SellerProductCheckoutCard = ({
                 </div>
               </div>
             )}
-            {(productStatus === "received" ||
-              productStatus === "bidder_received") && (
+            {(productStatus === "paid" ||
+              productStatus === "received") && (
               <>
                 <CheckCheck className="size-18 stroke-green-500" />
                 <div className="flex flex-col gap-2">
@@ -112,7 +123,7 @@ const SellerProductCheckoutCard = ({
                     </span>
                   </p>
                 </div>
-                {productStatus === "bidder_received" ? (
+                {productStatus === "received" ? (
                   <p className="text-green-500 font-bold">Người thắng đã nhận hàng</p>
                 ) : (
                   <p className="text-red-500 font-bold">Người thắng chưa nhận hàng</p>

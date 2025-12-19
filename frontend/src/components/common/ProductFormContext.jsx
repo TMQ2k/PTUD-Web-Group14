@@ -246,7 +246,7 @@ const ProductFormContext = ({
                 onChange: (e) => {
                   setValue(
                     "starting_price",
-                    convert(e.target.value.trim()) || "0"
+                    convert(e.target.value.trim())
                   );
                 },
               })}
@@ -268,7 +268,7 @@ const ProductFormContext = ({
                 required: "Step price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue("step_price", convert(e.target.value.trim()) || "0");
+                  setValue("step_price", convert(e.target.value.trim()));
                 },
               })}
             />

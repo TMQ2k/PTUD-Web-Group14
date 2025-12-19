@@ -23,7 +23,7 @@ const SellerProductCheckout = () => {
         email: "truongcongthienphu1910@gmai.com",
         address: "227 Nguyễn Văn Cừ",
       },
-      status: "bidder_received", // null - "paid" - "received" - "bidder_received"
+      status: "sent", // "invalid" - "sent" - "paid" - "received"
     },
     {      
       productId: 1004,
@@ -41,7 +41,7 @@ const SellerProductCheckout = () => {
         email: "truongcongthienphu1910@gmai.com",
         address: "227 Nguyễn Văn Cừ",
       },
-      status: null, // null - "paid" - "received" - "bidder_received"
+      status: "invalid", // "invalid" - "sent" - "paid" - "received"
     },
   ];  
 
