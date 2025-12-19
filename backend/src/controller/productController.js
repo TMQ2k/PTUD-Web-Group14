@@ -1,7 +1,6 @@
 import express, { json } from "express";
 import cloudinary from "../config/cloudinary.js";
 import upload from "../middleware/upload.js";
-
 import {
   getProductDetailsById,
   deleteProductById,
@@ -113,18 +112,32 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
     let extra_image_urls = [];
 
     if (imageFiles && imageFiles.length > 0) {
-      // Upload cover image (first image)
+      // Upload cover image (first image) stream
       const coverImage = imageFiles[0];
-      const coverUploadResult = await cloudinary.uploader.upload(coverImage.path, {
-        folder: "product_images",
-      });
+      const coverUploadResult = await cloudinary.uploader.upload_stream(
+        { folder: "product_images" },
+        (error, result) => {
+          if (error) {
+            throw new Error("Failed to upload cover image");
+          }
+          return result;
+        }
+      );
+      coverUploadResult.end(coverImage.buffer);
       image_cover_url = coverUploadResult.secure_url;
-      // Upload extra images (remaining images)
+      // Upload extra images (remaining images) streams
       for (let i = 1; i < imageFiles.length; i++) {
         const extraImage = imageFiles[i];
-        const extraUploadResult = await cloudinary.uploader.upload(extraImage.path, {
-          folder: "product_images",
-        });
+        const extraUploadResult = await cloudinary.uploader.upload_stream(
+          { folder: "product_images" },
+          (error, result) => {
+            if (error) {
+              throw new Error("Failed to upload extra image");
+            }
+            return result;
+          }
+        );
+        extraUploadResult.end(extraImage.buffer);
         extra_image_urls.push(extraUploadResult.secure_url);
       }
     }
