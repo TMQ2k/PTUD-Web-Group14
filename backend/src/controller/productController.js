@@ -143,18 +143,16 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
     }
     
     const newProduct = await postProduct(
-      {
-        user,
-        name,
-        description,
-        starting_price,
-        step_price,
-        buy_now_price,
-        image_cover_url,
-        end_time,
-        extra_image_urls,
-        category_ids
-      }
+      user,
+      name,
+      description,
+      starting_price,
+      step_price,
+      buy_now_price,
+      image_cover_url,
+      end_time,
+      extra_image_urls,
+      category_ids
     );
 
     res.status(201).json({

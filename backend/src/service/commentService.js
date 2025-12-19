@@ -102,5 +102,7 @@ export const postComment = async (user, productId, content, linkProduct, parentC
         }
     }
 
+    //Change parent_comment_id to parent_id for consistency
+    newComment.parent_id = newComment.parent_comment_id;
     return newComment;
 }

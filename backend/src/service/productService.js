@@ -117,6 +117,7 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
   const topBidderId = await getTopBidderIdByProductId(productId);
   const topBidderInfo = topBidderId ? await getUserInfoById(topBidderId) : null;
   const sellerInfo = await getUserInfoById(productInfo.seller_id);
+  sellerInfo.id = productInfo.seller_id;
   const productCategories = await getCategoriesByProductIdRepo(productId);
   const otherProducts = await otherProductsByCategoryRepo(
     productCategories.map((cat) => cat.category_id),
