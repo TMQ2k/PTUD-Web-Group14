@@ -9,6 +9,7 @@ import {
   postProduct,
   deactiveProduct,
   getProductBidHistoryService,
+  updateDescription,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -148,6 +149,7 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
       message: "Product created successfully",
       data: newProduct,
     });
+
   } catch (error) {
     res.status(500).json({
       code: 500,
@@ -175,3 +177,23 @@ router.get("/bid-history/:productId", async (req, res) => {
   }
 });
 export default router;
+
+router.put("/:productId/description", authenticate, authorize("seller"), async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const { newDescription } = req.body;
+
+    const updatedProduct = await updateDescription(productId, newDescription);  
+    res.status(200).json({
+      code: 200,
+      message: "Product description updated successfully",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});

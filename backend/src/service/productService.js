@@ -13,6 +13,7 @@ import {
   getCategoriesByProductId as getCategoriesByProductIdRepo,
   getProductBidHistory as getProductBidHistoryRepo,
   getProductListByQuery as getProductListByQueryRepo,
+  updateDescription as updateDescriptionRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -268,4 +269,12 @@ export const getProductListByQuery = async(query, limit, page, sortBy, is_active
         prod.history_count
       )
   );
+}
+
+export const updateDescription = async (productId, newDescription) => {
+  const updatedProduct = await updateDescriptionRepo(productId, newDescription);
+  if (!updatedProduct) {
+    throw new Error("Failed to update product description");
+  }
+  return updatedProduct;
 }

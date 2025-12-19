@@ -290,8 +290,8 @@ export const postProduct = async (
       [productId, category_ids]
     );
   }
-  const message = "Product created successfully";
-  return message;
+  
+  return productId
 };
 
 
@@ -328,3 +328,12 @@ export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy =
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 }
+
+export const updateDescription = async (productId, newDescription) => {
+  const result = await pool.query(
+    `UPDATE products SET description = $1 WHERE product_id = $2 RETURNING *`,
+    [newDescription, productId]
+  );
+  return result.rows[0];
+};
+
