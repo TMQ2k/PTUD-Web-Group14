@@ -92,6 +92,7 @@ export const productApi = {
     const respone = await http.post(`${productEndpoint.postProduct}`, productFormData, {
       headers: {
         Authorization: `Bearer ${authStorage.getToken()}`,
+        "Content-Type": 'multipart/form-data',
       },
     });
 
