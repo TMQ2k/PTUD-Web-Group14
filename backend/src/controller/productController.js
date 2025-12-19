@@ -1,4 +1,7 @@
 import express, { json } from "express";
+import cloudinary from "../config/cloudinary.js";
+import upload from "../middleware/upload.js";
+
 import {
   getProductDetailsById,
   deleteProductById,
@@ -97,32 +100,49 @@ router.get("/:productId", async (req, res) => {
 /* Create a new product */
 /*formdata imagesfile */
 
-router.post("/", authenticate, authorize("seller"), async (req, res) => {
+router.post("/", authenticate, authorize("seller"), upload.array("images"), async (req, res) => {
   try {
-    const user = req.user;
-    const {
-      name,
-      description,
-      starting_price,
-      step_price,
-      buy_now_price,
-      image_cover_url,
-      end_time,
-      extra_image_urls,
-      category_ids,
-    } = req.body;
+    const user = req.user; // Assuming user info is attached to the request
+    const productData = JSON.parse(req.body.product_payload);
+    const {name,description, starting_price, step_price, 
+      buy_now_price, end_time, category_ids} = productData;
+    const imageFiles = req.files; // Access uploaded files
+
+    let image_cover_url = "";
+    let extra_image_urls = [];
+
+    if (imageFiles && imageFiles.length > 0) {
+      // Upload cover image (first image)
+      const coverImage = imageFiles[0];
+      const coverUploadResult = await cloudinary.uploader.upload(coverImage.path, {
+        folder: "product_images",
+      });
+      image_cover_url = coverUploadResult.secure_url;
+      // Upload extra images (remaining images)
+      for (let i = 1; i < imageFiles.length; i++) {
+        const extraImage = imageFiles[i];
+        const extraUploadResult = await cloudinary.uploader.upload(extraImage.path, {
+          folder: "product_images",
+        });
+        extra_image_urls.push(extraUploadResult.secure_url);
+      }
+    }
+
     const newProduct = await postProduct(
-      user,
-      name,
-      description,
-      starting_price,
-      step_price,
-      buy_now_price,
-      image_cover_url,
-      end_time,
-      extra_image_urls,
-      category_ids
+      {
+        user,
+        name,
+        description,
+        starting_price,
+        step_price,
+        buy_now_price,
+        image_cover_url,
+        end_time,
+        extra_image_urls,
+        category_ids
+      }
     );
+
     res.status(201).json({
       code: 201,
       message: "Product created successfully",
