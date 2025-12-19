@@ -10,6 +10,8 @@ import {
   getProductBidHistoryService,
   updateDescription,
 } from "../service/productService.js";
+
+import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -103,45 +105,43 @@ router.get("/:productId", async (req, res) => {
 router.post("/", authenticate, authorize("seller"), upload.array("images"), async (req, res) => {
   try {
     const user = req.user; // Assuming user info is attached to the request
+    
+    if (!req.body.product_payload) {
+      return res.status(400).json({
+        code: 400,
+        message: "Missing product_payload in request body",
+        data: null,
+      });
+    }
+
     const productData = JSON.parse(req.body.product_payload);
     const {name,description, starting_price, step_price, 
       buy_now_price, end_time, category_ids} = productData;
-    const imageFiles = req.files; // Access uploaded files
 
+    // Handle image uploads
+    const imageFiles = req.files;
     let image_cover_url = "";
     let extra_image_urls = [];
 
     if (imageFiles && imageFiles.length > 0) {
-      // Upload cover image (first image) stream
-      const coverImage = imageFiles[0];
-      const coverUploadResult = await cloudinary.uploader.upload_stream(
-        { folder: "product_images" },
-        (error, result) => {
-          if (error) {
-            throw new Error("Failed to upload cover image");
-          }
-          return result;
-        }
-      );
-      coverUploadResult.end(coverImage.buffer);
-      image_cover_url = coverUploadResult.secure_url;
-      // Upload extra images (remaining images) streams
-      for (let i = 1; i < imageFiles.length; i++) {
-        const extraImage = imageFiles[i];
-        const extraUploadResult = await cloudinary.uploader.upload_stream(
-          { folder: "product_images" },
-          (error, result) => {
-            if (error) {
-              throw new Error("Failed to upload extra image");
-            }
-            return result;
-          }
+      // Upload cover image (first image)
+      image_cover_url = await uploadImageToCloudinary(imageFiles[0].buffer);
+      // Upload extra images (remaining images)
+      if (imageFiles.length > 1) {
+        const extraImagesPromises = imageFiles.slice(1).map(file => 
+          uploadImageToCloudinary(file.buffer)
         );
-        extraUploadResult.end(extraImage.buffer);
-        extra_image_urls.push(extraUploadResult.secure_url);
+        extra_image_urls = await Promise.all(extraImagesPromises);
       }
     }
-
+    else {
+      return res.status(400).json({
+        code: 400,
+        message: "At least one image is required",
+        data: null,
+      }); 
+    }
+    
     const newProduct = await postProduct(
       {
         user,
