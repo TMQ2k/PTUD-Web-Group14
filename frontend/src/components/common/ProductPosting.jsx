@@ -20,6 +20,7 @@ const ProductPosting = () => {
 
   const [posted, setPosted] = useState(false);
   const {userData} = useSelector((state) => state.user);
+  const [postedProductId, setPostedProductId] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -77,20 +78,24 @@ const ProductPosting = () => {
 
   const [quillContents, setQuillContents] = useState(null);
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     //console.log(new Date(data.end_date).toISOString());
     const formData = new FormData();
     const productPayload = {
-      product_name: data.product_name,
-      category_ids: data.categories,
+      name: data.product_name,
+      description: JSON.stringify(quillContents),
       starting_price: parseIntFromCurrency(data.starting_price),
       step_price: parseIntFromCurrency(data.step_price),
       buy_now_price: data.buy_now_price
         ? parseIntFromCurrency(data.buy_now_price)
         : null,
-      end_date: new Date(data.end_date).toISOString(),
+      end_time: new Date(data.end_date).toISOString(),
+      category_ids: data.categories,
+      
+      
+      
       //images: data.images,
-      description: JSON.stringify(quillContents),
+      
     };
 
     if (data.images && data.images.length > 0) {
@@ -107,7 +112,9 @@ const ProductPosting = () => {
     formData.append("product_payload", JSON.stringify(productPayload));
     console.log(formData.get("product_payload"));    
 
-    //productApi.postProduct(formData);
+    const respone = await productApi.postProduct(formData);
+    setPostedProductId(respone.data.productId);
+
     setPosted(true);
   }
   
@@ -166,6 +173,12 @@ const ProductPosting = () => {
               >
                 Đăng sản phẩm khác
               </button>
+              <Link 
+                to={`products/${postedProductId}`}
+                className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
+              >
+                View Product
+              </Link>
             </div>
             
             {/* Optional: Return to home link */}

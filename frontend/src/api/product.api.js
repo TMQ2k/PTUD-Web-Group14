@@ -1,4 +1,5 @@
 import { http } from "../libs/http";
+import { authStorage } from "../utils/auth";
 
 const productEndpoint = {
   getAll: "/products",
@@ -88,7 +89,13 @@ export const productApi = {
   },
 
   postProduct: async (productFormData) => {
-    await http.post(`${productEndpoint.postProduct}`, productFormData );
+    const respone = await http.post(`${productEndpoint.postProduct}`, productFormData, {
+      headers: {
+        Authorization: `Bearer ${authStorage.getToken()}`,
+      },
+    });
+
+    return respone.data;
   },
 
   /**
