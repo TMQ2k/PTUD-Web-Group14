@@ -196,9 +196,6 @@ export const postProduct = async (
   extra_image_urls,
   category_ids
 ) => {
-  if (user.role !== "seller") {
-    throw new Error("Only sellers can create products");
-  }
   const newProduct = await postProductRepo(
     user.id,
     name,
