@@ -88,12 +88,7 @@ export const productApi = {
   },
 
   postProduct: async (productFormData) => {
-    await http.post(`${productEndpoint.postProduct}`, {
-      productFormData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    await http.post(`${productEndpoint.postProduct}`, productFormData );
   },
 
   /**
