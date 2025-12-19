@@ -55,43 +55,50 @@ const ProductComments = React.memo(({ productId }) => {
       parent_comment_id: parentId,
     };
 
-    console.log("Payload: ", payload);
+    //console.log("Payload: ", payload);
 
     //console.log(userData);
-    const new_comment_id = (Math.max(0, ...comments.map((c) => c.comment_id)) + 1).toString();
-    const newComment = {
-      comment_id: new_comment_id,
-      user_id: userData.id,
-      username: userData.username,
-      user_avatar_url: userData.avatar,
-      content: content,
-      posted_at: new Date(Date.now()).toLocaleString(),
-      parent_id: parentId,
-      replies: [],
-    };
+    // const new_comment_id = (Math.max(0, ...comments.map((c) => c.comment_id)) + 1).toString();
+    // const newComment = {
+    //   comment_id: new_comment_id,
+    //   user_id: userData.id,
+    //   username: userData.username,
+    //   user_avatar_url: userData.avatar,
+    //   content: content,
+    //   posted_at: new Date(Date.now()).toLocaleString(),
+    //   parent_id: parentId,
+    //   replies: [],
+    // };
 
-    console.log(newComment);
+    // //console.log(newComment);
 
-    // create new comment locally
-    setComments((prevComments) => {
-      const updatedComments = [...prevComments, newComment];
+    // // create new comment locally
+    // setComments((prevComments) => {
+    //   const updatedComments = [...prevComments, newComment];
 
-      if (parentId) {
-        return updatedComments.map((comment) => {
-          if (comment.comment_id === parentId) {
-            return {
-              ...comment,
-              replies: [...(comment.replies || []), new_comment_id]
-            };
-          }
-          return comment;
-        });
-      }
+    //   if (parentId) {
+    //     return updatedComments.map((comment) => {
+    //       if (comment.comment_id === parentId) {
+    //         return {
+    //           ...comment,
+    //           replies: [...(comment.replies || []), new_comment_id]
+    //         };
+    //       }
+    //       return comment;
+    //     });
+    //   }
 
-      return updatedComments;
-    });
+    //   return updatedComments;
+    // });
     // post to api
-    commentApi.postComment(productId, payload);
+    const respone = await commentApi.postComment(productId, payload);
+    console.log(respone.data);
+    setComments((prev) => {
+      if (respone?.data) {
+        return [...prev, respone.data];
+      }
+      else return [...prev];
+    })
   };
 
   return (
