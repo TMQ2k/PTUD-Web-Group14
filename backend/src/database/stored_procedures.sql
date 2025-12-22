@@ -1807,3 +1807,34 @@ $$ LANGUAGE plpgsql;
 
 select * from user_won_products
 select * from fnc_seller_change_status_won_product(1, 'invalid')
+select * from auto_bids
+drop function fnc_get_products_bidded
+CREATE OR REPLACE FUNCTION fnc_get_products_bidded(p_user_id BIGINT)
+RETURNS TABLE (
+    product_id INTEGER,
+    product_name VARCHAR,
+    seller_id INT,
+    max_bid_amount NUMERIC(12,2),
+    current_bid_amount NUMERIC(12,2),
+    is_winner BOOLEAN,
+    end_time TIMESTAMPtz
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        p.product_id,
+        p.name,
+        p.seller_id,
+        ab.max_bid_amount,
+        ab.current_bid_amount,
+        ab.is_winner,
+        p.end_time
+    FROM auto_bids ab
+    JOIN products p ON p.product_id = ab.product_id
+    WHERE ab.user_id = p_user_id
+    ORDER BY p.end_time DESC;
+END;
+$$;
+select * from fnc_get_products_bidded(42)

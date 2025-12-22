@@ -21,6 +21,7 @@ import {
   getSellerDeactivatedProductsService,
   getUserWonProductsService,
   changeStatusWonProductsService,
+  getBiddedProductsService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -569,4 +570,22 @@ router.put("/change-won-product-status", async (req, res) => {
   }
 });
 
+router.get("/bidded-products", authenticate, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const products = await getBiddedProductsService(userId);
+    res.status(200).json({
+      code: 200,
+      message: "Lấy sản phẩm đã đấu giá thành công",
+      data: products,
+    });
+  } catch (err) {
+    console.error("❌ Error in /bidded-products route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to get bidded products",
+      data: null,
+    });
+  }
+});
 export default router;

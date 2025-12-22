@@ -122,21 +122,7 @@ CREATE TABLE user_otp (
     otp_code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
-go
-CREATE TABLE bids (
-    id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
-    amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
-    bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    status VARCHAR(20) NOT NULL DEFAULT 'active'
-        CHECK (status IN ('active', 'winning', 'outbid', 'rejected')),
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-);
-go
-drop table auto_bids
 go
 CREATE TABLE auto_bids (
     id BIGSERIAL PRIMARY KEY,
