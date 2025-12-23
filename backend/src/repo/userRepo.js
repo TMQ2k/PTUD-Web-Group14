@@ -227,3 +227,10 @@ export const changeStatusWonProductsRepo = async (wonId, status) => {
   );
   return result.rows[0];
 };
+
+export const getBiddedProductsRepo = async (userId) => {
+  const result = await pool.query("SELECT * FROM fnc_get_products_bidded($1)", [
+    userId,
+  ]);
+  return result.rows;
+};

@@ -17,6 +17,7 @@ import {
   changeStatusWonProductsRepo,
   getUserWonProductsRepo,
   getSellerDeactivatedProductsRepo,
+  getBiddedProductsRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -405,6 +406,19 @@ export const getSellerDeactivatedProductsService = async (sellerId) => {
   } catch (err) {
     console.error(
       "❌ [Service] Lỗi khi lấy sản phẩm đã hủy kích hoạt của người bán:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getBiddedProductsService = async (userId) => {
+  try {
+    const biddedProducts = await getBiddedProductsRepo(userId);
+    return biddedProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm đã đặt giá của người dùng:",
       err
     );
     throw err;
