@@ -160,4 +160,13 @@ export const userApi = {
     const response = await http.post("/users/judge-user", ratingData);
     return response.data;
   },
+
+  /**
+   * Lấy danh sách sản phẩm đã tham gia đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã đấu giá
+   */
+  getBiddedProducts: async () => {
+    const response = await http.get("/users/bidded-products");
+    return response.data;
+  },
 };

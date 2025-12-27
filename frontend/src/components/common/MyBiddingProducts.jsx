@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
+import { userApi } from "../../api/user.api";
+import { toast } from "react-toastify";
 import {
   Clock,
   CheckCircle,
@@ -7,122 +9,54 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-//test image
-import electronicsImg from "../../assets/electronics.jpg";
-
-// Mock data - Sản phẩm đang tham gia đấu giá
-const mockBiddingProducts = [
-  {
-    id: 1,
-    image: electronicsImg,
-    name: "Đồng hồ cơ Orient Bambino Gen 4",
-    currentPrice: "2,450,000",
-    highestBidder: "Van Cong Khoa", // Người đang dẫn đầu
-    myBidPrice: "2,400,000", // Giá bạn đã đấu
-    buyNowPrice: "3,200,000",
-    postedDate: "05/11/2025",
-    remainingTime: "00:04:32",
-    bidCount: 12,
-    status: "active", // active (còn hạn), expired (hết hạn)
-    isWinning: false, // Bạn có đang dẫn đầu không?
-  },
-  {
-    id: 2,
-    image: electronicsImg,
-    name: "iPhone 15 Pro Max 256GB - Titan Blue",
-    currentPrice: "31,200,000",
-    highestBidder: "Bạn", // Bạn đang dẫn đầu
-    myBidPrice: "31,200,000",
-    buyNowPrice: "33,000,000",
-    postedDate: "06/11/2025",
-    remainingTime: "02:09:15",
-    bidCount: 15,
-    status: "active",
-    isWinning: true,
-  },
-  {
-    id: 3,
-    image: electronicsImg,
-    name: "Tai nghe Sony WH-1000XM5",
-    currentPrice: "5,200,000",
-    highestBidder: "Le Bao Anh",
-    myBidPrice: "5,100,000",
-    buyNowPrice: "6,000,000",
-    postedDate: "06/11/2025",
-    remainingTime: "05:12:10",
-    bidCount: 9,
-    status: "active",
-    isWinning: false,
-  },
-  {
-    id: 4,
-    image: electronicsImg,
-    name: "MacBook Air M2 2023 13 inch 8GB/256GB",
-    currentPrice: "22,900,000",
-    highestBidder: "Bạn",
-    myBidPrice: "22,900,000",
-    buyNowPrice: "25,000,000",
-    postedDate: "02/11/2025",
-    remainingTime: "08:20:00",
-    bidCount: 42,
-    status: "active",
-    isWinning: true,
-  },
-  // Đã hết hạn
-  {
-    id: 5,
-    image: electronicsImg,
-    name: "Giày Nike Air Jordan 1 Retro High OG",
-    currentPrice: "6,500,000",
-    highestBidder: "Tran Thi Nhi",
-    myBidPrice: "6,300,000",
-    buyNowPrice: null,
-    postedDate: "05/11/2025",
-    remainingTime: "00:00:00",
-    bidCount: 22,
-    status: "expired",
-    isWinning: false, // Thua
-    finalResult: "lost", // won hoặc lost
-  },
-  {
-    id: 6,
-    image: electronicsImg,
-    name: "iPad Pro 2022 M2 11 inch Wi-Fi 128GB",
-    currentPrice: "18,200,000",
-    highestBidder: "Bạn",
-    myBidPrice: "18,200,000",
-    buyNowPrice: "20,000,000",
-    postedDate: "01/11/2025",
-    remainingTime: "00:00:00",
-    bidCount: 39,
-    status: "expired",
-    isWinning: true,
-    finalResult: "won", // Thắng
-  },
-  {
-    id: 7,
-    image: electronicsImg,
-    name: "Máy ảnh Canon EOS R6 Mark II",
-    currentPrice: "33,500,000",
-    highestBidder: "Do Thi Yen",
-    myBidPrice: "32,000,000",
-    buyNowPrice: "36,000,000",
-    postedDate: "04/11/2025",
-    remainingTime: "00:00:00",
-    bidCount: 45,
-    status: "expired",
-    isWinning: false,
-    finalResult: "lost",
-  },
-];
 
 const MyBiddingProducts = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("active"); // "active" hoặc "expired"
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8; // 4 dòng x 2 sản phẩm = 8 sản phẩm mỗi trang
 
+  useEffect(() => {
+    fetchBiddedProducts();
+  }, []);
+
+  const fetchBiddedProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await userApi.getBiddedProducts();
+      const biddedProducts = response.data || [];
+
+      // Transform data from backend
+      const transformedProducts = biddedProducts.map((item) => {
+        const now = new Date();
+        const endTime = new Date(item.end_time);
+        const isActive = endTime > now;
+
+        return {
+          id: item.product_id,
+          name: item.product_name,
+          currentPrice: item.current_bid_amount,
+          myBidPrice: item.max_bid_amount,
+          endTime: item.end_time,
+          status: isActive ? "active" : "expired",
+          isWinning: item.is_winner,
+          finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
+          sellerId: item.seller_id,
+        };
+      });
+
+      setProducts(transformedProducts);
+    } catch (error) {
+      console.error("Lỗi khi lấy sản phẩm đã đấu giá:", error);
+      toast.error("Không thể tải danh sách sản phẩm đã đấu giá");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Lọc sản phẩm theo tab
-  const filteredProducts = mockBiddingProducts.filter(
+  const filteredProducts = products.filter(
     (product) => product.status === activeTab
   );
 
@@ -139,18 +73,25 @@ const MyBiddingProducts = () => {
   };
 
   // Thống kê
-  const activeCount = mockBiddingProducts.filter(
-    (p) => p.status === "active"
-  ).length;
-  const expiredCount = mockBiddingProducts.filter(
-    (p) => p.status === "expired"
-  ).length;
-  const winningCount = mockBiddingProducts.filter(
+  const activeCount = products.filter((p) => p.status === "active").length;
+  const expiredCount = products.filter((p) => p.status === "expired").length;
+  const winningCount = products.filter(
     (p) => p.status === "active" && p.isWinning
   ).length;
-  const wonCount = mockBiddingProducts.filter(
+  const wonCount = products.filter(
     (p) => p.status === "expired" && p.finalResult === "won"
   ).length;
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+          <p className="text-gray-600 mt-4">Đang tải dữ liệu...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -162,51 +103,6 @@ const MyBiddingProducts = () => {
         <p className="text-gray-600 text-sm">
           Theo dõi các sản phẩm bạn đang tham gia đấu giá
         </p>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-blue-600 font-medium">Đang đấu giá</p>
-              <p className="text-2xl font-bold text-blue-700">{activeCount}</p>
-            </div>
-            <Clock className="w-8 h-8 text-blue-500" />
-          </div>
-        </div>
-
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-green-600 font-medium">Đang dẫn đầu</p>
-              <p className="text-2xl font-bold text-green-700">
-                {winningCount}
-              </p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-green-500" />
-          </div>
-        </div>
-
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-purple-600 font-medium">Đã thắng</p>
-              <p className="text-2xl font-bold text-purple-700">{wonCount}</p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-purple-500" />
-          </div>
-        </div>
-
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 font-medium">Đã kết thúc</p>
-              <p className="text-2xl font-bold text-gray-700">{expiredCount}</p>
-            </div>
-            <XCircle className="w-8 h-8 text-gray-500" />
-          </div>
-        </div>
       </div>
 
       {/* Tabs */}
