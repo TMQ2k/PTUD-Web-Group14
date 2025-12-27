@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import { useState, useEffect, useReducer, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import ProductGalleryCard from "./ProductGalleryCard";
 import AuctionBidCard from "./AuctionBidCard";

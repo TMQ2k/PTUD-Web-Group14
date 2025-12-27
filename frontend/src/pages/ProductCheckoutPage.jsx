@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Activity } from "react";
 import ProductCheckout from "../components/common/ProductCheckout";
 import SellerProductCheckout from "../components/common/SellerProductCheckout";
 
@@ -21,7 +21,14 @@ const ProductCheckoutPage = () => {
           {showSellerCheckout ? "Product" : "Seller"} Checkout
         </button>
       </div>
-      {showSellerCheckout ? <SellerProductCheckout /> : <ProductCheckout />}
+      <Activity mode={showSellerCheckout ? "visible" : "hidden"}>
+        <SellerProductCheckout />
+      </Activity>
+
+      <Activity mode={!showSellerCheckout ? "visible" : "hidden"}>
+        <ProductCheckout />
+      </Activity>
+      {/* {showSellerCheckout ? <SellerProductCheckout /> : <ProductCheckout />} */}
     </>
   );
 };

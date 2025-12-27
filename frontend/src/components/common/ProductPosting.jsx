@@ -112,8 +112,8 @@ const ProductPosting = () => {
     formData.append("product_payload", JSON.stringify(productPayload));
     console.log(formData.get("product_payload"));    
 
-    const respone = await productApi.postProduct(formData);
-    setPostedProductId(respone.data.productId);
+    const respone = await productApi.postProduct(formData);    
+    setPostedProductId(respone.data);
 
     setPosted(true);
   }
@@ -174,7 +174,7 @@ const ProductPosting = () => {
                 Đăng sản phẩm khác
               </button>
               <Link 
-                to={`products/${postedProductId}`}
+                to={`/products/${postedProductId}`}
                 className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200"
               >
                 View Product

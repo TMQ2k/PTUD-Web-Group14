@@ -114,12 +114,12 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
       });
     }
 
-    const productData = JSON.parse(req.body.product_payload);
+    const productData = JSON.parse(req.body.product_payload);    
     const {name,description, starting_price, step_price, 
       buy_now_price, end_time, category_ids} = productData;
 
     // Handle image uploads
-    const imageFiles = req.files;
+    const imageFiles = req.files;    
     let image_cover_url = "";
     let extra_image_urls = [];
 
@@ -142,8 +142,7 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
       }); 
     }
     
-    const newProduct = await postProduct(
-      {
+    const newProduct = await postProduct(      
         user,
         name,
         description,
@@ -153,8 +152,7 @@ router.post("/", authenticate, authorize("seller"), upload.array("images"), asyn
         image_cover_url,
         end_time,
         extra_image_urls,
-        category_ids
-      }
+        category_ids      
     );
 
     res.status(201).json({

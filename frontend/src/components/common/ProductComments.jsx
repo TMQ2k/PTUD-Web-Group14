@@ -1,4 +1,4 @@
-import React,{ useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSelector } from "react-redux";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
@@ -26,13 +26,13 @@ const ProductComments = React.memo(({ productId }) => {
       try {
         const respone = await commentApi.getAllComments(productId);
         console.log(respone.data);
-        if (isMounted) {          
+        if (isMounted) {
           setComments(respone.data);
         }
       } catch (err) {
         console.log(err);
         if (isMounted) {
-          setError(err);          
+          setError(err);
         }
       } finally {
         if (isMounted) {
@@ -49,73 +49,45 @@ const ProductComments = React.memo(({ productId }) => {
   }, [productId]);
 
   const handleAddComment = async (content, parentId) => {
-    const payload = {
-      content: content,
-      link_product: `${website_link}/${productId}`,
-      parent_comment_id: parentId,
-    };
+    try {
+      const payload = {
+        content: content,
+        link_product: `${website_link}/${productId}`,
+        parent_comment_id: parentId,
+      };
 
-    //console.log("Payload: ", payload);
-
-    //console.log(userData);
-    // const new_comment_id = (Math.max(0, ...comments.map((c) => c.comment_id)) + 1).toString();
-    // const newComment = {
-    //   comment_id: new_comment_id,
-    //   user_id: userData.id,
-    //   username: userData.username,
-    //   user_avatar_url: userData.avatar,
-    //   content: content,
-    //   posted_at: new Date(Date.now()).toLocaleString(),
-    //   parent_id: parentId,
-    //   replies: [],
-    // };
-
-    // //console.log(newComment);
-
-    // // create new comment locally
-    // setComments((prevComments) => {
-    //   const updatedComments = [...prevComments, newComment];
-
-    //   if (parentId) {
-    //     return updatedComments.map((comment) => {
-    //       if (comment.comment_id === parentId) {
-    //         return {
-    //           ...comment,
-    //           replies: [...(comment.replies || []), new_comment_id]
-    //         };
-    //       }
-    //       return comment;
-    //     });
-    //   }
-
-    //   return updatedComments;
-    // });
-    // post to api
-    const respone = await commentApi.postComment(productId, payload);
-    console.log(respone.data);
-    setComments((prev) => {
-      if (respone?.data) {
-        return [...prev, respone.data];
-      }
-      else return [...prev];
-    })
+      const respone = await commentApi.postComment(productId, payload);
+      //console.log(respone.data);
+      setComments((prev) => {
+        //console.log(respone.data);
+        if (respone?.data) {
+          return [...prev, respone.data];
+        } else return [...prev];
+      });
+    } catch (err) {
+      console.log("Post comment error: ", err.message);
+    }
   };
 
   return (
     <>
-      {loading && (
+      {/* {loading && (
         <div className="h-fit w-full mt-10 flex items-center justify-center">
           <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
       )}
-      {error && <div className="text-2xl font-bold text-red-500 text-center w-full">Can not get comments</div>}
-      {!loading && !error && (
+      {error && (
+        <div className="text-2xl font-bold text-red-500 text-center w-full">
+          Can not get comments
+        </div>
+      )} */}
+      {/*{!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">
             Bình luận ({comments.length})
           </h3>
 
-          {/* Root Comment Form */}
+          
           <div className="mb-8">
             {role !== "guest" && (
               <CommentForm
@@ -123,32 +95,81 @@ const ProductComments = React.memo(({ productId }) => {
                 handleSubmit={(text) => handleAddComment(text, null)}
               />
             )}
-          </div>      
-
-          {/* Render Root Comments */}
-          <div className="space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
+          </div>
+          
+          <div
+            className="space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
                 bg-white rounded-xl border border-blue-100
                 shadow-[0_8px_30px_rgb(0,0,0,0.04)]                
                 [&::-webkit-scrollbar]:w-2
                 [&::-webkit-scrollbar-track]:bg-blue-50
                 [&::-webkit-scrollbar-thumb]:bg-blue-200
                 [&::-webkit-scrollbar-thumb]:rounded-full
-                hover:[&::-webkit-scrollbar-thumb]:bg-blue-400">   
-            {comments.map((_, i, arr) => arr[arr.length - 1 - i].parent_id === null && (
-              <CommentItem
-                //id={arr[arr.length - 1 - i].comment_id}
-                key={arr[arr.length - 1 - i].comment_id}
-                comment={arr[arr.length - 1 - i]}
-                comments={comments}
-                addReply={handleAddComment}
-                userRole={role}
-              />
-            ))}
+                hover:[&::-webkit-scrollbar-thumb]:bg-blue-400"
+          >
+            {comments.map(
+              (_, i, arr) =>
+                arr[arr.length - 1 - i].parent_id === null && (
+                  <CommentItem
+                    //id={arr[arr.length - 1 - i].comment_id}
+                    key={arr[arr.length - 1 - i].comment_id}
+                    comment={arr[arr.length - 1 - i]}
+                    comments={comments}
+                    addReply={handleAddComment}
+                    userRole={role}
+                  />
+                )
+            )}
           </div>
         </div>
-      )}
+      )} */}
+      <Suspense
+        fallback={
+          <div className="h-fit w-full mt-10 flex items-center justify-center">
+            <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+          </div>
+        }
+      >
+        <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
+          <h3 className="text-xl font-bold text-blue-600 mb-6">
+            Bình luận ({comments.length})
+          </h3>          
+          <div className="mb-8">
+            {role !== "guest" && (
+              <CommentForm
+                submitLabel="Đăng bình luận"
+                handleSubmit={(text) => handleAddComment(text, null)}
+              />
+            )}
+          </div>
+          
+          <div
+            className="space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
+                bg-white rounded-xl border border-blue-100
+                shadow-[0_8px_30px_rgb(0,0,0,0.04)]                
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-track]:bg-blue-50
+                [&::-webkit-scrollbar-thumb]:bg-blue-200
+                [&::-webkit-scrollbar-thumb]:rounded-full
+                hover:[&::-webkit-scrollbar-thumb]:bg-blue-400"
+          >
+            {comments.map(
+              (_, i, arr) =>
+                arr[arr.length - 1 - i].parent_id === null && (
+                  <CommentItem                    
+                    key={arr[arr.length - 1 - i].comment_id}
+                    comment={arr[arr.length - 1 - i]}
+                    comments={comments}
+                    addReply={handleAddComment}
+                    userRole={role}
+                  />
+                )
+            )}
+          </div>
+        </div>
+      </Suspense>
     </>
   );
-})
+});
 
 export default ProductComments;
