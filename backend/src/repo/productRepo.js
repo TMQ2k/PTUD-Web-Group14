@@ -190,7 +190,7 @@ export const getProductsList = async (
   if (page && limit) {
     offset = (page - 1) * limit;
   }
-  let baseQuery = `SELECT p.*
+  let baseQuery = `SELECT DISTINCT p.*
     FROM products p
     LEFT JOIN product_categories pc ON p.product_id = pc.product_id
     WHERE 1=1`;
@@ -211,7 +211,7 @@ export const getProductsList = async (
   if (sortBy === "highest_price") {
     baseQuery += ` ORDER BY p.current_price DESC`;
   } else if (sortBy === "most_bidded") {
-    baseQuery = `SELECT p.*, COUNT(ab.product_id) AS bid_count
+    baseQuery = `SELECT DISTINCT p.*, COUNT(ab.product_id) AS bid_count
         FROM products p
         JOIN auto_bids ab ON p.product_id = ab.product_id
         LEFT JOIN product_categories pc ON p.product_id = pc.product_id
