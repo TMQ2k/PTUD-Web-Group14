@@ -113,7 +113,7 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
   }
 
   const productImages = await getProductImagesRepo(productId);
-  const bidHistory = await getBidHistoryByProductId(productId);
+  const historyCount = await countHistoryByProductId(productId);
   const topBidderId = await getTopBidderIdByProductId(productId);
   const topBidderInfo = topBidderId ? await getUserInfoById(topBidderId) : null;
   const sellerInfo = await getUserInfoById(productInfo.seller_id);
@@ -179,6 +179,7 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
     created_at: productInfo.created_at,
     end_time: productInfo.end_time,
     bidder: userHighestBidInfo,
+    history_count: historyCount,
     top_bidder: topBidderInfo,
     history: bidHistory,
     otherProducts: otherProducts,
@@ -270,9 +271,9 @@ export const getProductListByQuery = async(query, limit, page, sortBy, is_active
 }
 
 export const updateDescription = async (productId, newDescription) => {
-  const updatedProduct = await updateDescriptionRepo(productId, newDescription);
-  if (!updatedProduct) {
+  const updatedProductDescription = await updateDescriptionRepo(productId, newDescription);
+  if (!updatedProductDescription) {
     throw new Error("Failed to update product description");
   }
-  return updatedProduct;
+  return updatedProductDescription;
 }

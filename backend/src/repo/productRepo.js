@@ -334,6 +334,6 @@ export const updateDescription = async (productId, newDescription) => {
     `UPDATE products SET description = $1 WHERE product_id = $2 RETURNING *`,
     [newDescription, productId]
   );
-  return result.rows[0];
+  return result.rows[0].description;
 };
 
