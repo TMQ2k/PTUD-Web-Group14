@@ -4,7 +4,7 @@ import { authStorage } from "../utils/auth";
 const productEndpoint = {
   getAll: "/products",
   postProduct: "/products",
-  productBiddingHistory: "/products/bid-history"
+  productBiddingHistory: "/products/bid-history",
 };
 
 export const productApi = {
@@ -89,12 +89,16 @@ export const productApi = {
   },
 
   postProduct: async (productFormData) => {
-    const respone = await http.post(`${productEndpoint.postProduct}`, productFormData, {
-      headers: {
-        Authorization: `Bearer ${authStorage.getToken()}`,
-        "Content-Type": 'multipart/form-data',
-      },
-    });
+    const respone = await http.post(
+      `${productEndpoint.postProduct}`,
+      productFormData,
+      {
+        headers: {
+          Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
     return respone.data;
   },
@@ -134,7 +138,24 @@ export const productApi = {
   },
 
   getProductBiddingHistory: async (productId) => {
-    const respone = await http.get(`${productEndpoint.productBiddingHistory}/${productId}`);
+    const respone = await http.get(
+      `${productEndpoint.productBiddingHistory}/${productId}`
+    );
+    return respone.data;
+  },
+
+  updateDescription: async (productId, updatedDescription) => {
+    // console.log(updatedDescription);
+    // console.log(JSON.stringify(updatedDescription))
+    const respone = await http.put(
+      `products/${productId}/description`,
+      { newDescription: updatedDescription },
+      {
+        headers: {
+          Authorization: `Bearer ${authStorage.getToken()}`,
+        },
+      }
+    );
     return respone.data;
   },
 };

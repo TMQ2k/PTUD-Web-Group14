@@ -43,6 +43,7 @@ const ProductFormContext = ({
     getValues,
     formState: { errors },
     trigger,
+    formState: { isSubmitting },
   } = useFormContext();
 
   const [descCount, setDescCount] = useState(0);
@@ -523,9 +524,12 @@ const ProductFormContext = ({
         <div className="mt-4 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95"
+            disabled={isSubmitting}
+            className={`px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium 
+                        rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95
+                        disabled:bg-blue-300 disabled:cursor-not-allowed`}
           >
-            {buttonLabel}
+            {buttonLabel}{isSubmitting ? "..." : ""}
           </button>
         </div>
       </form>

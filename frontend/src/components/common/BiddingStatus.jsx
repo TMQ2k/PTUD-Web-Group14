@@ -127,7 +127,7 @@ const BiddingStatus = ({ className = "" }) => {
                         </NavigateButton>
                       </>
                     )}
-                  {(role === "bidder" || role === "seller") && (
+                  {(role === "bidder" || role === "seller") && (userData.id !== product?.seller?.id || false) && (
                     <>
                       {rating_percent < 80.00 ? (
                         <BiddingRequestForm 

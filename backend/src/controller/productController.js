@@ -187,7 +187,6 @@ router.get("/bid-history/:productId", async (req, res) => {
     });
   }
 });
-export default router;
 
 router.put("/:productId/description", authenticate, authorize("seller"), async (req, res) => {
   try {
@@ -208,3 +207,5 @@ router.put("/:productId/description", authenticate, authorize("seller"), async (
     });
   }
 });
+
+export default router;
