@@ -12,6 +12,12 @@ import {
   getAllUsers,
   deleteUserById,
   updateQRUrl,
+  judgeUserRepo,
+  getUserRatingRepo,
+  changeStatusWonProductsRepo,
+  getUserWonProductsRepo,
+  getSellerDeactivatedProductsRepo,
+  getBiddedProductsRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -28,7 +34,13 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const register = async (username, password, email, role = "bidder") => {
+export const register = async (
+  username,
+  password,
+  email,
+  address,
+  role = "bidder"
+) => {
   // (Giữ lại validation ở service để báo lỗi sớm và user-friendly)
   const existingUsername = await pool.query(
     "SELECT 1 FROM users WHERE username = $1",
@@ -48,7 +60,13 @@ export const register = async (username, password, email, role = "bidder") => {
 
   // Hash password và gọi repo để đăng ký qua hàm DB (tạo users_info & users_rating)
   const hashed = await bcrypt.hash(password, 10);
-  const registerMessage = await registerUser(username, hashed, email, role);
+  const registerMessage = await registerUser(
+    username,
+    hashed,
+    email,
+    address,
+    role
+  );
 
   // Kỳ vọng: "User registered successfully with ID: <id>"
   if (!registerMessage || typeof registerMessage !== "string") {
@@ -333,4 +351,88 @@ export const updateUserQRUrlService = async (user_id, qr_url) => {
     throw new Error("Không tìm thấy user hoặc cập nhật QR URL thất bại.");
   }
   return updatedUser;
+};
+
+export const judgeUserService = async (
+  from_user_id,
+  to_user_id,
+  value,
+  content
+) => {
+  try {
+    const result = await judgeUserRepo(
+      from_user_id,
+      to_user_id,
+      value,
+      content
+    );
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi đánh giá người dùng:", err);
+    throw err;
+  }
+};
+
+export const getUserRatingsService = async (userId) => {
+  try {
+    const ratings = await getUserRatingRepo(userId);
+    return ratings;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy đánh giá người dùng:", err);
+    throw err;
+  }
+};
+
+export const changeStatusWonProductsService = async (won_id, status) => {
+  try {
+    const result = await changeStatusWonProductsRepo(won_id, status);
+    return result;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi thay đổi trạng thái sản phẩm thắng:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getUserWonProductsService = async (userId) => {
+  try {
+    const wonProducts = await getUserWonProductsRepo(userId);
+    return wonProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm thắng của người dùng:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getSellerDeactivatedProductsService = async (sellerId) => {
+  try {
+    const deactivatedProducts = await getSellerDeactivatedProductsRepo(
+      sellerId
+    );
+    return deactivatedProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm đã hủy kích hoạt của người bán:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getBiddedProductsService = async (userId) => {
+  try {
+    const biddedProducts = await getBiddedProductsRepo(userId);
+    return biddedProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy sản phẩm đã đặt giá của người dùng:",
+      err
+    );
+    throw err;
+  }
 };

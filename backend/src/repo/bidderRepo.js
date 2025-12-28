@@ -172,3 +172,16 @@ export const requestBidderOnProductRepo = async (
     throw err;
   }
 };
+
+export const isBidsOnProductRepo = async (productId, bidderId) => {
+  try {
+    const result = await pool.query(`SELECT * FROM fnc_is_bids($1, $2)`, [
+      productId,
+      bidderId,
+    ]);
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi kiểm tra đấu thầu trên sản phẩm:", err);
+    throw err;
+  }
+};

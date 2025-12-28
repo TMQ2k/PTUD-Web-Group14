@@ -7,7 +7,6 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
-select * from users
 go
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
@@ -22,7 +21,7 @@ CREATE TABLE users_info (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE users_info
-ADD COLUMN qr_url VARCHAR(255);
+ADD COLUMN address VARCHAR(250);
 select * from users_info
 
 go
@@ -92,6 +91,8 @@ ALTER TABLE products
 ADD CONSTRAINT chk_min_duration
 CHECK (end_time >= created_at + INTERVAL '3 hours');
 go
+alter table products
+drop constraint chk_min_duration 
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
@@ -121,21 +122,7 @@ CREATE TABLE user_otp (
     otp_code VARCHAR(6) NOT NULL,
     expires_at TIMESTAMP NOT NULL
 );
-go
-CREATE TABLE bids (
-    id BIGSERIAL PRIMARY KEY,
-    product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
-    amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
-    bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    status VARCHAR(20) NOT NULL DEFAULT 'active'
-        CHECK (status IN ('active', 'winning', 'outbid', 'rejected')),
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-);
-go
-drop table auto_bids
 go
 CREATE TABLE auto_bids (
     id BIGSERIAL PRIMARY KEY,
@@ -272,6 +259,7 @@ CREATE TABLE product_stats (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 go
 CREATE TABLE comments (
     comment_id BIGSERIAL PRIMARY KEY,
@@ -305,5 +293,57 @@ CREATE TABLE product_history (
     bid_time TIMESTAMPTZ NOT NULL DEFAULT NOW()  -- thời điểm ra giá
 );
 
+CREATE TABLE user_reviews (
+    review_id BIGSERIAL PRIMARY KEY,
+    
+    from_user BIGINT NOT NULL,   -- người đánh giá
+    to_user   BIGINT NOT NULL,   -- người bị đánh giá
+
+    value INT NOT NULL
+        CHECK (value IN (1, -1)), -- +1 hoặc -1
+
+    content TEXT DEFAULT NULL,   -- nội dung đánh giá
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    ----------------------------------------------------------------
+    -- RÀNG BUỘC
+    ----------------------------------------------------------------
+
+    CONSTRAINT fk_review_from_user
+        FOREIGN KEY (from_user)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_review_to_user
+        FOREIGN KEY (to_user)
+        REFERENCES users(user_id)
+        ON DELETE CASCADE,
+
+    -- Không cho tự đánh giá
+    CONSTRAINT chk_review_not_self
+        CHECK (from_user <> to_user)
+
+);
+
+CREATE TABLE user_won_products (
+    id BIGSERIAL PRIMARY KEY,
+
+    user_id BIGINT NOT NULL
+        REFERENCES users(user_id) ON DELETE CASCADE,   -- người chiến thắng
+
+    product_id BIGINT NOT NULL
+        REFERENCES products(product_id) ON DELETE CASCADE, -- sản phẩm thắng đấu giá
+
+    winning_bid NUMERIC(15,2) NOT NULL,   -- giá thắng
+    won_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- thời điểm thắng
+
+    -- mỗi sản phẩm chỉ có 1 người thắng
+    CONSTRAINT uq_won_product UNIQUE (product_id)
+);
+
+ALTER TABLE user_won_products
+ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'invalid'
+CHECK (status IN ('invalid', 'sent', 'paid', 'received'));
 
 
