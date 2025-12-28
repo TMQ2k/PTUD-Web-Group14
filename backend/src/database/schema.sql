@@ -21,7 +21,7 @@ CREATE TABLE users_info (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ALTER TABLE users_info
-ADD COLUMN qr_url TEXT;
+ADD COLUMN address VARCHAR(250);
 select * from users_info
 
 go

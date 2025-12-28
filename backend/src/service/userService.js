@@ -34,7 +34,13 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const register = async (username, password, email, role = "bidder") => {
+export const register = async (
+  username,
+  password,
+  email,
+  address,
+  role = "bidder"
+) => {
   // (Giữ lại validation ở service để báo lỗi sớm và user-friendly)
   const existingUsername = await pool.query(
     "SELECT 1 FROM users WHERE username = $1",
@@ -54,7 +60,13 @@ export const register = async (username, password, email, role = "bidder") => {
 
   // Hash password và gọi repo để đăng ký qua hàm DB (tạo users_info & users_rating)
   const hashed = await bcrypt.hash(password, 10);
-  const registerMessage = await registerUser(username, hashed, email, role);
+  const registerMessage = await registerUser(
+    username,
+    hashed,
+    email,
+    address,
+    role
+  );
 
   // Kỳ vọng: "User registered successfully with ID: <id>"
   if (!registerMessage || typeof registerMessage !== "string") {

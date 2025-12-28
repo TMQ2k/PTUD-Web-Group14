@@ -30,13 +30,13 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   try {
-    const { username, password, email, role } = req.body;
-    const msg = await register(username, password, email, role);
+    const { username, password, email, address, role } = req.body;
+    const msg = await register(username, password, email, address, role);
 
     res.status(201).json({
       code: 201,
       message: "User registered successfully",
-      data: { username, email, role, note: msg },
+      data: { username, email, role, address, note: msg },
     });
   } catch (err) {
     console.error("❌ Error in /register route:", err);

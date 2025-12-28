@@ -17,11 +17,12 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-
+select * from users_info
 CREATE OR REPLACE FUNCTION fnc_register_user(
     p_username VARCHAR,
     p_password_hashed TEXT,
     p_email VARCHAR,
+	p_address VARCHAR,
     p_role VARCHAR DEFAULT 'guest'
 )
 RETURNS TEXT AS $$
@@ -49,7 +50,13 @@ BEGIN
     RETURNING user_id INTO new_user_id;
 
     -- Tạo bản ghi trong bảng users_info tương ứng
-    INSERT INTO users_info(user_id) VALUES (new_user_id);
+	IF p_address IS NOT NULL THEN
+	    INSERT INTO users_info(user_id, address) 
+	    VALUES (new_user_id, p_address);
+	ELSE
+	    INSERT INTO users_info(user_id) 
+	    VALUES (new_user_id);
+	END IF;
 	INSERT INTO users_rating(user_id, rating_plus, rating_minus) VALUES (new_user_id, 0, 0);
 
     -- Trả về thông báo hoặc ID
