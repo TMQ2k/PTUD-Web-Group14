@@ -9,6 +9,12 @@ import {
   enableAuctionExtensionRepo,
 } from "../repo/sellerRepo.js";
 
+import { getUserProfile } from "../repo/userRepo.js";
+import { getProductProfile } from "./productService.js";
+import {
+  sendNotificationEmail
+} from "./emailService.js";
+
 export const deactivateAllSellerExpiredService = async () => {
   try {
     const result = await deactivateAllSellerExpiredRepo();
@@ -45,12 +51,38 @@ export const sellerRejectBidderService = async (
       bidderId,
       reason
     );
+
+    const bidderProfile = await getUserProfile(bidderId);
+    const sellerProfile = await getUserProfile(sellerId);
+    const productProfile = await getProductProfile(productId);
+    if (bidderProfile && sellerProfile) {
+      await sendEmailRejectBidderService(
+        bidderProfile.email,
+        bidderProfile.username,
+        sellerProfile.username,
+        productProfile.name,
+        reason
+      );
+    }
+
     return result;
+    
   } catch (err) {
     console.error(
       "❌ [Service] Lỗi khi người bán từ chối người đấu thầu:",
       err
     );
+    throw err;
+  }
+};
+
+export const sendEmailRejectBidderService = async (to, bidderName, sellerName, productName, reason) => {
+  try {
+    const subject = `Thông báo từ web đấu giá - Yêu cầu ra giá bị từ chối`;
+    const message = `Xin chào ${bidderName},\n\nChúng tôi rất tiếc thông báo rằng yêu cầu ra giá của bạn cho sản phẩm "${productName}" đã bị từ chối vì lý do sau: ${reason}.\n\nCảm ơn bạn đã quan tâm đến sản phẩm của chúng tôi. Hy vọng sẽ được phục vụ bạn trong tương lai.\n\nTrân trọng,\n${sellerName} và đội ngũ web đấu giá.`;
+    await sendNotificationEmail(to, subject, message);
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi gửi email từ chối người đấu thầu:", err);
     throw err;
   }
 };

@@ -337,3 +337,11 @@ export const updateDescription = async (productId, newDescription) => {
   return result.rows[0].description;
 };
 
+export const getProductProfile = async (productId) => {
+  const result = await pool.query(
+    `SELECT * FROM products WHERE product_id = $1`,
+    [productId]
+  );
+  return result.rows[0];
+}
+
