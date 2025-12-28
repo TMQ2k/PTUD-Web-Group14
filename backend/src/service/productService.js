@@ -14,6 +14,7 @@ import {
   getProductBidHistory as getProductBidHistoryRepo,
   getProductListByQuery as getProductListByQueryRepo,
   updateDescription as updateDescriptionRepo,
+  getRecentlyEndedProducts as getRecentlyEndedProductsRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -23,12 +24,17 @@ import {
   countHistoryByProductId,
 } from "../repo/bidderRepo.js";
 
-import { getUserInfoById } from "../repo/userRepo.js";
+import { 
+  getUserInfoById,
+  getUserProfile
+ } from "../repo/userRepo.js";
 import {
   otherProductsInfo,
   Product,
   ProductProfile,
 } from "../model/productModel.js";
+
+import { sendNotificationEmail } from "./emailService.js";
 
 export const getSearchProducts = async (
   search,
@@ -233,8 +239,81 @@ export const deleteProductById = async (productId) => {
 };
 
 export const deactiveProduct = async () => {
+  const getRecentlyEndedProducts = await getRecentlyEndedProductsRepo();
   const result = await deactiveProductRepo();
+
+  if (getRecentlyEndedProducts) {
+    for (let prod of getRecentlyEndedProducts) {
+      const historyCount = await countHistoryByProductId(prod.product_id);
+      if (historyCount == 0) {
+        const sellerInfo = await getUserProfile(prod.seller_id);
+        //SendNotificationEmail to seller
+        await sendNoBidderNotificationEmails(
+          sellerInfo.email,
+          sellerInfo.username,
+          prod.name
+        );
+      }
+
+      else {
+        const topBidderId = await getTopBidderIdByProductId(prod.product_id);
+        const topBidderInfo = await getUserProfile(topBidderId);
+        const sellerInfo = await getUserProfile(prod.seller_id);  
+        //SendNotificationEmail to bidder
+        await sendWinningBidderNotificationEmail(
+          topBidderInfo.email,
+          topBidderInfo.username,
+          prod.name,
+          prod.current_price
+        );
+
+        //SendNotificationEmail to seller
+        await sendSellerNotificationEmail(
+          sellerInfo.email,
+          sellerInfo.username,
+          prod.name,
+          prod.current_price,
+          topBidderInfo.username
+        );
+      }
+    }
+  } 
+
   return result;
+};
+
+export const sendNoBidderNotificationEmails = async (sellerEmail, sellerName, productName) => {
+  const subject = "Thông báo kết thúc đấu giá sản phẩm";
+  const message = `Kính gửi ${sellerName},\n\nSản phẩm đấu giá "${productName}" của bạn đã kết thúc mà không có người đấu thầu nào.\n\nTrân trọng,\nĐội ngũ đấu giá`;
+  try {
+    await sendNotificationEmail(sellerEmail, subject, message);
+  } catch (err) {
+    console.error("❌ Lỗi khi gửi email thông báo không có người đấu thầu:", err);
+    throw err;
+  } 
+};
+
+export const sendWinningBidderNotificationEmail = async (bidderEmail, bidderName, productName, finalPrice) => {
+  const subject = "Chúc mừng bạn đã thắng đấu giá!";
+  const message = `Kính gửi ${bidderName},\n\nChúc mừng bạn đã thắng đấu giá sản phẩm "${productName}" với giá cuối cùng là ${finalPrice}.\n\nVui lòng liên hệ với người bán để hoàn tất giao dịch.\n\nTrân trọng,\nĐội ngũ đấu giá`;
+  try {
+    await sendNotificationEmail(bidderEmail, subject, message);
+  } catch (err) {
+    console.error("❌ Lỗi khi gửi email thông báo người đấu thầu thắng:", err);
+    throw err;
+  }
+};
+
+export const sendSellerNotificationEmail = async (sellerEmail, sellerName, productName, finalPrice, bidderName) => {
+  const subject = "Thông báo sản phẩm đấu giá đã kết thúc";
+  const message = `Kính gửi ${sellerName},\n\nSản phẩm đấu giá "${productName}" của bạn đã kết thúc với người thắng cuộc là ${bidderName} với giá cuối cùng là ${finalPrice}.\n\nVui lòng liên hệ với người thắng cuộc để hoàn tất giao dịch.\n\nTrân trọng,\nĐội ngũ đấu giá`;
+  try {
+    await sendNotificationEmail(sellerEmail, subject, message);
+  }
+  catch (err) {
+    console.error("❌ Lỗi khi gửi email thông báo người bán:", err);
+    throw err;
+  }
 };
 
 export const getProductListByQuery = async(query, limit, page, sortBy, is_active) => {
