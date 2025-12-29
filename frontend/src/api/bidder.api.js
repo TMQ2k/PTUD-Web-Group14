@@ -32,7 +32,7 @@ export const bidderApi = {
       reason: reason,
     }
 
-    const respone = await http.post(bidderEndpoint.requestProduct,requestData, {});
+    const respone = await http.post(bidderEndpoint.requestProduct, requestData, {});
     return respone.data;
   }
 };

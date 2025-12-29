@@ -24,7 +24,9 @@ const BiddingStatus = ({ className = "" }) => {
   const dispatch = useProductDispatch();
   const { userData } = useSelector((state) => state.user);
   const role = userData?.role || "guest";
-  const rating_percent = userData?.rating_percent || 0.00;
+  //console.log("Role: ", role)
+  const rating_percent = userData?.rating_percent || 0.0;
+  //console.log(userData.id !== product.seller.id)
 
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(
@@ -56,14 +58,16 @@ const BiddingStatus = ({ className = "" }) => {
       type: "autobid-update",
       payload: respone.data,
     });
-  };  
+  };
 
   return (
     <>
       <main className={className}>
         <section>
           <h2 className="text-slate-400 text-md font-normal uppercase">
-            {product?.current_price && product?.top_bidder ? "Giá hiện tại" : "Giá khởi điểm"}
+            {product?.current_price && product?.top_bidder
+              ? "Giá hiện tại"
+              : "Giá khởi điểm"}
           </h2>
           <p className="text-3xl font-semibold">{formattedCurrentBid} đ</p>
           <ProgressBar className="mt-2" />
@@ -95,9 +99,11 @@ const BiddingStatus = ({ className = "" }) => {
                 />
               </div>
             </>
-          ) : (<div className="font-bold text-red-500 text-center w-full">
-            Sản phẩm chưa có người đấu giá
-          </div>)}          
+          ) : (
+            <div className="font-bold text-red-500 text-center w-full">
+              Sản phẩm chưa có người đấu giá
+            </div>
+          )}
         </section>
         <div className="w-full h-px bg-gray-400 mt-5 mb-2"></div>
         <section>
@@ -111,7 +117,7 @@ const BiddingStatus = ({ className = "" }) => {
                 </div>
               ) : (
                 <>
-                  {role === "seller" &&
+                  {/* {role === "seller" &&
                     product?.seller?.seller_id === userData.id && (
                       <>
                         <NavigateButton
@@ -126,52 +132,55 @@ const BiddingStatus = ({ className = "" }) => {
                           Danh sách bidder cần duyệt
                         </NavigateButton>
                       </>
-                    )}
-                  {(role === "bidder" || role === "seller") && (userData.id !== product?.seller?.id || false) && (
-                    <>
-                      {rating_percent < 80.00 ? (
-                        <BiddingRequestForm 
-                          productId={product?.product_id || ""}
-                          state={false}
-                        />
-                      ) : (
-                        <BiddingForm
-                          price={product?.bidder?.maximum_price || 0}
-                          steps={parseInt(product?.step_price) || 0}
-                          productId={product?.product_id || ""}
-                          onAutobidUpdate={handleAutobidUpdate}
-                        />
-                      )}
+                    )} */}
+                  {(role === "bidder" || role === "seller") &&
+                    userData.id !== product.seller.id && (
+                      <>
+                        {rating_percent < 80.0 ? (
+                          <BiddingRequestForm
+                            productId={product?.product_id || ""}
+                            state={false}
+                          />
+                        ) : (
+                          <BiddingForm
+                            price={product?.bidder?.maximum_price || 0}
+                            steps={parseInt(product?.step_price) || 0}
+                            productId={product?.product_id || ""}
+                            onAutobidUpdate={handleAutobidUpdate}
+                          />
+                        )}
 
-                      {/*If buy_now_price exists*/}
-                      {buy_now && (
-                        <NavigateButton
-                          to={`/products/${product?.product_id || ""}/bidding`}
-                          className="bg-white/50 hover:bg-purple-100
+                        {/*If buy_now_price exists*/}
+                        {buy_now && (
+                          <NavigateButton
+                            to={`/products/${
+                              product?.product_id || ""
+                            }/bidding`}
+                            className="bg-white/50 hover:bg-purple-100
                                        text-center text-purple-500
                                        font-bold rounded-md w-full py-2                                    
                                        relative group text-lg border-2 border-purple-500"
-                        >
-                          <p className="flex flex-row justify-center items-center gap-2">
-                            <FaShippingFast className="size-6" />
-                            Mua ngay{" "}
-                            {formatNumberToCurrency(
-                              product?.buy_now_price || "NaN"
-                            )}{" "}
-                            đ
-                          </p>
-                          <span
-                            className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500 
+                          >
+                            <p className="flex flex-row justify-center items-center gap-2">
+                              <FaShippingFast className="size-6" />
+                              Mua ngay{" "}
+                              {formatNumberToCurrency(
+                                product?.buy_now_price || "NaN"
+                              )}{" "}
+                              đ
+                            </p>
+                            <span
+                              className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500 
                                         animate-ping"
-                          ></span>
-                          <span
-                            className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500
+                            ></span>
+                            <span
+                              className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500
                                         "
-                          ></span>
-                        </NavigateButton>
-                      )}
-                    </>
-                  )}
+                            ></span>
+                          </NavigateButton>
+                        )}
+                      </>
+                    )}
                 </>
               )}
               <button
@@ -185,7 +194,7 @@ const BiddingStatus = ({ className = "" }) => {
                   });
                 }}
               >
-                {role === "seller" && userData === product?.seller?.id
+                {role === "seller" && userData.id === product.seller.id
                   ? "Quản lý đấu giá"
                   : "Lịch sử đấu giá"}
                 <span

@@ -25,7 +25,7 @@ const ProductComments = React.memo(({ productId }) => {
 
       try {
         const respone = await commentApi.getAllComments(productId);
-        console.log(respone.data);
+        //console.log(respone.data);
         if (isMounted) {
           setComments(respone.data);
         }
