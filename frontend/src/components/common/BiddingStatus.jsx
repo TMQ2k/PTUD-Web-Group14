@@ -188,7 +188,7 @@ const BiddingStatus = ({ className = "" }) => {
                 onClick={() => {
                   navigate(`/auctionmanagement/${product?.product_id}`, {
                     state: {
-                      sellerId: product?.seller?.seller_id || null,
+                      sellerId: product?.seller?.id || null,
                       productName: product?.name || "",
                     },
                   });

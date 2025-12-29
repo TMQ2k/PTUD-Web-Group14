@@ -31,7 +31,7 @@ const SellerProductCheckout = () => {
       price: 2250.0,
       productImageUrl:
         "https://images.unsplash.com/photo-1627639685507-358459789474?q=80&w=2070&auto=format&fit=crop",
-      bidderImageUrl: null,        
+      transactionImageUrl: null,        
       seller: {
         name: "RetroOptics Ltd.",
         id: 11,

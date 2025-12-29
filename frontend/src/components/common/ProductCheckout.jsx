@@ -10,19 +10,18 @@ const ProductCheckout = () => {
 
   const data = [
     {
-      id: 101,
       productId: 1002,
       name: "Vintage 1960s Leica M3 Rangefinder Camera with Summicron 50mm Lens (Excellent Condition)",
       price: 2450.0,
-      imageUrl:
+      productImageUrl:
         "https://images.unsplash.com/photo-1627639685507-358459789474?q=80&w=2070&auto=format&fit=crop",
       seller: {
         name: "RetroOptics Ltd.",
-      },
-      // Using a placeholder image service for the QR code demonstration
+        id: 12,
+      },      
       paymentQrUrl:
         "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:RetroOptics:ACC123456",
-      status: "paid", // null - "paid" - "received"
+      status: "paid", // "invalid" - "sent" - "paid" - "received"
     },
     {      
       productId: 1004,
