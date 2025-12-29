@@ -185,9 +185,8 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
     created_at: productInfo.created_at,
     end_time: productInfo.end_time,
     bidder: userHighestBidInfo,
-    history_count: historyCount,
     top_bidder: topBidderInfo,
-    history: bidHistory,
+    history_count: historyCount,
     otherProducts: otherProducts,
   };
 };
