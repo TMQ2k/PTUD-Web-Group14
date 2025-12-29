@@ -9,7 +9,7 @@ import {
 } from "../repo/sellerRepo.js";
 
 import { getUserProfile } from "../repo/userRepo.js";
-import { getProductProfile } from "./productService.js";
+import { getProductProfile } from "../repo/productRepo.js";
 import {
   sendNotificationEmail
 } from "./emailService.js";
