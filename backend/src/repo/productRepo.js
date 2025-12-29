@@ -202,8 +202,7 @@ export const getProductsList = async (
   if (is_active !== undefined) {
     if (is_active == "true") {
       queryParams.push(true);
-    }
-    else {
+    } else {
       queryParams.push(false);
     }
     baseQuery += ` AND p.is_active = $${queryParams.length}`;
@@ -225,12 +224,11 @@ export const getProductsList = async (
     if (is_active !== undefined) {
       if (is_active == "true") {
         queryParams.push(true);
-      }
-      else {
+      } else {
         queryParams.push(false);
       }
-    baseQuery += ` AND p.is_active = $${queryParams.length}`;
-  }
+      baseQuery += ` AND p.is_active = $${queryParams.length}`;
+    }
     baseQuery += ` GROUP BY p.product_id ORDER BY bid_count DESC`;
   } else if (sortBy === "ending_soon") {
     baseQuery += ` ORDER BY p.end_time ASC`;
@@ -294,8 +292,13 @@ export const postProduct = async (
   return message;
 };
 
-
-export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy = "endtime_desc", is_active) => {
+export const getProductListByQuery = async (
+  query,
+  limit = 5,
+  page = 1,
+  sortBy = "endtime_desc",
+  is_active
+) => {
   let offset = 0;
   if (page && limit) {
     offset = (page - 1) * limit;
@@ -307,13 +310,12 @@ export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy =
     LEFT JOIN categories c ON pc.category_id = c.category_id
     WHERE (p.name ILIKE $1 OR c.name ILIKE $1 OR c.parent_id IN (
       SELECT category_id FROM categories WHERE name ILIKE $1
-    ))`; 
-  const queryParams = [`%${query}%`]; 
+    ))`;
+  const queryParams = [`%${query}%`];
   if (is_active !== undefined) {
     if (is_active == "true") {
       queryParams.push(true);
-    }
-    else {
+    } else {
       queryParams.push(false);
     }
     baseQuery += ` AND p.is_active = $${queryParams.length}`;
@@ -322,9 +324,16 @@ export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy =
     baseQuery += ` ORDER BY p.current_price ASC`;
   } else if (sortBy === "endtime_desc") {
     baseQuery += ` ORDER BY p.end_time DESC`;
-  } 
+  }
   baseQuery += ` LIMIT $2 OFFSET $3`;
   queryParams.push(limit, offset);
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
-}
+};
+export const getProductBySellerIdRepo = async (sellerId) => {
+  const result = await pool.query(
+    "SELECT * FROM products WHERE seller_id = $1 AND is_active = true",
+    [sellerId]
+  );
+  return result.rows;
+};

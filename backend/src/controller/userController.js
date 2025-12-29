@@ -22,6 +22,7 @@ import {
   getUserWonProductsService,
   changeStatusWonProductsService,
   getBiddedProductsService,
+  uploadPaymentPictureService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -519,7 +520,7 @@ router.get("/seller-deactivated-products", authenticate, async (req, res) => {
     const products = await getSellerDeactivatedProductsService(sellerId);
     res.status(200).json({
       code: 200,
-      message: "Lấy sản phẩm đã hủy thành công",
+      message: "Lấy sản phẩm hết hạn thành công",
       data: products,
     });
   } catch (err) {
@@ -588,4 +589,51 @@ router.get("/bidded-products", authenticate, async (req, res) => {
     });
   }
 });
+
+router.patch(
+  "/upload-payment-picture",
+  authenticate,
+  upload.single("payment_picture"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+      const { wonId } = req.body;
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "payment_pictures" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      // Cập nhật payment_picture_url trong DB
+      await uploadPaymentPictureService(wonId, uploadResult.secure_url);
+      return res.status(200).json({
+        code: 200,
+        message: "Upload payment picture thành công",
+        data: {
+          payment_picture_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload payment picture:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
+
 export default router;

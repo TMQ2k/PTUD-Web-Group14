@@ -6,6 +6,7 @@ import {
   postProduct,
   deactiveProduct,
   getProductBidHistoryService,
+  getProductBySellerIdService,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -75,7 +76,7 @@ router.put("/deactivate-expired", async (req, res) => {
     });
   }
 });
-router.get("/:productId", async (req, res) => {
+router.get("/get/:productId", async (req, res) => {
   try {
     const productId = req.params.productId;
     const user = req.user; // Assuming user info is attached to the request
@@ -145,6 +146,24 @@ router.get("/bid-history/:productId", async (req, res) => {
       code: 200,
       message: "Bid history retrieved successfully",
       data: bidHistory,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});
+
+router.get("/seller-products", authenticate, async (req, res) => {
+  try {
+    const sellerId = req.user.id;
+    const products = await getProductBySellerIdService(sellerId);
+    res.json({
+      code: 200,
+      message: "Seller's products retrieved successfully",
+      data: products,
     });
   } catch (error) {
     res.status(500).json({
