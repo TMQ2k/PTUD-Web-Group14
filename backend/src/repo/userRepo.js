@@ -235,3 +235,11 @@ export const getBiddedProductsRepo = async (userId) => {
   ]);
   return result.rows;
 };
+
+export const uploadPaymentPictureRepo = async (wonId, payment_picture_url) => {
+  const result = await pool.query(
+    "UPDATE user_won_products SET payment = $1 WHERE id = $2 RETURNING *",
+    [payment_picture_url, wonId]
+  );
+  return result.rows[0];
+};

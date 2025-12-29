@@ -15,6 +15,7 @@ import {
   getProductListByQuery as getProductListByQueryRepo,
   updateDescription as updateDescriptionRepo,
   getRecentlyEndedProducts as getRecentlyEndedProductsRepo,
+  getProductBySellerIdRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -355,3 +356,7 @@ export const updateDescription = async (productId, newDescription) => {
   }
   return updatedProductDescription;
 }
+export const getProductBySellerIdService = async (sellerId) => {
+  const result = await getProductBySellerIdRepo(sellerId);
+  return result;
+};

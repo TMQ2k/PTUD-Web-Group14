@@ -7,6 +7,7 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
+select * from users
 go
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
@@ -23,7 +24,7 @@ CREATE TABLE users_info (
 ALTER TABLE users_info
 ADD COLUMN address VARCHAR(250);
 select * from users_info
-
+select * from user_upgrade_requests
 go
 CREATE TABLE users_rating (
     user_rating_id SERIAL PRIMARY KEY,
@@ -53,6 +54,10 @@ CREATE TABLE user_upgrade_requests (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE user_upgrade_requests
+ADD CONSTRAINT user_upgrade_requests_status_check
+CHECK (status IN ('pending', 'approved', 'rejected', 'expired'));
+select * from user_upgrade_requests
 go
 
 CREATE TABLE auction_extensions (
@@ -346,4 +351,6 @@ ALTER TABLE user_won_products
 ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'invalid'
 CHECK (status IN ('invalid', 'sent', 'paid', 'received'));
 
+ALTER TABLE user_won_products
+ADD COLUMN payment TEXT DEFAULT NULL
 

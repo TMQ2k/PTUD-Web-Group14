@@ -352,3 +352,10 @@ export const getRecentlyEndedProducts = async () => {
   return result.rows;
 }
 
+export const getProductBySellerIdRepo = async (sellerId) => {
+  const result = await pool.query(
+    "SELECT * FROM products WHERE seller_id = $1 AND is_active = true",
+    [sellerId]
+  );
+  return result.rows;
+};
