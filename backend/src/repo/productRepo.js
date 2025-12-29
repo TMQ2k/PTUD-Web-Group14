@@ -277,3 +277,11 @@ export const postProduct = async (
   const message = "Product created successfully";
   return message;
 };
+
+export const getProductBySellerIdRepo = async (sellerId) => {
+  const result = await pool.query(
+    "SELECT * FROM products WHERE seller_id = $1 AND is_active = true",
+    [sellerId]
+  );
+  return result.rows;
+};

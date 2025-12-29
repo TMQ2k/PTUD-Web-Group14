@@ -12,6 +12,7 @@ import {
   deactiveProduct as deactiveProductRepo,
   getCategoriesByProductId as getCategoriesByProductIdRepo,
   getProductBidHistory as getProductBidHistoryRepo,
+  getProductBySellerIdRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -232,5 +233,10 @@ export const deleteProductById = async (productId) => {
 
 export const deactiveProduct = async () => {
   const result = await deactiveProductRepo();
+  return result;
+};
+
+export const getProductBySellerIdService = async (sellerId) => {
+  const result = await getProductBySellerIdRepo(sellerId);
   return result;
 };
