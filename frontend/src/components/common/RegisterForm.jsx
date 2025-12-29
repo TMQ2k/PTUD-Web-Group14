@@ -42,9 +42,16 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
     const email = formData.get("email");
     const password = formData.get("password");
     const confirmPassword = formData.get("confirmPassword");
+    const address = formData.get("address");
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword || !address) {
       setError("Vui lòng điền đầy đủ thông tin.");
+      setLoading(false);
+      return;
+    }
+
+    if (address.trim().length < 5) {
+      setError("Địa chỉ phải có ít nhất 5 ký tự.");
       setLoading(false);
       return;
     }
@@ -72,7 +79,7 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
       console.log("🔄 Đang đăng ký user...");
 
       // ✅ BƯỚC 1: Gọi API đăng ký
-      await userApi.register({ username, email, password });
+      await userApi.register({ username, email, password, address });
 
       console.log("✅ Đăng ký thành công! OTP đã được gửi tới email.");
 
@@ -273,6 +280,18 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                   name="email"
                   className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   placeholder="you@example.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Địa chỉ <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Nhập địa chỉ của bạn"
                 />
               </div>
 
