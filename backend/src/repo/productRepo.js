@@ -334,6 +334,21 @@ export const updateDescription = async (productId, newDescription) => {
     `UPDATE products SET description = $1 WHERE product_id = $2 RETURNING *`,
     [newDescription, productId]
   );
-  return result.rows[0];
+  return result.rows[0].description;
 };
+
+export const getProductProfile = async (productId) => {
+  const result = await pool.query(
+    `SELECT * FROM products WHERE product_id = $1`,
+    [productId]
+  );
+  return result.rows[0];
+}
+
+export const getRecentlyEndedProducts = async () => {
+  const result = await pool.query(
+    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW() ORDER BY end_time DESC`,
+  );
+  return result.rows;
+}
 
