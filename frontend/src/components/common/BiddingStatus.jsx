@@ -194,7 +194,7 @@ const BiddingStatus = ({ className = "" }) => {
                   });
                 }}
               >
-                {role === "seller" && userData.id === product.seller.id
+                {(role === "seller" && userData.id === product.seller.id)
                   ? "Quản lý đấu giá"
                   : "Lịch sử đấu giá"}
                 <span
