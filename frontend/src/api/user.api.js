@@ -13,6 +13,7 @@ const userEndpoint = {
   verifyOtpResetPassword: "/users/verify-otp-reset-pass",
   resetPassword: "/users/reset-password",
   userRatings: "/users/user-ratings",
+  sellerDeactivatedProducts: "/users/seller-deactivated-products",
 };
 
 export const userApi = {
@@ -167,6 +168,15 @@ export const userApi = {
    */
   getBiddedProducts: async () => {
     const response = await http.get("/users/bidded-products");
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách sản phẩm đã có người thắng đấu giá (seller)
+   * @returns {Promise<Object>} Danh sách sản phẩm đã hết hạn có người thắng
+   */
+  getSellerDeactivatedProducts: async () => {
+    const response = await http.get(userEndpoint.sellerDeactivatedProducts);
     return response.data;
   },
 };
