@@ -40,7 +40,7 @@ const ProductBaseInformation = () => {
       />
       <ProductBaseInformationCard
         title="Số lượt ra giá"
-        value={product.history.length}
+        value={product.history_count}
       />
     </div>
   );
