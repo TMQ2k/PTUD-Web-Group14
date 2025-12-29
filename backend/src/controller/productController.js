@@ -7,6 +7,7 @@ import {
   deactiveProduct,
   getProductBidHistoryService,
   getProductBySellerIdService,
+  getExpiredProductsService,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -175,4 +176,22 @@ router.get("/seller-products", authenticate, async (req, res) => {
     });
   }
 });
+
+router.get("/expired-products", async (req, res) => {
+  try {
+    const expiredProducts = await getExpiredProductsService();
+    res.json({
+      code: 200,
+      message: "Expired products retrieved successfully",
+      data: expiredProducts,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});
+
 export default router;
