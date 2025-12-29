@@ -5,12 +5,13 @@ export const registerUser = async (
   username,
   password_hashed,
   email,
+  address,
   role = "bidder"
 ) => {
   // Alias the scalar return to a stable column name so callers can read it reliably
   const result = await pool.query(
-    "SELECT fnc_register_user($1, $2, $3, $4) AS message",
-    [username, password_hashed, email, role]
+    "SELECT fnc_register_user($1, $2, $3, $4, $5) AS message",
+    [username, password_hashed, email, address, role]
   );
   const row = result.rows?.[0] ?? {};
   const message = row.message ?? row.fnc_register_user ?? null;
