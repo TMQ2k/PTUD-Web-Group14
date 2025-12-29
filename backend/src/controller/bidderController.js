@@ -228,7 +228,7 @@ router.post(
 
 router.get("/bidders/:productId", async (req, res) => {
   try {
-    const { productId } = req.params; 
+    const { productId } = req.params;
     const bidders = await getAllBidderInfosByProductId(productId);
     res.status(200).json({
       code: 200,

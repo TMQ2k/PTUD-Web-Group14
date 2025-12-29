@@ -3,7 +3,7 @@ import { CheckCircle, XCircle, Clock, Calendar } from "lucide-react";
 import { adminApi } from "../../api/admin.api";
 import { toast } from "react-toastify";
 
-const RequestManagement = () => {
+const RequestManagement = ({ onRequestUpdated }) => {
   const [filterStatus, setFilterStatus] = useState("all"); // all, pending, approved, rejected, expired
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -44,6 +44,7 @@ const RequestManagement = () => {
       await adminApi.handleUpgradeRequest(userId, true);
       toast.success("Đã duyệt yêu cầu! User sẽ là Seller trong 7 ngày.");
       await fetchRequests();
+      onRequestUpdated?.();
     } catch (error) {
       console.error("Error approving request:", error);
       toast.error(error.response?.data?.message || "Duyệt yêu cầu thất bại");
@@ -62,6 +63,7 @@ const RequestManagement = () => {
       await adminApi.handleUpgradeRequest(userId, false);
       toast.success("Đã từ chối yêu cầu.");
       await fetchRequests();
+      onRequestUpdated?.();
     } catch (error) {
       console.error("Error rejecting request:", error);
       toast.error(error.response?.data?.message || "Từ chối yêu cầu thất bại");
@@ -211,16 +213,6 @@ const RequestManagement = () => {
           >
             Từ chối
           </button>
-          <button
-            onClick={() => setFilterStatus("expired")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              filterStatus === "expired"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Hết hạn
-          </button>
         </div>
       </div>
 
@@ -248,15 +240,6 @@ const RequestManagement = () => {
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Họ tên
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ngày yêu cầu
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Hết hạn
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Trạng thái
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -268,94 +251,80 @@ const RequestManagement = () => {
                 {filteredRequests.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="8"
+                      colSpan="5"
                       className="px-6 py-8 text-center text-gray-500"
                     >
                       Không có yêu cầu nào
                     </td>
                   </tr>
                 ) : (
-                  filteredRequests.map((request) => (
-                    <tr
-                      key={request.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        #{request.id}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {request.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {request.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {request.full_name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {formatDateTime(request.requested_at)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {request.expires_at
-                          ? formatDateTime(request.expires_at)
-                          : "-"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {getStatusBadge(request.status, request.expires_at)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-3">
-                          {request.status === "pending" && (
-                            <>
-                              <button
-                                onClick={() =>
-                                  handleApprove(
-                                    request.user_id,
-                                    request.username
-                                  )
-                                }
-                                disabled={loading}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:bg-green-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600"
-                                title="Duyệt (7 ngày)"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                                <span>Duyệt</span>
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleReject(
-                                    request.user_id,
-                                    request.username
-                                  )
-                                }
-                                disabled={loading}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 active:bg-red-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
-                                title="Từ chối"
-                              >
-                                <XCircle className="w-4 h-4" />
-                                <span>Từ chối</span>
-                              </button>
-                            </>
-                          )}
-                          {request.status === "approved" && (
-                            <span className="text-xs text-gray-500 italic">
-                              Đang hoạt động
-                            </span>
-                          )}
-                          {request.status === "rejected" && (
-                            <span className="text-xs text-red-500 italic">
-                              Đã từ chối
-                            </span>
-                          )}
-                          {request.status === "expired" && (
-                            <span className="text-xs text-gray-500 italic">
-                              Đã kết thúc
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                  filteredRequests.map((request) => {
+                    return (
+                      <tr
+                        key={request.id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          #{request.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {request.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {request.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(request.status, request.expires_at)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end gap-3">
+                            {request.status === "pending" && (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    handleApprove(
+                                      request.user_id,
+                                      request.username
+                                    )
+                                  }
+                                  disabled={loading}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 active:bg-green-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600"
+                                  title="Duyệt (7 ngày)"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                  <span>Duyệt</span>
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    handleReject(
+                                      request.user_id,
+                                      request.username
+                                    )
+                                  }
+                                  disabled={loading}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 active:bg-red-800 transition-all shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
+                                  title="Từ chối"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                  <span>Từ chối</span>
+                                </button>
+                              </>
+                            )}
+                            {request.status === "approved" && (
+                              <span className="text-xs text-gray-500 italic">
+                                Đã phê duyệt
+                              </span>
+                            )}
+                            {request.status === "rejected" && (
+                              <span className="text-xs text-red-500 italic">
+                                Đã từ chối
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

@@ -110,6 +110,18 @@ const App = () => {
     };
 
     initAuth();
+
+    // Lắng nghe event logout từ http interceptor khi token hết hạn
+    const handleAuthLogout = () => {
+      console.log("🚪 Token hết hạn - Đăng xuất Redux state");
+      dispatch(logout());
+    };
+
+    window.addEventListener("auth:logout", handleAuthLogout);
+
+    return () => {
+      window.removeEventListener("auth:logout", handleAuthLogout);
+    };
   }, [dispatch]);
 
   useEffect(() => {
