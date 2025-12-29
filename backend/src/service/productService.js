@@ -13,7 +13,6 @@ import {
   getCategoriesByProductId as getCategoriesByProductIdRepo,
   getProductBidHistory as getProductBidHistoryRepo,
   getProductBySellerIdRepo,
-  getExpiredProductsRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -239,10 +238,5 @@ export const deactiveProduct = async () => {
 
 export const getProductBySellerIdService = async (sellerId) => {
   const result = await getProductBySellerIdRepo(sellerId);
-  return result;
-};
-
-export const getExpiredProductsService = async () => {
-  const result = await getExpiredProductsRepo();
   return result;
 };
