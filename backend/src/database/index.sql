@@ -80,7 +80,8 @@ create INDEX idx_comments_product ON comments(product_id)
 -- product_history
 create INDEX idx_history_product ON product_history(product_id)
 
-
-
+-- user_won_product
+create INDEX idx_won_product ON user_won_products(user_id)
+create INDEX idx_won_user ON user_won_products(product_id)
 
 

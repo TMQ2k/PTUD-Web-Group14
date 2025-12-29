@@ -1086,17 +1086,26 @@ where user_id = 36
 CREATE OR REPLACE FUNCTION fnc_deactivate_expired_sellers()
 RETURNS VOID AS $$
 BEGIN
+    -- 1. Hạ role seller -> bidder
     UPDATE users u
-    SET 
-        role = 'bidder'
+    SET role = 'bidder'
     FROM user_upgrade_requests ur
     WHERE 
         u.user_id = ur.user_id
         AND u.role = 'seller'
         AND ur.status = 'approved'
         AND ur.updated_at <= NOW() - INTERVAL '7 days';
+
+    -- 2. Đổi trạng thái request thành expired
+    UPDATE user_upgrade_requests ur
+    SET status = 'expired'
+    WHERE 
+        ur.status = 'approved'
+        AND ur.updated_at <= NOW() - INTERVAL '7 days';
 END;
 $$ LANGUAGE plpgsql;
+select * from fnc_deactivate_expired_sellers()
+
 
 CREATE OR REPLACE FUNCTION fnc_get_seller_start_time(p_user_id BIGINT)
 RETURNS TIMESTAMPTZ AS $$
@@ -1715,7 +1724,8 @@ RETURNS TABLE (
     seller_id INTEGER,
     seller_name TEXT,
     seller_qr_url TEXT,
-    status VARCHAR(20)
+    status VARCHAR(20),
+	payment TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1728,7 +1738,8 @@ BEGIN
         p.seller_id,
         CONCAT(ui.first_name, ' ', ui.last_name) AS seller_name,
         ui.qr_url AS seller_qr_url,
-        uwp.status
+        uwp.status,
+		uwp.payment
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
@@ -1740,7 +1751,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 select * from fnc_user_won_product(43)
-
+select * from users
 drop function fnc_seller_deactive_product
 CREATE OR REPLACE FUNCTION fnc_seller_deactive_product(p_seller_id BIGINT)
 RETURNS TABLE (
@@ -1757,7 +1768,8 @@ RETURNS TABLE (
     bidder_email VARCHAR,
     bidder_address TEXT,
     bidder_phone VARCHAR,
-    status VARCHAR(20)
+    status VARCHAR(20),
+	payment TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1775,7 +1787,8 @@ BEGIN
         u.email AS bidder_email,
         bi.address AS bidder_address,
         bi.phone_number AS bidder_phone,
-        uwp.status
+        uwp.status,
+		uwp.payment
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
