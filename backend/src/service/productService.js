@@ -15,6 +15,8 @@ import {
   getProductListByQuery as getProductListByQueryRepo,
   updateDescription as updateDescriptionRepo,
   getRecentlyEndedProducts as getRecentlyEndedProductsRepo,
+  getWinningBidderByProductId as getWinningBidderByProductIdRepo,
+  getProductProfile,
 } from "../repo/productRepo.js";
 
 import {
@@ -315,4 +317,24 @@ export const updateDescription = async (productId, newDescription) => {
     throw new Error("Failed to update product description");
   }
   return updatedProductDescription;
+}
+
+export const getWinningBidderByProductId = async (user, productId) => {
+  if (user.id != (await getProductProfile(productId)).seller_id) {
+    throw new Error("Unauthorized access to winning bidder information");
+  }
+  try {
+    const winningBidderId = await getWinningBidderByProductIdRepo(productId);
+    const winningBidderProfile = winningBidderId ? await getUserProfile(winningBidderId) : null;
+    return { 
+      bidder_id: winningBidderId ? winningBidderId : null,
+      username: winningBidderProfile ? winningBidderProfile.username : null,
+      email: winningBidderProfile ? winningBidderProfile.email : null,
+      address: winningBidderProfile ? winningBidderProfile.address : null,
+      phone: winningBidderProfile ? winningBidderProfile.phone_number : null,
+    };
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy người đấu thầu thắng cuộc:", err);
+    throw err;
+  }
 }

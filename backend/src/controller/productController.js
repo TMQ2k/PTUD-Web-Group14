@@ -9,6 +9,7 @@ import {
   deactiveProduct,
   getProductBidHistoryService,
   updateDescription,
+  getWinningBidderByProductId,
 } from "../service/productService.js";
 
 import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
@@ -198,6 +199,24 @@ router.put("/:productId/description", authenticate, authorize("seller"), async (
       code: 200,
       message: "Product description updated successfully",
       data: updatedProduct,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});
+
+router.get("/:productId/winning-bidder", authenticate, authorize("seller"), async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const winningBidderId = await getWinningBidderByProductId(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Winning bidder retrieved successfully",
+      data: { winningBidderId },
     });
   } catch (error) {
     res.status(500).json({

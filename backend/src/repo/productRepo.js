@@ -352,3 +352,10 @@ export const getRecentlyEndedProducts = async () => {
   return result.rows;
 }
 
+export const getWinningBidderByProductId = async (productId) => {
+  const result = await pool.query(
+    `SELECT bidder_id FROM bids WHERE product_id = $1 AND is_winner = true`,
+    [productId]
+  );
+  return result.rows[0]?.bidder_id || null;
+}
