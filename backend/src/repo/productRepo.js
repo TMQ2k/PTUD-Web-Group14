@@ -347,7 +347,7 @@ export const getProductProfile = async (productId) => {
 
 export const getRecentlyEndedProducts = async () => {
   const result = await pool.query(
-    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW() ORDER BY end_time DESC`,
+    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW()`,
   );
   return result.rows;
 }
@@ -359,3 +359,10 @@ export const getProductBySellerIdRepo = async (sellerId) => {
   );
   return result.rows;
 };
+export const getWinningBidderByProductId = async (productId) => {
+  const result = await pool.query(
+    `SELECT bidder_id FROM bids WHERE product_id = $1 AND is_winner = true`,
+    [productId]
+  );
+  return result.rows[0]?.bidder_id || null;
+}

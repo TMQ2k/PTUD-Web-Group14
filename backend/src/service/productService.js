@@ -16,6 +16,8 @@ import {
   updateDescription as updateDescriptionRepo,
   getRecentlyEndedProducts as getRecentlyEndedProductsRepo,
   getProductBySellerIdRepo,
+  getWinningBidderByProductId as getWinningBidderByProductIdRepo,
+  getProductProfile,
 } from "../repo/productRepo.js";
 
 import {
@@ -239,50 +241,11 @@ export const deleteProductById = async (productId) => {
 };
 
 export const deactiveProduct = async () => {
-  const getRecentlyEndedProducts = await getRecentlyEndedProductsRepo();
   const result = await deactiveProductRepo();
-
-  if (getRecentlyEndedProducts) {
-    for (let prod of getRecentlyEndedProducts) {
-      const historyCount = await countHistoryByProductId(prod.product_id);
-      if (historyCount == 0) {
-        const sellerInfo = await getUserProfile(prod.seller_id);
-        //SendNotificationEmail to seller
-        await sendNoBidderNotificationEmails(
-          sellerInfo.email,
-          sellerInfo.username,
-          prod.name
-        );
-      }
-
-      else {
-        const topBidderId = await getTopBidderIdByProductId(prod.product_id);
-        const topBidderInfo = await getUserProfile(topBidderId);
-        const sellerInfo = await getUserProfile(prod.seller_id);  
-        //SendNotificationEmail to bidder
-        await sendWinningBidderNotificationEmail(
-          topBidderInfo.email,
-          topBidderInfo.username,
-          prod.name,
-          prod.current_price
-        );
-
-        //SendNotificationEmail to seller
-        await sendSellerNotificationEmail(
-          sellerInfo.email,
-          sellerInfo.username,
-          prod.name,
-          prod.current_price,
-          topBidderInfo.username
-        );
-      }
-    }
-  } 
-
   return result;
-};
+}
 
-export const sendNoBidderNotificationEmails = async (sellerEmail, sellerName, productName) => {
+export const sendNoBidderNotificationEmail = async (sellerEmail, sellerName, productName) => {
   const subject = "Thông báo kết thúc đấu giá sản phẩm";
   const message = `Kính gửi ${sellerName},\n\nSản phẩm đấu giá "${productName}" của bạn đã kết thúc mà không có người đấu thầu nào.\n\nTrân trọng,\nĐội ngũ đấu giá`;
   try {
@@ -360,3 +323,23 @@ export const getProductBySellerIdService = async (sellerId) => {
   const result = await getProductBySellerIdRepo(sellerId);
   return result;
 };
+
+export const getWinningBidderByProductId = async (user, productId) => {
+  if (user.id != (await getProductProfile(productId)).seller_id) {
+    throw new Error("Unauthorized access to winning bidder information");
+  }
+  try {
+    const winningBidderId = await getWinningBidderByProductIdRepo(productId);
+    const winningBidderProfile = winningBidderId ? await getUserProfile(winningBidderId) : null;
+    return { 
+      bidder_id: winningBidderId ? winningBidderId : null,
+      username: winningBidderProfile ? winningBidderProfile.username : null,
+      email: winningBidderProfile ? winningBidderProfile.email : null,
+      address: winningBidderProfile ? winningBidderProfile.address : null,
+      phone: winningBidderProfile ? winningBidderProfile.phone_number : null,
+    };
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi lấy người đấu thầu thắng cuộc:", err);
+    throw err;
+  }
+}
