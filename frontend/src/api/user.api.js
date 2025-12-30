@@ -13,6 +13,8 @@ const userEndpoint = {
   verifyOtpResetPassword: "/users/verify-otp-reset-pass",
   resetPassword: "/users/reset-password",
   userRatings: "/users/user-ratings",
+  userWonProducts: "/users/user-won-products",
+  changeWonProductStatus: "/users/change-won-product-status",
 };
 
 export const userApi = {
@@ -169,4 +171,12 @@ export const userApi = {
     const response = await http.get("/users/bidded-products");
     return response.data;
   },
+
+  updateWonProductStatus: async (wonId, status) => {
+    const repsone = await http.put(`${userEndpoint.changeWonProductStatus}`, {
+      wonId: wonId,
+      status: status,
+    }, {});
+    return repsone.data;
+  }
 };

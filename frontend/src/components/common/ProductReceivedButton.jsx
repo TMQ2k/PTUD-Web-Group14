@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Truck, CheckCheck } from "lucide-react";
 
-const ProductReceivedButton = React.memo(({ productId, status }) => {
+const ProductReceivedButton = React.memo(({ productId, wonId, status, onChangeStatus }) => {
   const [received, setReceived] = useState(status);
 
-  const handleClick = () => {
-    setReceived("received");
+  const handleClick = async () => {
+    const updatedStatus = "received";
+    const respone = await onChangeStatus(wonId, updatedStatus);    
+    if (respone.code === 200) setReceived(updatedStatus);
   };
 
   return (

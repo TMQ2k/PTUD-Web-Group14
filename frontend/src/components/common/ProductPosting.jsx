@@ -121,7 +121,7 @@ const ProductPosting = () => {
 
   return (
     <>
-      {userData.role !== "seller" && <Navigate to="/" />}
+      {userData?.role !== "seller" && <Navigate to="/" />}
       {loading && (
         <div className="h-screen w-full flex items-center justify-center">
           <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />

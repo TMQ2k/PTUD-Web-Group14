@@ -8,14 +8,15 @@ const ProductCheckoutCard = React.memo(
   ({
     productName,
     productId,
+    wonId,
     productImage,
     winningPrice,
     sellerName,
     qrCodeUrl,
-    status,    
+    status,
+    onChangeStatus,
     className = "",
-  }) => {    
-
+  }) => {
     return (
       <>
         {/* --- MAIN CARD --- */}
@@ -52,24 +53,31 @@ const ProductCheckoutCard = React.memo(
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">
                 Giá mua hàng
               </p>
-              <div className="flex items-baseline text-blue-700">                
+              <div className="flex items-baseline text-blue-700">
                 <span className="text-3xl font-extrabold tracking-tight">
                   {formatNumberToCurrency(winningPrice)} đ
-                </span>                
+                </span>
               </div>
             </div>
           </div>
 
           {/* Right Side: Payment & Seller */}
-          {(status === "paid" || status === "received") ? (
-            <ProductReceivedButton productId={productId} status={status} />
+          {status === "paid" || status === "received" ? (
+            <ProductReceivedButton
+              productId={productId}
+              wonId={wonId}
+              status={status}
+              onChangeStatus={onChangeStatus}
+            />
           ) : (
             <QRcode
               sellerName={sellerName}
               qrCodeUrl={qrCodeUrl}
               productId={productId}
+              wonId={wonId}
               status={status}
-            />            
+              onChangeStatus={onChangeStatus}
+            />
           )}
         </div>
       </>

@@ -3,22 +3,29 @@ import { formatNumberToCurrency } from "../../utils/NumberHandler";
 import Image from "./Image";
 import { CheckCheck, AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import WonUserInformation from "./WonUserInformation";
 
 const SellerProductCheckoutCard = ({
   productId,
   productName,
   productImage,
+  wonId,
   sellerName,
   sellerId,
-  bidderUsername,
-  bidderEmail,
-  bidderAddress,
   transactionImage,
   price,
   status,
+  onPaid,
+  onChangeStatus,
   className = "",
 }) => {
   const [productStatus, setProductStatus] = useState(status);
+  
+  const handleClick = async (updatedStatus) => {
+    const respone = await onChangeStatus(wonId, updatedStatus);
+    if (respone.code === 200) setProductStatus(updatedStatus);
+  }
+
   return (
     <>
       <div
@@ -66,7 +73,9 @@ const SellerProductCheckoutCard = ({
               <div className="flex max-w-58 items-start gap-3 p-4 mb-4 text-sm text-yellow-800 border border-yellow-200 rounded-lg bg-yellow-50">
                 <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                 <div>
-                  <h3 className="font-semibold text-yellow-900">Chưa xác nhận giao dịch</h3>
+                  <h3 className="font-semibold text-yellow-900">
+                    Chưa xác nhận giao dịch
+                  </h3>
                   <p className="mt-1">
                     Người đấu giá cao nhất chưa gửi ảnh giao dịch cho bạn.
                   </p>
@@ -78,7 +87,7 @@ const SellerProductCheckoutCard = ({
                 <Image src={transactionImage} alt="Transaction" />
                 <div className="flex flex-col gap-4 justify-center items-center">
                   <button
-                    onClick={() => setProductStatus("paid")}
+                    onClick={() => handleClick("paid")}
                     className="bg-linear-to-br from-teal-400 to-green-600 text-white 
                               rounded-lg py-2 px-2 hover:scale-102 active:scale-98 hover:shadow-lg
                               transition-all duration-300 font-semibold"
@@ -86,7 +95,7 @@ const SellerProductCheckoutCard = ({
                     Xác nhận giao dịch
                   </button>
                   <button
-                    onClick={() => setProductStatus("invalid")}
+                    onClick={() => handleClick("invalid")}
                     className="w-full text-red-500 border-2 border-red-400 hover:bg-red-50 
                               rounded-lg py-1 px-2 hover:scale-102 active:scale-98 hover:shadow-lg
                               transition-all duration-300 font-semibold"
@@ -96,40 +105,23 @@ const SellerProductCheckoutCard = ({
                 </div>
               </div>
             )}
-            {(productStatus === "paid" ||
-              productStatus === "received") && (
-              <>
-                <CheckCheck className="size-18 stroke-green-500" />
-                <div className="flex flex-col gap-2">
-                  <h2 className="text-center font-bold text-lg ">
-                    Thông tin người thắng
-                  </h2>
-                  <p className="font-bold  text-amber-500 border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-                    Bidder username:{" "}
-                    <span className="text-black font-semibold">
-                      {bidderUsername}
-                    </span>
-                  </p>
-                  <p className="font-bold  text-amber-500 border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-                    Email:{" "}
-                    <span className="text-black font-semibold">
-                      {bidderEmail}
-                    </span>
-                  </p>
-                  <p className="font-bold  text-amber-500 border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
-                    Address:{" "}
-                    <span className="text-black font-semibold">
-                      {bidderAddress}
-                    </span>
-                  </p>
-                </div>
-                {productStatus === "received" ? (
-                  <p className="text-green-500 font-bold">Người thắng đã nhận hàng</p>
-                ) : (
-                  <p className="text-red-500 font-bold">Người thắng chưa nhận hàng</p>
-                )}
-              </>
-            )}
+
+            {productStatus === "paid" && (
+              <WonUserInformation 
+                productId={productId}
+                wonId={wonId}
+                onPaid={onPaid}
+              />
+            )} 
+            {productStatus === "received" ? (
+              <p className="text-green-500 font-bold">
+                Người thắng đã nhận hàng
+              </p>
+            ) : (
+              <p className="text-red-500 font-bold">
+                Người thắng chưa nhận hàng
+              </p>
+            )}            
           </div>
         )}
       </div>

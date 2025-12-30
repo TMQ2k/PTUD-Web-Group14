@@ -136,7 +136,7 @@ export default function Header() {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-2 shrink-0"
+          className="flex items-center gap-2 shrink-0 focus:outline-none"
           aria-label="AuctionHub home"
         >
           <div className="flex items-center justify-center bg-linear-to-r from-blue-400 to-purple-600 text-white p-2.5 rounded-lg shadow-md">

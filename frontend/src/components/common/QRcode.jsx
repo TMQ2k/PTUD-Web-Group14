@@ -3,7 +3,7 @@ import { ImagePlus } from "lucide-react";
 import { FourSquare } from "react-loading-indicators";
 import Image from "./Image";
 
-const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
+const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, wonId, status, onChangeStatus }) => {
   const [pending, setPending] = useState(status);  
   const [previewImages, setPreviewImages] = useState(null);
   const [image, setImage] = useState(null);
@@ -24,15 +24,21 @@ const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, status }) => {
     setImage(files[0]);
   };
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
     setPreviewImages(null);
     setImage(null);
-    setPending("invalid");
+    
+    const updatedStatus = "invalid";
+    const respone = await onChangeStatus(wonId, updatedStatus);
+    if (respone.code === 200) setPending(updatedStatus);
   };
 
-  const handleClick = (e) => {
+  const handleClick = async (e) => {
     e.preventDefault();
-    setPending("sent");
+
+    const updatedStatus = "sent";
+    const respone = await onChangeStatus(wonId, updatedStatus);
+    if (respone.code === 200) setPending(updatedStatus);
     
   };
 

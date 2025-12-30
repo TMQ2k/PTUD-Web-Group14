@@ -1,4 +1,5 @@
 import { useState, Activity } from "react";
+import { ShoppingBag, Store } from "lucide-react"; // npm install lucide-react
 import ProductCheckout from "../components/common/ProductCheckout";
 import SellerProductCheckout from "../components/common/SellerProductCheckout";
 
@@ -7,28 +8,56 @@ const ProductCheckoutPage = () => {
 
   return (
     <>
-      <div className="w-full flex flex-row justify-end items-center h-fit">
-        <button
-          onClick={() => setShowSellerCheckout(!showSellerCheckout)}
-          className={`bg-linear-to-br ${
-            showSellerCheckout
-              ? "from-amber-400 to-red-600"
-              : "from-blue-400 to-purple-600"
-          } hover:scale-102 active:scale-98
-                     hover:shadow-lg transition-all duration-300 rounded-lg text-white px-2 py-2 
-                     font-bold mt-2 mr-2`}
-        >
-          {showSellerCheckout ? "Product" : "Seller"} Checkout
-        </button>
+      <div className="w-full flex justify-end items-center mb-6 pr-4 pt-4">
+        {/* Container */}
+        <div className="bg-gray-100 p-1.5 rounded-xl inline-flex shadow-inner">
+          
+          {/* Buyer Button */}
+          <button
+            onClick={() => setShowSellerCheckout(false)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ease-out
+              ${!showSellerCheckout 
+                ? "bg-white text-blue-600 shadow-sm shadow-gray-200" 
+                : "text-gray-500 hover:text-gray-700"
+              }`}
+          >
+            <ShoppingBag size={18} />
+            Product Checkout
+          </button>
+
+          {/* Seller Button */}
+          <button
+            onClick={() => setShowSellerCheckout(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ease-out
+              ${showSellerCheckout 
+                ? "bg-white text-rose-600 shadow-sm shadow-gray-200" 
+                : "text-gray-500 hover:text-gray-700"
+              }`}
+          >
+            <Store size={18} />
+            Seller Checkout
+          </button>
+        </div>
       </div>
+
+      {/* Note: Using standard conditional rendering here. 
+         If you need to keep component state alive (hidden but mounted),
+         use CSS display styles instead.
+      */}
+      {/* <div className={showSellerCheckout ? "hidden" : "block"}>
+        <ProductCheckout />
+      </div>
+      
+      <div className={showSellerCheckout ? "block" : "hidden"}>
+        <SellerProductCheckout />
+      </div> */}
+
+      <Activity mode={showSellerCheckout ? "hidden" : "visible"}>
+        <ProductCheckout />
+      </Activity>
       <Activity mode={showSellerCheckout ? "visible" : "hidden"}>
         <SellerProductCheckout />
       </Activity>
-
-      <Activity mode={!showSellerCheckout ? "visible" : "hidden"}>
-        <ProductCheckout />
-      </Activity>
-      {/* {showSellerCheckout ? <SellerProductCheckout /> : <ProductCheckout />} */}
     </>
   );
 };
