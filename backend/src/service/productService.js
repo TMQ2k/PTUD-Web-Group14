@@ -238,50 +238,11 @@ export const deleteProductById = async (productId) => {
 };
 
 export const deactiveProduct = async () => {
-  const getRecentlyEndedProducts = await getRecentlyEndedProductsRepo();
   const result = await deactiveProductRepo();
-
-  if (getRecentlyEndedProducts) {
-    for (let prod of getRecentlyEndedProducts) {
-      const historyCount = await countHistoryByProductId(prod.product_id);
-      if (historyCount == 0) {
-        const sellerInfo = await getUserProfile(prod.seller_id);
-        //SendNotificationEmail to seller
-        await sendNoBidderNotificationEmails(
-          sellerInfo.email,
-          sellerInfo.username,
-          prod.name
-        );
-      }
-
-      else {
-        const topBidderId = await getTopBidderIdByProductId(prod.product_id);
-        const topBidderInfo = await getUserProfile(topBidderId);
-        const sellerInfo = await getUserProfile(prod.seller_id);  
-        //SendNotificationEmail to bidder
-        await sendWinningBidderNotificationEmail(
-          topBidderInfo.email,
-          topBidderInfo.username,
-          prod.name,
-          prod.current_price
-        );
-
-        //SendNotificationEmail to seller
-        await sendSellerNotificationEmail(
-          sellerInfo.email,
-          sellerInfo.username,
-          prod.name,
-          prod.current_price,
-          topBidderInfo.username
-        );
-      }
-    }
-  } 
-
   return result;
-};
+}
 
-export const sendNoBidderNotificationEmails = async (sellerEmail, sellerName, productName) => {
+export const sendNoBidderNotificationEmail = async (sellerEmail, sellerName, productName) => {
   const subject = "Thông báo kết thúc đấu giá sản phẩm";
   const message = `Kính gửi ${sellerName},\n\nSản phẩm đấu giá "${productName}" của bạn đã kết thúc mà không có người đấu thầu nào.\n\nTrân trọng,\nĐội ngũ đấu giá`;
   try {

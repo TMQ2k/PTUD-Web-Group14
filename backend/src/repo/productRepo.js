@@ -347,7 +347,7 @@ export const getProductProfile = async (productId) => {
 
 export const getRecentlyEndedProducts = async () => {
   const result = await pool.query(
-    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW() ORDER BY end_time DESC`,
+    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW()`,
   );
   return result.rows;
 }
