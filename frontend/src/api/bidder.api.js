@@ -5,6 +5,7 @@ const bidderEndpoint = {
   autobid: "/bidder/auto-bid",
   autobidUpdate: "/bidder/auto-bid/update",
   requestProduct: "/bidder/request-bidder-on-product",
+  isBidOnProduct: "/bidder/is-bids-on-product",
 };
 
 export const bidderApi = {
@@ -33,6 +34,11 @@ export const bidderApi = {
     }
 
     const respone = await http.post(bidderEndpoint.requestProduct, requestData, {});
+    return respone.data;
+  },
+
+  isBidOnProduct: async (productId) => {
+    const respone = await http.get(`${bidderEndpoint.isBidOnProduct}/${productId}`);
     return respone.data;
   }
 };

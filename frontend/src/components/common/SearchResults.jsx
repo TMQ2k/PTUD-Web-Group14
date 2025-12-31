@@ -93,7 +93,7 @@ const SearchResults = ({
                     onClick={() => onPageChange(pageNum)}
                     className={`px-4 py-2 rounded-lg font-semibold transition-all ${
                       currentPage === pageNum
-                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110"
+                        ? "bg-linear-to-r from-blue-500 to-purple-600 text-white shadow-lg scale-110"
                         : "bg-white text-gray-700 hover:bg-purple-50 shadow-md hover:shadow-lg border border-gray-200"
                     }`}
                   >

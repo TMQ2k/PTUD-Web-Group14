@@ -30,11 +30,7 @@ const ProductDetails = () => {
         setLoading(true);
         setError(null);
 
-        const other_products_quantity = 5;
-        const respone = await productApi.getProductById(
-          params.id,
-          other_products_quantity
-        );
+        const respone = await productApi.getProductById(params.id);
         console.log(respone.data);
         if (isMounted) {
           dispatch({

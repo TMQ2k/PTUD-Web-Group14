@@ -56,7 +56,7 @@ const WonUserInformation = ({ wonId, productId, onPaid }) => {
             <p className="font-bold  text-amber-500 border border-gray-200 rounded-lg px-2 py-1 shadow-sm">
               SĐT:{" "}
               <span className="text-black font-semibold">
-                {bidderInfo.phone_number}
+                {bidderInfo.phone}
               </span>
             </p>
             <p className="font-bold  text-amber-500 border border-gray-200 rounded-lg px-2 py-1 shadow-sm">

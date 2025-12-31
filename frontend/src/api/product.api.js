@@ -5,6 +5,7 @@ const productEndpoint = {
   getAll: "/products",
   postProduct: "/products",
   productBiddingHistory: "/products/bid-history",
+  winningBidder: "/winning-bidder",
 };
 
 export const productApi = {
@@ -81,9 +82,9 @@ export const productApi = {
     return response.data;
   },
 
-  getProductById: async (productId, other_products_quantity) => {
+  getProductById: async (productId) => {
     const response = await http.get(
-      `${productEndpoint.getAll}/${productId}?limit=${other_products_quantity}`
+      `${productEndpoint.getAll}/get/${productId}`
     );
     return response.data;
   },
@@ -158,4 +159,9 @@ export const productApi = {
     );
     return respone.data;
   },
+
+  getWinningBidder: async (productId) => {
+    const respone = await http.get(`${productId}/${productEndpoint.winningBidder}`);
+    return respone.data;
+  }
 };

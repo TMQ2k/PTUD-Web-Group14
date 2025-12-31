@@ -6,6 +6,7 @@ import { userApi } from "../../api/user.api";
 import { BlinkBlur } from "react-loading-indicators";
 import { Link } from "react-router-dom";
 import { PackageOpen, ArrowRight } from "lucide-react";
+import { productApi } from "../../api/product.api";
 
 const SellerProductCheckout = () => {
   // const data = [
@@ -78,7 +79,10 @@ const SellerProductCheckout = () => {
     };
   }, []);
 
-  const onPaid = async (wonId, productId) => {};
+  const onPaid = async (wonId, productId) => {
+    const respone = await productApi.getWinningBidder(productId);
+    return respone.data;
+  };
   const onChangeStatus = async (wonId, status) => {
     const respone = await userApi.updateWonProductStatus(wonId, status);
     return respone;

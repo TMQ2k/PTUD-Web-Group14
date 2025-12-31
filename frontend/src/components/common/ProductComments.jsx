@@ -57,7 +57,7 @@ const ProductComments = React.memo(({ productId }) => {
       };
 
       const respone = await commentApi.postComment(productId, payload);
-      //console.log(respone.data);
+      console.log(respone);
       setComments((prev) => {
         //console.log(respone.data);
         if (respone?.data) {

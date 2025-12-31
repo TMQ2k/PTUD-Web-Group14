@@ -19,141 +19,141 @@ const AuctionManagement = () => {
   const [error, setError] = useState(null);
   //const [bannedList, setBannedList] = useState([]);
 
-  const mockData = [
-    {
-      request_id: 1,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 1,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 2,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 2,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 3,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 3,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 4,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 4,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 5,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 5,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 6,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 6,
-      bidder_username: "thienphu",
-      bidder_rating: 106.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 7,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 7,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 8,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 8,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 9,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 9,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-    {
-      request_id: 10,
-      product_id: 22,
-      product_name: "Laptop",
-      bidder_id: 10,
-      bidder_username: "thienphu",
-      bidder_rating: 10.0,
-      reason: "Nothing",
-      created_at: "2025-12-08T16:10:29.113Z",
-    },
-  ];
+  // const mockData = [
+  //   {
+  //     request_id: 1,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 1,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 2,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 2,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 3,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 3,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 4,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 4,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 5,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 5,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 6,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 6,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 106.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 7,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 7,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 8,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 8,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 9,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 9,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  //   {
+  //     request_id: 10,
+  //     product_id: 22,
+  //     product_name: "Laptop",
+  //     bidder_id: 10,
+  //     bidder_username: "thienphu",
+  //     bidder_rating: 10.0,
+  //     reason: "Nothing",
+  //     created_at: "2025-12-08T16:10:29.113Z",
+  //   },
+  // ];
 
-  const MOCK_BIDS = [
-    {
-      bidder_id: 1,
-      masked_username: "Sarah Jenkins",
-      bid_amount: 450.0,
-      bid_time: "2023-10-27T10:30:00Z",
-    },
-    {
-      bidder_id: 2,
-      masked_username: "Michael Chen",
-      bid_amount: 425.5,
-      bid_time: "2023-10-27T10:25:00Z",
-    },
-    {
-      bidder_id: 3,
-      masked_username: "Alex Thompson",
-      bid_amount: 400.0,
-      bid_time: "2023-10-27T10:15:00Z",
-    },
-    {
-      bidder_id: 4,
-      masked_username: "Jessica Wu",
-      bid_amount: 350.0,
-      bid_time: "2023-10-27T09:45:00Z",
-    },
-    {
-      bidder_id: 5,
-      masked_username: "David Miller",
-      bid_amount: 320.0,
-      bid_time: "2023-10-27T09:30:00Z",
-    },
-  ];
+  // const MOCK_BIDS = [
+  //   {
+  //     bidder_id: 1,
+  //     masked_username: "Sarah Jenkins",
+  //     bid_amount: 450.0,
+  //     bid_time: "2023-10-27T10:30:00Z",
+  //   },
+  //   {
+  //     bidder_id: 2,
+  //     masked_username: "Michael Chen",
+  //     bid_amount: 425.5,
+  //     bid_time: "2023-10-27T10:25:00Z",
+  //   },
+  //   {
+  //     bidder_id: 3,
+  //     masked_username: "Alex Thompson",
+  //     bid_amount: 400.0,
+  //     bid_time: "2023-10-27T10:15:00Z",
+  //   },
+  //   {
+  //     bidder_id: 4,
+  //     masked_username: "Jessica Wu",
+  //     bid_amount: 350.0,
+  //     bid_time: "2023-10-27T09:45:00Z",
+  //   },
+  //   {
+  //     bidder_id: 5,
+  //     masked_username: "David Miller",
+  //     bid_amount: 320.0,
+  //     bid_time: "2023-10-27T09:30:00Z",
+  //   },
+  // ];
 
   const isSeller = userData?.role === "seller";
 
@@ -199,13 +199,13 @@ const AuctionManagement = () => {
       {!loading && !error && (
         <>
           <ProductHistory
-            auctionHistory={history || MOCK_BIDS}
+            auctionHistory={history}
             productName={productName}
           />
           {userData?.role === "seller" && userData?.id === sellerId && (
             <PendingBidsList
-              requests={pendingList || mockData}
-              bidderList={history || MOCK_BIDS}
+              requests={pendingList}
+              bidderList={history}
               bannedBidders={[]}
               productName={productName}
             />

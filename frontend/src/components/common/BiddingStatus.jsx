@@ -20,7 +20,7 @@ import BiddingRequestForm from "./BiddingRequestForm";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
-  const product = useProduct();
+  const product = useProduct();  
   const dispatch = useProductDispatch();
   const { userData } = useSelector((state) => state.user);
   const role = userData?.role || "guest";
@@ -51,6 +51,26 @@ const BiddingStatus = ({ className = "" }) => {
       clearInterval(interval_id);
     };
   }, [product.end_time]);
+
+  const [isBidOnProduct, setBidOnProduct] = useState(false);  
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadIsBidOnProduct = async () => {
+      try {
+        const respone = await bidderApi.isBidOnProduct(product.product_id);        
+        if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);        
+      } catch (err) {
+        console.log(err.message);
+      }
+    };
+
+    loadIsBidOnProduct();
+
+    return () => {
+      isMounted = false;
+    }
+  }, [product.product_id]);
 
   const handleAutobidUpdate = async () => {
     const respone = await bidderApi.autobidUpdate(product?.product_id);
@@ -89,8 +109,8 @@ const BiddingStatus = ({ className = "" }) => {
                 </div>
                 <p className="font-bold text-xl text-blue-700">
                   Bidder:
-                  <span className="font-normal text-black ml-2">
-                    {product?.top_bidder?.name || "********"}
+                  <span className="text-black font-semibold ml-2">
+                    {product?.top_bidder?.username || "********"}
                   </span>
                 </p>
                 <BidderRating
@@ -136,7 +156,7 @@ const BiddingStatus = ({ className = "" }) => {
                   {(role === "bidder" || role === "seller") &&
                     userData.id !== product.seller.id && (
                       <>
-                        {rating_percent < 80.0 ? (
+                        {rating_percent < 80.0 && !isBidOnProduct ? (
                           <BiddingRequestForm
                             productId={product?.product_id || ""}
                             state={false}

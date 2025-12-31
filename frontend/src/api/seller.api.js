@@ -7,7 +7,7 @@ const sellerEndpoints = {
   bidsPendingList: "/seller/all-requests",
   rejectBidder: "/seller/seller-reject-bidder",
   deleteBannedBidder: "/seller/seller-delete-banned-bidder",
-  allowBidder: "/seller/seller-allow-bidder",
+  allowBidder: "/seller/seller-allow-bidder",  
 };
 
 export const sellerApi = {
@@ -76,7 +76,7 @@ export const sellerApi = {
 
   acceptBidder: async (product_id, bidder_id) => {
     const respone = await http.post(
-      sellerEndpoints.acceptBidder,
+      `${sellerEndpoints.allowBidder}`,
       {
         productId: product_id,
         bidderId: bidder_id,        
