@@ -366,3 +366,11 @@ export const getWinningBidderByProductId = async (productId) => {
   );
   return result.rows[0]?.bidder_id || null;
 }
+
+export const deactiveProductById = async (productId) => {
+  const result = await pool.query(
+    `UPDATE products SET is_active = false WHERE product_id = $1 RETURNING *`,
+    [productId]
+  );
+  return result.rows[0];
+}

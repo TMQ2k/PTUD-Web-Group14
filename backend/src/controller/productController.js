@@ -11,6 +11,7 @@ import {
   updateDescription,
   getProductBySellerIdService,
   getWinningBidderByProductId,
+  deactiveProductById,
 } from "../service/productService.js";
 
 import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
@@ -254,6 +255,25 @@ router.get("/:productId/winning-bidder", authenticate, authorize("seller"), asyn
       data: { winningBidderId },
     });
   } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});
+
+router.put("/:productId/deactivate", authenticate, authorize("seller"), async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const deactivatedProduct = await deactiveProductById(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Product deactivated successfully",
+      data: deactivatedProduct,
+    });
+  }
+  catch (error) {
     res.status(500).json({
       code: 500,
       message: error.message,
