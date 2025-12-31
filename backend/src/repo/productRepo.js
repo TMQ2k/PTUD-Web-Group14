@@ -361,10 +361,10 @@ export const getProductBySellerIdRepo = async (sellerId) => {
 };
 export const getWinningBidderByProductId = async (productId) => {
   const result = await pool.query(
-    `SELECT bidder_id FROM bids WHERE product_id = $1 AND is_winner = true`,
+    `SELECT user_id FROM user_won_products WHERE product_id = $1`,
     [productId]
   );
-  return result.rows[0]?.bidder_id || null;
+  return result.rows[0]?.user_id || null;
 }
 
 export const deactiveProductById = async (productId) => {
@@ -374,3 +374,5 @@ export const deactiveProductById = async (productId) => {
   );
   return result.rows[0];
 }
+
+

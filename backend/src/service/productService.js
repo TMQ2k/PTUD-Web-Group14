@@ -30,7 +30,8 @@ import {
 
 import { 
   getUserInfoById,
-  getUserProfile
+  getUserProfile,
+  addUserWonProductRepo,
  } from "../repo/userRepo.js";
 import {
   otherProductsInfo,
@@ -350,5 +351,8 @@ export const deactiveProductById = async (productId) => {
   if (!result) {
     throw new Error("Failed to deactivate product");
   }
+  const userId = await getTopBidderIdByProductId(productId);
+  const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
+  await addUserWonProductRepo(productId, userId, winning_bid);
   return result;
 }

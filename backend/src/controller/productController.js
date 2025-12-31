@@ -263,23 +263,29 @@ router.get("/:productId/winning-bidder", authenticate, authorize("seller"), asyn
   }
 });
 
-router.put("/:productId/deactivate", authenticate, authorize("seller"), async (req, res) => {
-  try {
-    const productId = req.params.productId;
-    const deactivatedProduct = await deactiveProductById(productId);
-    res.status(200).json({
-      code: 200,
-      message: "Product deactivated successfully",
-      data: deactivatedProduct,
-    });
+router.put(
+  "/:productId/deactivate",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const result = await deactiveProductById(productId);
+      return res.status(200).json({
+        code: 200,
+        message: "Product deactivated successfully",
+        data: result,
+      });
+    }
+    catch (err) {
+      console.error("❌ Error in /:productId/deactivate route:", err);
+      return res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to deactivate product",
+        data: null,
+      });
+    }
   }
-  catch (error) {
-    res.status(500).json({
-      code: 500,
-      message: error.message,
-      data: null,
-    });
-  }
-});
+);
 
 export default router;
