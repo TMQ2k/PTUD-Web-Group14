@@ -101,5 +101,20 @@ export const postComment = async (user, productId, content, linkProduct, parentC
 
     //Change parent_comment_id to parent_id for consistency
     newComment.parent_id = newComment.parent_comment_id;
-    return newComment;
+    
+
+    const userInfo =  await getUserProfileRepo(newComment.user_id);
+    newComment.username = userInfo.username;
+    newComment.user_avatar_url = userInfo.avatar_url;
+    newComment.posted_at = newComment.created_at;
+    return newComment=> new Comment(
+        newComment.comment_id,
+        newComment.user_id,
+        newComment.username,
+        newComment.user_avatar_url,
+        newComment.content,
+        newComment.posted_at,
+        newComment.parent_id,
+        []
+    );
 }

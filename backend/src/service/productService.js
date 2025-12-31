@@ -18,6 +18,7 @@ import {
   getProductBySellerIdRepo,
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
+  deactiveProductById as deactiveProductByIdRepo
 } from "../repo/productRepo.js";
 
 import {
@@ -29,7 +30,8 @@ import {
 
 import { 
   getUserInfoById,
-  getUserProfile
+  getUserProfile,
+  addUserWonProductRepo,
  } from "../repo/userRepo.js";
 import {
   otherProductsInfo,
@@ -342,4 +344,15 @@ export const getWinningBidderByProductId = async (user, productId) => {
     console.error("❌ [Service] Lỗi khi lấy người đấu thầu thắng cuộc:", err);
     throw err;
   }
+}
+
+export const deactiveProductById = async (productId) => {
+  const result = await deactiveProductByIdRepo(productId);
+  if (!result) {
+    throw new Error("Failed to deactivate product");
+  }
+  const userId = await getTopBidderIdByProductId(productId);
+  const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
+  await addUserWonProductRepo(productId, userId, winning_bid);
+  return result;
 }
