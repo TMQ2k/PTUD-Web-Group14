@@ -81,7 +81,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
       // ✅ Lưu vào Redux
       dispatch(
         loginSuccess({
-          id: userData.id,
+          id: userData.user_id || userData.id,
           name: userData.username || userData.name,
           email: userData.email,
           role: userData.role || "buyer",
@@ -194,7 +194,7 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
         dispatch(
           loginSuccess({
-            id: userData.id,
+            id: userData.user_id,
             name: displayName,
             email: userData.email,
             role: userData.role,

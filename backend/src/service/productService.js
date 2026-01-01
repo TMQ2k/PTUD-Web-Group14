@@ -18,7 +18,8 @@ import {
   getProductBySellerIdRepo,
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
-  deactiveProductById as deactiveProductByIdRepo
+  deactiveProductById as deactiveProductByIdRepo,
+  getProductBySellerIdRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -281,8 +282,20 @@ export const sendSellerNotificationEmail = async (sellerEmail, sellerName, produ
   }
 };
 
-export const getProductListByQuery = async(query, limit, page, sortBy, is_active) => {
-  const products = await getProductListByQueryRepo(query, limit, page, sortBy, is_active);
+export const getProductListByQuery = async (
+  query,
+  limit,
+  page,
+  sortBy,
+  is_active
+) => {
+  const products = await getProductListByQueryRepo(
+    query,
+    limit,
+    page,
+    sortBy,
+    is_active
+  );
   for (let prod of products) {
     const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
     if (top_bidder_id) {
@@ -291,8 +304,8 @@ export const getProductListByQuery = async(query, limit, page, sortBy, is_active
       prod.top_bidder = null;
     }
     const countHistory = await countHistoryByProductId(prod.product_id);
-      prod.history_count = countHistory;
-  } 
+    prod.history_count = countHistory;
+  }
   if (!products) {
     throw new Error("No products found");
   }

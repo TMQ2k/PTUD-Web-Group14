@@ -15,6 +15,7 @@ const userEndpoint = {
   userRatings: "/users/user-ratings",
   userWonProducts: "/users/user-won-products",
   changeWonProductStatus: "/users/change-won-product-status",
+  sellerDeactivatedProducts: "/users/seller-deactivated-products",
 };
 
 export const userApi = {
@@ -178,5 +179,13 @@ export const userApi = {
       status: status,
     }, {});
     return repsone.data;
-  }
+  },
+  /**
+   * Lấy danh sách sản phẩm đã có người thắng đấu giá (seller)
+   * @returns {Promise<Object>} Danh sách sản phẩm đã hết hạn có người thắng
+   */
+  getSellerDeactivatedProducts: async () => {
+    const response = await http.get(userEndpoint.sellerDeactivatedProducts);
+    return response.data;
+  },
 };
