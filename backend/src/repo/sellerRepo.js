@@ -63,11 +63,3 @@ export const getAllRequestsRepo = async (sellerId, productId) => {
     requests: result.rows,
   };
 };
-
-export const enableAuctionExtensionRepo = async (sellerId, productId) => {
-  const result = await pool.query(
-    `SELECT * FROM fnc_enable_auction_extension($1, $2)`,
-    [sellerId, productId]
-  );
-  return result.rows[0];
-};

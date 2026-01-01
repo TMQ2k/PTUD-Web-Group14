@@ -88,64 +88,73 @@ drop FUNCTION fnc_deactivate_expired_products
 CREATE OR REPLACE FUNCTION fnc_deactivate_expired_products()
 RETURNS TABLE (
     product_id   INTEGER,
-	product_name VARCHAR,
-    end_time     TIMESTAMP
+    product_name VARCHAR,
+    end_time     TIMESTAMPTZ
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     ------------------------------------------------------------
-    -- 1. Tạo bảng tạm lưu danh sách sản phẩm hết hạn
+    -- 1. Lưu danh sách sản phẩm hết hạn
     ------------------------------------------------------------
     CREATE TEMP TABLE tmp_expired_products ON COMMIT DROP AS
     SELECT
         p.product_id,
-		p.name as product_name,
+        p.name AS product_name,
         p.end_time
     FROM products p
     WHERE p.end_time <= NOW()
       AND p.is_active = TRUE;
 
     ------------------------------------------------------------
-    -- 2. Lưu người chiến thắng vào user_won_products
+    -- 2. Lưu người chiến thắng (chỉ khi có bid)
     ------------------------------------------------------------
     INSERT INTO user_won_products (user_id, product_id, winning_bid, won_at)
     SELECT
         ph.user_id,
-        ph.product_id,
+        tep.product_id,
         ph.bid_amount,
         NOW()
     FROM tmp_expired_products tep
-    JOIN LATERAL (
-        SELECT user_id, product_id, bid_amount
-        FROM product_history
-        WHERE product_id = tep.product_id
-        ORDER BY bid_amount DESC, bid_time ASC
+    LEFT JOIN LATERAL (
+        SELECT
+            ph2.user_id,
+            ph2.bid_amount
+        FROM product_history ph2
+        WHERE ph2.product_id = tep.product_id
+        ORDER BY ph2.bid_amount DESC, ph2.bid_time ASC
         LIMIT 1
     ) ph ON TRUE
-    WHERE NOT EXISTS (
-        SELECT 1
-        FROM user_won_products uwp
-        WHERE uwp.product_id = tep.product_id
-    );
+    WHERE ph.user_id IS NOT NULL
+      AND NOT EXISTS (
+          SELECT 1
+          FROM user_won_products uwp
+          WHERE uwp.product_id = tep.product_id
+      );
 
     ------------------------------------------------------------
     -- 3. Deactivate sản phẩm
     ------------------------------------------------------------
-    UPDATE products
+    UPDATE products p
     SET is_active = FALSE
-    WHERE product_id IN (
-        SELECT product_id FROM tmp_expired_products
+    WHERE p.product_id IN (
+        SELECT tep.product_id
+        FROM tmp_expired_products tep
     );
 
     ------------------------------------------------------------
     -- 4. Trả về danh sách sản phẩm đã hết hạn
     ------------------------------------------------------------
     RETURN QUERY
-    SELECT * FROM tmp_expired_products;
+    SELECT
+        tep.product_id,
+        tep.product_name,
+        tep.end_time
+    FROM tmp_expired_products tep;
 
 END;
 $$;
+
 select * from fnc_deactivate_expired_products()
 
 INSERT INTO products (
@@ -231,7 +240,7 @@ BEGIN
     WHERE user_id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
-
+select * from products
 $$ LANGUAGE plpgsql;
 drop function fnc_create_product
 CREATE OR REPLACE FUNCTION fnc_create_product
@@ -567,7 +576,9 @@ RETURNS TABLE (
     username VARCHAR,
     email VARCHAR,
     first_name VARCHAR,
-    last_name VARCHAR
+    last_name VARCHAR,
+	avatar_url TEXT,
+	rating NUMERIC(5, 2)
 ) AS $$
 DECLARE
     v_highest_bid RECORD;
@@ -579,7 +590,17 @@ DECLARE
     v_bid_count INT;
     v_old_price NUMERIC(12,2);
     v_history_exists BOOLEAN;
+    v_last_bidder BIGINT;
+
 BEGIN
+
+	SELECT ph.user_id
+	INTO v_last_bidder
+	FROM product_history ph
+	WHERE ph.product_id = _product_id
+	ORDER BY ph.bid_time DESC
+	LIMIT 1;
+
     SELECT p.end_time, p.step_price, p.starting_price, p.current_price
     INTO v_auction_end, v_step_price, v_start_price, v_old_price
     FROM products p
@@ -658,10 +679,13 @@ BEGIN
         SELECT 1 FROM product_history WHERE product_id = _product_id
     ) INTO v_history_exists;
 
-    IF v_new_price <> v_old_price OR NOT v_history_exists THEN
-        INSERT INTO product_history(product_id, user_id, bid_amount)
-        VALUES (_product_id, v_highest_bid.user_id, v_new_price);
-    END IF;
+	IF v_new_price <> v_old_price
+	   OR v_last_bidder IS DISTINCT FROM v_highest_bid.user_id
+	THEN
+	    INSERT INTO product_history(product_id, user_id, bid_amount)
+	    VALUES (_product_id, v_highest_bid.user_id, v_new_price);
+	END IF;
+
 
     RETURN QUERY
     SELECT
@@ -670,9 +694,12 @@ BEGIN
         u.username,
         u.email,
         ui.first_name,
-        ui.last_name
+        ui.last_name,
+		ui.avatar_url,
+		ur.rating_percent
     FROM users u
     LEFT JOIN users_info ui ON u.user_id = ui.user_id
+	LEFT JOIN users_rating ur ON u.user_id = ur.user_id
     WHERE u.user_id = v_highest_bid.user_id;
 
 END;
@@ -707,7 +734,7 @@ BEGIN
     LIMIT 5;
 END;
 $$ LANGUAGE plpgsql;
-
+select * from product_history
 CREATE OR REPLACE FUNCTION fnc_delete_category(
     p_category_id integer
 )
@@ -1237,7 +1264,7 @@ $$;
 select * from bid_rejections
 select * from products where product_id = 30
 select * from product_history
-
+select * from products
 select * from auto_bids
 CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
     _user_id BIGINT,
@@ -1246,6 +1273,7 @@ CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
 )
 RETURNS TEXT AS $$
 DECLARE
+	start_price NUMERIC(12,2);
     old_max_bid NUMERIC(12,2);
     auction_end TIMESTAMPTZ;
     user_rating NUMERIC(5,2);
@@ -1254,12 +1282,13 @@ DECLARE
     is_banned BOOLEAN;
     is_allowed BOOLEAN;
     is_extendable BOOLEAN;
+	is_active BOOLEAN;
 BEGIN
     --------------------------------------------------------------------
     -- 1. Kiểm tra sản phẩm còn trong thời gian đấu giá
     --------------------------------------------------------------------
-    SELECT p.end_time, p.current_price
-    INTO auction_end, current_price
+    SELECT p.end_time, p.current_price, p.starting_price, p.is_active
+    INTO auction_end, current_price, start_price, is_active
     FROM products p
     WHERE p.product_id = _product_id;
 
@@ -1269,6 +1298,17 @@ BEGIN
         RETURN 'Sản phẩm đã hết thời gian đấu giá.';
     END IF;
 
+	IF _new_max_bid < start_price THEN
+	    RETURN format(
+	        'Giá auto bid (%s) không được nhỏ hơn giá khởi điểm (%s).',
+	        _new_max_bid,
+	        start_price
+	    );
+	END IF;
+
+	IF NOT is_active THEN
+	    RETURN 'Sản phẩm đã bị ngừng đấu giá.';
+	END IF;
     --------------------------------------------------------------------
     -- 2. Kiểm tra người dùng có bị cấm đấu giá
     --------------------------------------------------------------------
@@ -1320,23 +1360,23 @@ BEGIN
     
 	remaining := auction_end - NOW();
 
-    IF is_extendable
-       AND _new_max_bid > current_price
-       AND remaining <= INTERVAL '10 minutes'
-    THEN
-        UPDATE products
-        SET end_time = end_time + INTERVAL '20 minutes'
-        WHERE product_id = _product_id;
-
-        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 20 phút.';
-    END IF;
-
     --------------------------------------------------------------------
     -- 6. INSERT hoặc UPDATE auto-bid
     --------------------------------------------------------------------
     IF old_max_bid IS NULL THEN
         INSERT INTO auto_bids(user_id, product_id, max_bid_amount, current_bid_amount)
         VALUES (_user_id, _product_id, _new_max_bid, 0);
+
+	    IF is_extendable
+	       AND _new_max_bid > current_price
+	       AND remaining <= INTERVAL '5 minutes'
+	    THEN
+	        UPDATE products
+	        SET end_time = end_time + INTERVAL '10 minutes'
+	        WHERE product_id = _product_id;
+	
+	        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 10 phút.';
+	    END IF;
 
         RETURN 'Đặt auto bid thành công.';
     ELSE
@@ -1349,11 +1389,26 @@ BEGIN
             updated_at = NOW()
         WHERE user_id = _user_id AND product_id = _product_id;
 
+	    IF is_extendable
+	       AND _new_max_bid > current_price
+	       AND remaining <= INTERVAL '5 minutes'
+	    THEN
+	        UPDATE products
+	        SET end_time = end_time + INTERVAL '10 minutes'
+	        WHERE product_id = _product_id;
+	
+	        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 10 phút.';
+	    END IF;
+
         RETURN 'Cập nhật auto bid thành công.';
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-select *
+select * from fnc_upsert_auto_bid(42, 54, 17500000.00)
+select * from auto_bids
+select * from products
+
+select * from auction_extensions
 select * from fnc_judge_user()
 drop function judge_user
 CREATE OR REPLACE FUNCTION fnc_judge_user(
@@ -1567,6 +1622,10 @@ BEGIN
 END;
 $$;
 select * from products
+select * from auction_extensions
+delete from auction_extensions
+
+
 CREATE OR REPLACE FUNCTION fnc_enable_auction_extension(
     _seller_id BIGINT,
     _product_id BIGINT

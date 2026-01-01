@@ -19,6 +19,7 @@ import {
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
   deactiveProductById as deactiveProductByIdRepo,  
+  enableExtentionForProductRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -368,3 +369,7 @@ export const deactiveProductById = async (productId) => {
   await addUserWonProductRepo(productId, userId, winning_bid);
   return result;
 }
+export const enableExtentionForProductService = async (sellerId, productId) => {
+  const result = await enableExtentionForProductRepo(sellerId, productId);
+  return result;
+};

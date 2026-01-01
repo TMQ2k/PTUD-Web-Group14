@@ -12,6 +12,7 @@ import {
   getProductBySellerIdService,
   getWinningBidderByProductId,
   deactiveProductById,
+  enableExtentionForProductService,
 } from "../service/productService.js";
 
 import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
@@ -288,4 +289,31 @@ router.put(
   }
 );
 
+router.post(
+  "/enable-extension",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const { productId } = req.body;
+      const sellerId = req.user.id;
+      const result = await enableExtentionForProductService(
+        sellerId,
+        productId
+      );
+      res.status(200).json({
+        code: 200,
+        message: "Successfully enabled auction extension",
+        data: result,
+      });
+    } catch (err) {
+      console.error("❌ Error in /enable-extension route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to enable auction extension",
+        data: null,
+      });
+    }
+  }
+);
 export default router;
