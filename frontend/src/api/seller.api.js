@@ -8,6 +8,7 @@ const sellerEndpoints = {
   rejectBidder: "/seller/seller-reject-bidder",
   deleteBannedBidder: "/seller/seller-delete-banned-bidder",
   allowBidder: "/seller/seller-allow-bidder",  
+  enableAuctionExtension: "/seller/enable-auction-extension",
 };
 
 export const sellerApi = {
@@ -87,6 +88,14 @@ export const sellerApi = {
         },
       }
     );
+
+    return respone.data;
+  },
+
+  enableAuctionExtension: async (productId) => {
+    const respone = await http.post(sellerEndpoints.enableAuctionExtension, {
+      productId: productId,
+    }, {});
 
     return respone.data;
   }

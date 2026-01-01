@@ -18,8 +18,7 @@ import {
   getProductBySellerIdRepo,
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
-  deactiveProductById as deactiveProductByIdRepo,
-  getProductBySellerIdRepo,
+  deactiveProductById as deactiveProductByIdRepo,  
 } from "../repo/productRepo.js";
 
 import {

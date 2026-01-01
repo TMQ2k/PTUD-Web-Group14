@@ -17,17 +17,15 @@ import { useNavigate } from "react-router-dom";
 import { bidderApi } from "../../api/bidder.api";
 import { FaShippingFast } from "react-icons/fa";
 import BiddingRequestForm from "./BiddingRequestForm";
+import BuyNowDialog from "./BuyNowDialog";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
   const product = useProduct();
   const dispatch = useProductDispatch();
   const { userData } = useSelector((state) => state.user);
-  console.log(userData);
   const role = userData?.role || "guest";
-  //console.log("Role: ", role)
   const rating_percent = userData?.rating_percent || 0.0;
-  //console.log(userData.id !== product.seller.id)
 
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(
@@ -53,9 +51,7 @@ const BiddingStatus = ({ className = "" }) => {
     };
   }, [product.end_time]);
 
-  useEffect(() => {
-
-  }, [])
+  useEffect(() => {}, []);
 
   const [isBidOnProduct, setBidOnProduct] = useState(false);
 
@@ -85,8 +81,29 @@ const BiddingStatus = ({ className = "" }) => {
     });
   };
 
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Example Product Data
+  const currentProduct = {
+    id: "prod_abc123",
+    name: "Super Gadget X",
+    price: 99.99,
+  };
+
+  const openBuyDialog = () => setIsDialogOpen(true);
+  const closeBuyDialog = () => setIsDialogOpen(false);
+
+  // The actual action to take when they click "Buy Now" in the dialog
+  const handlePurchaseConfirm = (productId) => {
+    console.log(`Processing purchase for Product ID: ${productId}...`);
+    // Call your API here...
+    // Then close dialog
+    closeBuyDialog();
+    alert("Purchase confirmed!");
+  };
+
   return (
-    <>        
+    <>
       <main className={className}>
         <section>
           <h2 className="text-slate-400 text-md font-normal uppercase">
@@ -158,35 +175,43 @@ const BiddingStatus = ({ className = "" }) => {
                             price={product?.bidder?.maximum_price || 0}
                             steps={parseInt(product?.step_price) || 0}
                             productId={product?.product_id || ""}
+                            endTime={product.end_time}
                             onAutobidUpdate={handleAutobidUpdate}
                           />
                           {buy_now && (
-                            <NavigateButton
-                              to={`/products/${
-                                product?.product_id || ""
-                              }/bidding`}
-                              className="bg-white/50 hover:bg-purple-100
+                            <>
+                              <button                                
+                                className="bg-white/50 hover:bg-purple-100
                                        text-center text-purple-500
                                        font-bold rounded-md w-full py-2                                    
                                        relative group text-lg border-2 border-purple-500"
-                            >
-                              <p className="flex flex-row justify-center items-center gap-2">
-                                <FaShippingFast className="size-6" />
-                                Mua ngay{" "}
-                                {formatNumberToCurrency(
-                                  product?.buy_now_price || "NaN"
-                                )}{" "}
-                                đ
-                              </p>
-                              <span
-                                className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500 
+                                onClick={openBuyDialog}
+                              >
+                                <p className="flex flex-row justify-center items-center gap-2">
+                                  <FaShippingFast className="size-6" />
+                                  Mua ngay{" "}
+                                  {formatNumberToCurrency(
+                                    product?.buy_now_price || "NaN"
+                                  )}{" "}
+                                  đ
+                                </p>
+                                <span
+                                  className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500 
                                         animate-ping"
-                              ></span>
-                              <span
-                                className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500
+                                ></span>
+                                <span
+                                  className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500
                                         "
-                              ></span>
-                            </NavigateButton>
+                                ></span>
+                              </button>
+                              <BuyNowDialog
+                                isOpen={isDialogOpen}
+                                onClose={closeBuyDialog}
+                                onConfirm={handlePurchaseConfirm}
+                                buyNowPrice={currentProduct.price}
+                                productId={currentProduct.id}
+                              />
+                            </>
                           )}
                         </>
                       )}
@@ -205,7 +230,6 @@ const BiddingStatus = ({ className = "" }) => {
                   });
                 }}
               >
-
                 {role === "seller" &&
                 product?.seller?.id &&
                 userData?.id &&
@@ -224,7 +248,7 @@ const BiddingStatus = ({ className = "" }) => {
             </div>
           </div>
         </section>
-      </main>      
+      </main>
     </>
   );
 };

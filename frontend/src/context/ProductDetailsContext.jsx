@@ -31,6 +31,7 @@ export const productReducer = (product, action) => {
         current_price: action.payload.current_price,
         top_bidder: {
           ...product.top_bidder,
+          points: action.payload.points,
           name: action.payload.username,
           avatar_url: action.payload.avatar_url || product.top_bidder?.avatar_url,
         }

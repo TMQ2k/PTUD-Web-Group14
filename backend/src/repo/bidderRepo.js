@@ -113,7 +113,7 @@ export const updateAutoBidCurrentAmount = async (productId) => {
     const result = await pool.query(`SELECT * FROM fnc_update_auto_bids($1)`, [
       productId,
     ]);
-    return result.rows;
+    return result.rows[0];
   } catch (err) {
     console.error("❌ [Repo] Lỗi khi cập nhật current bid amount:", err);
     throw err;

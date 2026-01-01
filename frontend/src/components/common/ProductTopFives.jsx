@@ -72,7 +72,7 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: "Đang cập nhật",
+            highestBidder: product.top_bidder.username,
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
@@ -128,7 +128,7 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: "Đang cập nhật",
+            highestBidder: product.top_bidder.username,
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
@@ -190,13 +190,13 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: "Đang cập nhật", // Backend chưa trả về
+            highestBidder: product.top_bidder.username, // Backend chưa trả về
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
             postedDate: postedDate,
             remainingTime: remainingTime,
-            bidCount: product.bid_count || 0, // Backend chưa trả về
+            bidCount: product.history_count || 0, // Backend chưa trả về
             is_active: product.is_active,
           };
         });

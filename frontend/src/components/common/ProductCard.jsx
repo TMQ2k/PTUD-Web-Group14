@@ -17,6 +17,7 @@ const ProductCard = ({
   remainingTime,
   bidCount,
   onBuyNow,
+  topBidder,
   isInWatchlist = false,
   onRemoveFromWatchlist,
   is_active = true,
@@ -193,7 +194,7 @@ const ProductCard = ({
         </div>
 
         {/* Info grid - 2 cột rõ ràng */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {/* Người đấu cao nhất */}
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div className="flex items-center gap-2 mb-1.5">

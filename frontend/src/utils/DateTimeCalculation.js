@@ -133,6 +133,13 @@ function formatCustomDate(dateString) {
   return `${dayName}, ${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
 }
 
+function dateDistance(dateIsoString1, dateIsoString2) {
+  const date1 = new Date(dateIsoString1);
+  const date2 = new Date(dateIsoString2);
+
+  return date2 - date1;
+}
+
 export {
   remainingTime,
   isEndingSoon,
