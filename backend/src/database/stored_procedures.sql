@@ -84,13 +84,30 @@ BEGIN
       AND verified = TRUE;  -- chỉ cho phép user active
 END;
 $$ LANGUAGE plpgsql;
-
+drop FUNCTION fnc_deactivate_expired_products
 CREATE OR REPLACE FUNCTION fnc_deactivate_expired_products()
-RETURNS VOID AS $$
+RETURNS TABLE (
+    product_id   INTEGER,
+	product_name VARCHAR,
+    end_time     TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
 BEGIN
     ------------------------------------------------------------
-    -- 1. Lưu người chiến thắng vào user_won_products
-    --    (lấy bid cao nhất từ product_history)
+    -- 1. Tạo bảng tạm lưu danh sách sản phẩm hết hạn
+    ------------------------------------------------------------
+    CREATE TEMP TABLE tmp_expired_products ON COMMIT DROP AS
+    SELECT
+        p.product_id,
+		p.name as product_name,
+        p.end_time
+    FROM products p
+    WHERE p.end_time <= NOW()
+      AND p.is_active = TRUE;
+
+    ------------------------------------------------------------
+    -- 2. Lưu người chiến thắng vào user_won_products
     ------------------------------------------------------------
     INSERT INTO user_won_products (user_id, product_id, winning_bid, won_at)
     SELECT
@@ -98,32 +115,38 @@ BEGIN
         ph.product_id,
         ph.bid_amount,
         NOW()
-    FROM products p
+    FROM tmp_expired_products tep
     JOIN LATERAL (
         SELECT user_id, product_id, bid_amount
         FROM product_history
-        WHERE product_id = p.product_id
+        WHERE product_id = tep.product_id
         ORDER BY bid_amount DESC, bid_time ASC
         LIMIT 1
     ) ph ON TRUE
-    WHERE p.end_time <= NOW()
-      AND p.is_active = TRUE
-      -- tránh insert trùng nếu function chạy nhiều lần
-      AND NOT EXISTS (
-          SELECT 1
-          FROM user_won_products uwp
-          WHERE uwp.product_id = p.product_id
-      );
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM user_won_products uwp
+        WHERE uwp.product_id = tep.product_id
+    );
 
     ------------------------------------------------------------
-    -- 2. Deactivate sản phẩm đã hết hạn
+    -- 3. Deactivate sản phẩm
     ------------------------------------------------------------
     UPDATE products
     SET is_active = FALSE
-    WHERE end_time <= NOW()
-      AND is_active = TRUE;
+    WHERE product_id IN (
+        SELECT product_id FROM tmp_expired_products
+    );
+
+    ------------------------------------------------------------
+    -- 4. Trả về danh sách sản phẩm đã hết hạn
+    ------------------------------------------------------------
+    RETURN QUERY
+    SELECT * FROM tmp_expired_products;
+
 END;
-$$ LANGUAGE plpgsql;
+$$;
+select * from fnc_deactivate_expired_products()
 
 INSERT INTO products (
     seller_id,

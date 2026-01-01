@@ -247,7 +247,7 @@ export const deactiveProduct = async () => {
   const result = await pool.query(
     `SELECT * FROM fnc_deactivate_expired_products()`
   );
-  return result.rows[0];
+  return result.rows;
 };
 export const postProduct = async (
   seller_id,
