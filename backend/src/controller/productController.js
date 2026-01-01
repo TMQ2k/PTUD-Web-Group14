@@ -7,6 +7,7 @@ import {
   deactiveProduct,
   getProductBidHistoryService,
   getProductBySellerIdService,
+  enableExtentionForProductService,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -176,4 +177,31 @@ router.get("/seller-products", authenticate, async (req, res) => {
   }
 });
 
+router.post(
+  "/enable-extension",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const { productId } = req.body;
+      const sellerId = req.user.id;
+      const result = await enableExtentionForProductService(
+        sellerId,
+        productId
+      );
+      res.status(200).json({
+        code: 200,
+        message: "Successfully enabled auction extension",
+        data: result,
+      });
+    } catch (err) {
+      console.error("❌ Error in /enable-extension route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to enable auction extension",
+        data: null,
+      });
+    }
+  }
+);
 export default router;
