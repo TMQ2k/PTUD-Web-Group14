@@ -6,6 +6,7 @@ const productEndpoint = {
   postProduct: "/products",
   productBiddingHistory: "/products/bid-history",
   winningBidder: "/winning-bidder",
+  enableExtension: "/products/enable-extension",
 };
 
 export const productApi = {
@@ -161,7 +162,15 @@ export const productApi = {
   },
 
   getWinningBidder: async (productId) => {
-    const respone = await http.get(`${productId}/${productEndpoint.winningBidder}`);
+    const respone = await http.get(`/products/${productId}/${productEndpoint.winningBidder}`);
+    return respone.data;
+  },
+
+  enableProductExtension: async (productId) => {
+    const respone = await http.post(productEndpoint.enableExtension, {
+      productId: productId,
+    }, {});
+
     return respone.data;
   }
 };
