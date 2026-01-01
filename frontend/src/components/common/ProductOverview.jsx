@@ -13,8 +13,8 @@
 //   );
 // };
 
-// const ProductOverview = () => {  
-//   const { quill, quillRef } = useQuill();  
+// const ProductOverview = () => {
+//   const { quill, quillRef } = useQuill();
 
 //   const product = useProduct();
 //   const description = JSON.parse(product.description);
@@ -22,7 +22,7 @@
 //     if (quill) {
 //       quill.setContents(description);
 //       //quill.editReadOnly();
-//       // quill.on('text-change', (delta, oldDelta, source) => {             
+//       // quill.on('text-change', (delta, oldDelta, source) => {
 //       // });
 //     }
 //   }, [quill, quillRef, description]);
@@ -83,9 +83,10 @@ const ProductOverview = () => {
   useEffect(() => {
     if (viewQuill && product?.description) {
       try {
-        const descriptionDelta = typeof product.description === "string" 
-          ? JSON.parse(product.description) 
-          : product.description;
+        const descriptionDelta =
+          typeof product.description === "string"
+            ? JSON.parse(product.description)
+            : product.description;
         // const finalDescriptionDelta = typeof product.description === "string"
         //   ? JSON.parse(descriptionDelta)
         //   : descriptionDelta
@@ -136,22 +137,16 @@ const ProductOverview = () => {
       const oldContent = viewQuill.getContents(); // Get current Delta
       const newContent = appendQuill.getContents(); // Get new Delta
 
-      // Use the Delta 'concat' method to merge them
-      // Note: We access the prototype if needed, or just use the instance method
       const combinedContent = oldContent.concat(newContent);
 
-      // 1. Update the View Editor locally
-      viewQuill.setContents(combinedContent);
-
-      // 2. TODO: Send 'JSON.stringify(combinedContent)' to your Backend API here
-      //console.log("Saving to DB:", JSON.stringify(combinedContent));
-      
-      console.log(combinedContent);
-      // 3. Cleanup
-      appendQuill.setContents([]); // Clear input
-      setIsAppending(false); // Close input mode
+      appendQuill.setContents([]);
+      setIsAppending(false);
       try {
-        const data = await productApi.updateDescription(product?.product_id, JSON.stringify(combinedContent));
+        const respone = await productApi.updateDescription(
+          product?.product_id,
+          JSON.stringify(combinedContent)
+        );
+        if (respone.code === 200) viewQuill.setContents(combinedContent);
       } catch (err) {
         console.log(err.message);
       }
@@ -160,13 +155,15 @@ const ProductOverview = () => {
 
   return (
     <article className="flex flex-col gap-5 bg-slate-100 hover:shadow-lg transition-all duration-300 rounded-md py-5 px-6 text-balance">
-            
-      <OverviewSection title="Mô tả từ người bán">        
-        <div className="bg-white rounded-lg border border-gray-200">           
-           <div ref={viewRef} style={{ minHeight: '150px', border: 'none', width: "100%" }} />
+      <OverviewSection title="Mô tả từ người bán">
+        <div className="bg-white rounded-lg border border-gray-200">
+          <div
+            ref={viewRef}
+            style={{ minHeight: "150px", border: "none", width: "100%" }}
+          />
         </div>
       </OverviewSection>
-      
+
       {/* <div className="flex flex-col items-start gap-4 mb-6">
         {!isAppending ? (
           <button
@@ -248,45 +245,61 @@ const ProductOverview = () => {
           </Activity>
         </>
       )}  */}
-      
-      <Activity mode={isAppending ? "hidden" : "visible"}>
-        <button
-          onClick={() => setIsAppending(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Thêm thông tin mô tả
-        </button>
-      </Activity>
-      <Activity mode={isAppending ? "visible" : "hidden"}>
-        <form className="w-full bg-white p-4 rounded-lg border-2 border-blue-100 animate-fade-in-down">
-          <h4 className="text-sm font-semibold text-gray-500 mb-2">Nội dung bổ sung:</h4>
-          
-          {/* The Append Editor */}
-          <div style={{ minHeight: 200, marginBottom: '50px' }}>
-              <div ref={appendRef} />
-          </div>
 
-          <div className="flex gap-3 mt-4 justify-end">
+      {userData.id === product.seller.id && (
+        <>
+          <Activity mode={isAppending ? "hidden" : "visible"}>
             <button
-              type="button"
-              onClick={() => setIsAppending(false)}
-              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+              onClick={() => setIsAppending(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
             >
-              Hủy bỏ
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              Thêm thông tin mô tả
             </button>
-            <button
-              type="submit"
-              onClick={handleConfirmAppend}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium shadow-sm"
-            >
-              Xác nhận & Gộp
-            </button>
-          </div>
-          </form>
-      </Activity>
+          </Activity>
+          <Activity mode={isAppending ? "visible" : "hidden"}>
+            <form className="w-full bg-white p-4 rounded-lg border-2 border-blue-100 animate-fade-in-down">
+              <h4 className="text-sm font-semibold text-gray-500 mb-2">
+                Nội dung bổ sung:
+              </h4>
+
+              <div style={{ minHeight: 200, marginBottom: "50px" }}>
+                <div ref={appendRef} />
+              </div>
+
+              <div className="flex gap-3 mt-4 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsAppending(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  onClick={handleConfirmAppend}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium shadow-sm"
+                >
+                  Xác nhận & Gộp
+                </button>
+              </div>
+            </form>
+          </Activity>
+        </>
+      )}
 
       <OverviewSection title="Thông tin chung">
         <ProductBaseInformation />

@@ -4,7 +4,7 @@ import { AlertCircle, Send } from "lucide-react";
 
 const BiddingRequestForm = React.memo(({ productId, state }) => {
   const [reason, setReason] = useState("");
-  const [sent, setSent] = useState(state);
+  const [sent, setSent] = useState(state);  
 
   const handleSubmit = async () => {
     const respone = await bidderApi.requestProduct(productId, reason);
