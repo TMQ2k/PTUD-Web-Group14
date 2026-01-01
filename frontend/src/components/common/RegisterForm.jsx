@@ -190,7 +190,7 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
 
       dispatch(
         registerSuccess({
-          id: userData.id,
+          id: userData.user_id || userData.id,
           name: displayName,
           email: userData.email,
           role: userData.role,
