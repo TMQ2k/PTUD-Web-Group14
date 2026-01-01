@@ -244,7 +244,38 @@ export const deleteProductById = async (productId) => {
 
 export const deactiveProduct = async () => {
   const result = await deactiveProductRepo();
-  return result;
+  if (result) {
+    for (let prod of result) {
+      const productProfile = await getProductProfile(prod);
+      const sellerProfile = await getUserProfile(productProfile.seller_id);
+      const historyCount = await countHistoryByProductId(productProfile.product_id);
+      if (historyCount === 0) {
+        await sendNoBidderNotificationEmail(
+          sellerProfile.email,
+          sellerProfile.username,
+          productProfile.name
+        );
+      } else {
+        const topBidderId = await getTopBidderIdByProductId(prod);
+        const topBidderProfile = await getUserProfile(topBidderId);
+        const finalPrice = productProfile.current_price;
+        await sendWinningBidderNotificationEmail(
+          topBidderProfile.email,
+          topBidderProfile.username,
+          productProfile.name,
+          finalPrice
+        );
+        await sendSellerNotificationEmail(
+          sellerProfile.email,
+          sellerProfile.username,
+          productProfile.name,
+          finalPrice,
+          topBidderProfile.username
+        );
+      }
+    }
+  }
+  return [{}];
 }
 
 export const sendNoBidderNotificationEmail = async (sellerEmail, sellerName, productName) => {

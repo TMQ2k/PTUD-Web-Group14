@@ -246,11 +246,28 @@ export const getProductsList = async (
 };
 
 export const deactiveProduct = async () => {
+  const productsBefore = await pool.query(
+    `SELECT product_id FROM products WHERE is_active = false`
+  );
+
+  const productBeforeIds = new Set(
+    productsBefore.rows.map((row) => row.product_id)
+  );
+  
   const result = await pool.query(
     `SELECT * FROM fnc_deactivate_expired_products()`
   );
-  return result.rows[0];
+  const productsAfter = await pool.query(
+    `SELECT product_id FROM products WHERE is_active = false`
+  );
+  
+  const newlyDeactivatedProducts = productsAfter.rows
+    .map((row) => row.product_id)
+    .filter((id) => !productBeforeIds.has(id));
+
+  return newlyDeactivatedProducts;
 };
+
 export const postProduct = async (
   seller_id,
   name,
