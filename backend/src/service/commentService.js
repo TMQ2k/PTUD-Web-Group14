@@ -107,7 +107,7 @@ export const postComment = async (user, productId, content, linkProduct, parentC
     newComment.username = userInfo.username;
     newComment.user_avatar_url = userInfo.avatar_url;
     newComment.posted_at = newComment.created_at;
-    return newComment=> new Comment(
+    return new Comment(
         newComment.comment_id,
         newComment.user_id,
         newComment.username,
