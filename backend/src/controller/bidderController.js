@@ -271,7 +271,7 @@ router.get(
 );
 
 router.put(
-  "/:productId/buy-now",
+  "/buy-now/:productId",
   authenticate,
   authorize("bidder"),
   async (req, res) => {
