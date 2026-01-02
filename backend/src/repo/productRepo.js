@@ -394,6 +394,14 @@ export const deactiveProductById = async (productId) => {
   return result.rows[0];
 }
 
+export const updateCurrentPrice = async (productId, newPrice) => {
+  const result = await pool.query(
+    `UPDATE products SET current_price = $1 WHERE product_id = $2 RETURNING *`,
+    [newPrice, productId]
+  );
+  return result.rows[0];
+};
+
 
 
 export const enableExtentionForProductRepo = async (sellerId, productId) => {

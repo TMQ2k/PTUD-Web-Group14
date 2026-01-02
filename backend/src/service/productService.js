@@ -18,8 +18,9 @@ import {
   getProductBySellerIdRepo,
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
-  deactiveProductById as deactiveProductByIdRepo,  
   enableExtentionForProductRepo,
+  deactiveProductById as deactiveProductByIdRepo,
+  updateCurrentPrice
 } from "../repo/productRepo.js";
 
 import {
@@ -371,7 +372,9 @@ export const getProductBySellerIdService = async (sellerId) => {
 };
 
 export const getWinningBidderByProductId = async (user, productId) => {
-  if (user.id != (await getProductProfile(productId)).seller_id) {
+  const productProfile = await getProductProfile(productId);
+  const sellerId = productProfile.seller_id;
+  if (user.id != sellerId) {
     throw new Error("Unauthorized access to winning bidder information");
   }
   try {
@@ -396,7 +399,24 @@ export const deactiveProductById = async (user, productId) => {
     throw new Error("Failed to deactivate product");
   }
   const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
+  await updateCurrentPrice(productId, winning_bid);
   await addUserWonProductRepo(productId, user.id, winning_bid);
+  await sendWinningBidderNotificationEmail(
+    user.email,
+    user.username,
+    result.name,
+    winning_bid
+  );
+
+  const sellerProfile = await getUserProfile(result.seller_id);
+  await sendSellerNotificationEmail(
+    sellerProfile.email,
+    sellerProfile.username,
+    result.name,
+    winning_bid,
+    user.username
+  );
+
   return result;
 }
 export const enableExtentionForProductService = async (sellerId, productId) => {
