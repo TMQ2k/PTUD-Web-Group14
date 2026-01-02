@@ -10,9 +10,10 @@ import {
   getUpgradeRequestsService,
   handleUpgradeRequestService,
   requestBidderOnProductService,
-  isBidsOnProductService,
+  isBidsOnProductService
 } from "../service/bidderService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
+import { deactiveProductById } from "../service/productService.js";
 
 const router = express.Router();
 router.post("/add-to-watchlist", authenticate, async (req, res) => {
@@ -273,7 +274,7 @@ router.get(
 router.put(
   "/buy-now/:productId",
   authenticate,
-  authorize("bidder"),
+  authorize("bidder", "seller"),
   async (req, res) => {
     try {
       const productId = req.params.productId;
