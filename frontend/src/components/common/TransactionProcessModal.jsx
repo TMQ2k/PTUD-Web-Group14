@@ -28,7 +28,7 @@ const TransactionProcessModal = ({
   }, [isOpen]);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
+    const file = Array.from(e.target.files)[0];
     if (file) {
       setBillFile(file);
       setBillPreview(URL.createObjectURL(file));

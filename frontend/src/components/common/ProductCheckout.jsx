@@ -329,7 +329,7 @@ const ProductCheckout = () => {
                 />
               ))
             )}
-            {mockUserWonProducts.map((p) => (
+            {/* {mockUserWonProducts.map((p) => (
                 <ProductCheckoutCard
                   key={p.product_id}
                   productName={p.product_name}
@@ -346,7 +346,7 @@ const ProductCheckout = () => {
                   billImage={p.bill_confirmation_url}
                   onChangeStatus={onChangeStatus}
                 />
-              ))}
+              ))} */}
           </div>
         </>
       )}

@@ -93,7 +93,7 @@ const SellerProductCheckout = () => {
       try {
         setLoading(true);
         setError(null);
-        const respone = await userApi.getUserWonProducts();
+        const respone = await userApi.getSellerDeactivatedProducts();
         if (isMounted) {
           setUserWonProducts(respone.data);
         }
@@ -171,7 +171,7 @@ const SellerProductCheckout = () => {
                   productId={p.product_id}
                   wonId={p.won_id}
                   productName={p.product_name}
-                  productImage={p.image_cover_url}
+                  productImage={p.product_image}
                   sellerName={p.seller_name}
                   sellerId={userData.id}
                   onPaid={onPaid}

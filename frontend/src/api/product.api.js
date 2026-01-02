@@ -86,7 +86,7 @@ export const productApi = {
 
   getProductById: async (productId) => {
     const response = await http.get(
-      `${productEndpoint.getAll}/get/${productId}`
+      `${productEndpoint.getAll}/${productId}`
     );
     return response.data;
   },
