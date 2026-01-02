@@ -247,6 +247,7 @@ export const uploadPaymentPictureRepo = async (wonId, payment_picture_url) => {
 //Update user_won_products with user_id when bidder wins the product
 export const addUserWonProductRepo = async (productId, userId, winning_bid) => {
   try {
+    
     const result = await pool.query(
       'INSERT INTO user_won_products (product_id, user_id, winning_bid) VALUES ($1, $2, $3) RETURNING *',
       [productId, userId, winning_bid]
