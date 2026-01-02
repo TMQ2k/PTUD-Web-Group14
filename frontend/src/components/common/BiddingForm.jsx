@@ -32,15 +32,8 @@ const BiddingForm = React.memo(
       const formattedPrice = currentBidPrice - (currentBidPrice % steps);
       setValue("bidder_price", formatNumberToCurrency(formattedPrice));
       const respone = await bidderApi.autobid(productId, formattedPrice);
-      if (respone.code === 200) {
-        const end_date = new Date(endTime);
-        const current = new Date();
-        const remaining_time = end_date - current;
-        const limit = 5;
-        if (remaining_time <= limit * 60000) {
-          await sellerApi.enableAuctionExtension(productId);
-        }
-
+      if (respone.code === 200) {       
+        await sellerApi.enableAuctionExtension(productId);
         await onAutobidUpdate();
       }
     };
