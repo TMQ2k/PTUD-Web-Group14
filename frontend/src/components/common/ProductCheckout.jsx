@@ -150,11 +150,12 @@
 
 import { useEffect, useState } from "react";
 import ProductCheckoutCard from "./ProductCheckoutCard";
-import { Package, PackageOpen, ArrowRight } from "lucide-react";
+import { Package, PackageOpen, ArrowRight, Check } from "lucide-react";
 import { Navigate, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { userApi } from "../../api/user.api";
 import { BlinkBlur } from "react-loading-indicators";
+import CheckoutFilterBar from "./CheckoutFilterBar";
 
 const ProductCheckout = () => {
   const { userData } = useSelector((state) => state.user);
@@ -163,82 +164,82 @@ const ProductCheckout = () => {
   const [error, setError] = useState(null);
   const [userWonProducts, setUserWonProducts] = useState([]);
 
-  const mockUserWonProducts = [
-    {
-      product_id: 101,
-      productId: 101,
-      product_name:
-        "Sony PlayStation 5 Digital Edition - God of War Ragnarök Bundle",
-      image_cover_url:
-        "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=1000&auto=format&fit=crop",
-      winning_bid: 10500000,
-      seller_name: "GameStation VN",
-      seller_qr_url:
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:GameStation:12345",
-      status: "awaiting_payment", // Case 1: Initial state (Shows QR Code & Upload)
-      won_id: "won_001",
-      bill_confirmation_url: null,
-    },
-    {
-      product_id: 102,
-      productId: 102,
-      product_name: "Ibanez Electric Guitar RG Series - Black Flat",
-      image_cover_url:
-        "https://images.unsplash.com/photo-1550985543-f47f38aee65d?q=80&w=1000&auto=format&fit=crop",
-      winning_bid: 8900000,
-      seller_name: "Music World",
-      seller_qr_url:
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:MusicWorld:67890",
-      status: "sent", // Case 2: Buyer sent proof, waiting for seller response
-      won_id: "won_002",
-      bill_confirmation_url: null,
-    },
-    {
-      product_id: 103,
-      productId: 103,
-      product_name: "Vintage 1980s Casio Digital Watch - Gold Edition",
-      image_cover_url:
-        "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1000&auto=format&fit=crop",
-      winning_bid: 1200000,
-      seller_name: "Retro Finds",
-      seller_qr_url:
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:RetroFinds:11111",
-      status: "invalid", // Case 3: Seller rejected the proof (Shows re-upload UI)
-      won_id: "won_003",
-      bill_confirmation_url: null,
-    },
-    {
-      product_id: 104,
-      productId: 104,
-      product_name: "Dell XPS 15 9520 (i9/32GB/1TB/RTX 3050Ti)",
-      image_cover_url:
-        "https://images.unsplash.com/photo-1593642632823-8f78536788c6?q=80&w=1000&auto=format&fit=crop",
-      winning_bid: 45000000,
-      seller_name: "LaptopPro",
-      seller_qr_url:
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:LaptopPro:22222",
-      status: "paid", // Case 4: Paid successfully, Bill is available
-      won_id: "won_004",
-      // This image will trigger the "Xem hóa đơn" button
-      bill_confirmation_url:
-        "https://images.unsplash.com/photo-1554224154-26032ffc0d07?q=80&w=1000&auto=format&fit=crop",
-    },
-    {
-      product_id: 105,
-      productId: 105,
-      product_name: "Adidas Ultraboost 22 - Core Black - Size 42",
-      image_cover_url:
-        "https://images.unsplash.com/photo-1587563871167-1ee9c731aef4?q=80&w=1000&auto=format&fit=crop",
-      winning_bid: 2800000,
-      seller_name: "SneakerHead",
-      seller_qr_url:
-        "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:SneakerHead:33333",
-      status: "received", // Case 5: Transaction fully completed
-      won_id: "won_005",
-      bill_confirmation_url:
-        "https://images.unsplash.com/photo-1554224154-26032ffc0d07?q=80&w=1000&auto=format&fit=crop",
-    },
-  ];
+  // const mockUserWonProducts = [
+  //   {
+  //     product_id: 101,
+  //     productId: 101,
+  //     product_name:
+  //       "Sony PlayStation 5 Digital Edition - God of War Ragnarök Bundle",
+  //     image_cover_url:
+  //       "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=1000&auto=format&fit=crop",
+  //     winning_bid: 10500000,
+  //     seller_name: "GameStation VN",
+  //     seller_qr_url:
+  //       "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:GameStation:12345",
+  //     status: "awaiting_payment", // Case 1: Initial state (Shows QR Code & Upload)
+  //     won_id: "won_001",
+  //     bill_confirmation_url: null,
+  //   },
+  //   {
+  //     product_id: 102,
+  //     productId: 102,
+  //     product_name: "Ibanez Electric Guitar RG Series - Black Flat",
+  //     image_cover_url:
+  //       "https://images.unsplash.com/photo-1550985543-f47f38aee65d?q=80&w=1000&auto=format&fit=crop",
+  //     winning_bid: 8900000,
+  //     seller_name: "Music World",
+  //     seller_qr_url:
+  //       "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:MusicWorld:67890",
+  //     status: "sent", // Case 2: Buyer sent proof, waiting for seller response
+  //     won_id: "won_002",
+  //     bill_confirmation_url: null,
+  //   },
+  //   {
+  //     product_id: 103,
+  //     productId: 103,
+  //     product_name: "Vintage 1980s Casio Digital Watch - Gold Edition",
+  //     image_cover_url:
+  //       "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=1000&auto=format&fit=crop",
+  //     winning_bid: 1200000,
+  //     seller_name: "Retro Finds",
+  //     seller_qr_url:
+  //       "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:RetroFinds:11111",
+  //     status: "invalid", // Case 3: Seller rejected the proof (Shows re-upload UI)
+  //     won_id: "won_003",
+  //     bill_confirmation_url: null,
+  //   },
+  //   {
+  //     product_id: 104,
+  //     productId: 104,
+  //     product_name: "Dell XPS 15 9520 (i9/32GB/1TB/RTX 3050Ti)",
+  //     image_cover_url:
+  //       "https://images.unsplash.com/photo-1593642632823-8f78536788c6?q=80&w=1000&auto=format&fit=crop",
+  //     winning_bid: 45000000,
+  //     seller_name: "LaptopPro",
+  //     seller_qr_url:
+  //       "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:LaptopPro:22222",
+  //     status: "paid", // Case 4: Paid successfully, Bill is available
+  //     won_id: "won_004",
+  //     // This image will trigger the "Xem hóa đơn" button
+  //     bill_confirmation_url:
+  //       "https://images.unsplash.com/photo-1554224154-26032ffc0d07?q=80&w=1000&auto=format&fit=crop",
+  //   },
+  //   {
+  //     product_id: 105,
+  //     productId: 105,
+  //     product_name: "Adidas Ultraboost 22 - Core Black - Size 42",
+  //     image_cover_url:
+  //       "https://images.unsplash.com/photo-1587563871167-1ee9c731aef4?q=80&w=1000&auto=format&fit=crop",
+  //     winning_bid: 2800000,
+  //     seller_name: "SneakerHead",
+  //     seller_qr_url:
+  //       "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BankTransfer:SneakerHead:33333",
+  //     status: "received", // Case 5: Transaction fully completed
+  //     won_id: "won_005",
+  //     bill_confirmation_url:
+  //       "https://images.unsplash.com/photo-1554224154-26032ffc0d07?q=80&w=1000&auto=format&fit=crop",
+  //   },
+  // ];
 
   useEffect(() => {
     let isMounted = true;
@@ -280,6 +281,9 @@ const ProductCheckout = () => {
       {!loading && !error && (
         <>
           {role === "guest" && <Navigate to="/" />}
+          <div className="flex items-center justify-center w-full">
+            <CheckoutFilterBar mainColor={"purple"} onFilter={null} />
+          </div>
           <h1 className="flex flex-row gap-2 justify-center items-center h-fit p-1 mt-4 text-center text-4xl font-bold text-transparent bg-linear-to-br from-blue-400 to-purple-600 bg-clip-text ">
             <Package className="size-12 stroke-purple-500 bg-purple-200 p-2 rounded-full" />
             Sản phẩm đã thắng

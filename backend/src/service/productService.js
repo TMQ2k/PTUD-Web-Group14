@@ -401,22 +401,22 @@ export const deactiveProductById = async (user, productId) => {
   }
   const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
   await updateCurrentPrice(productId, winning_bid);
-  await addUserWonProductRepo(productId, user.id, winning_bid);
-  await sendWinningBidderNotificationEmail(
-    user.email,
-    user.username,
-    result.name,
-    winning_bid
-  );
+  //await addUserWonProductRepo(productId, user.id, winning_bid);
+  // await sendWinningBidderNotificationEmail(
+  //   user.email,
+  //   user.username,
+  //   result.name,
+  //   winning_bid
+  // );
 
   const sellerProfile = await getUserProfile(result.seller_id);
-  await sendSellerNotificationEmail(
-    sellerProfile.email,
-    sellerProfile.username,
-    result.name,
-    winning_bid,
-    user.username
-  );
+  // await sendSellerNotificationEmail(
+  //   sellerProfile.email,
+  //   sellerProfile.username,
+  //   result.name,
+  //   winning_bid,
+  //   user.username
+  // );
 
   return result;
 }

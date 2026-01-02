@@ -7,6 +7,7 @@ import { BlinkBlur } from "react-loading-indicators";
 import { Link } from "react-router-dom";
 import { PackageOpen, ArrowRight } from "lucide-react";
 import { productApi } from "../../api/product.api";
+import CheckoutFilterBar from "./CheckoutFilterBar";
 
 const SellerProductCheckout = () => {
   // const mockCheckoutData = [
@@ -130,6 +131,9 @@ const SellerProductCheckout = () => {
       {error && <div>{error?.message}</div>}
       {!loading && !error && (
         <>
+          <div className="flex items-center justify-center w-full">
+            <CheckoutFilterBar mainColor={"amber"} onFilter={null} />
+          </div>
           <h1 className="flex flex-row gap-2 justify-center items-center h-fit p-1 mt-4 ml-4 text-4xl font-bold text-transparent bg-linear-to-br from-amber-400 to-red-600 bg-clip-text ">
             <Package className="size-12 stroke-red-500 bg-red-200 p-2 rounded-full" />
             Sản phẩm của bạn đang chờ xử lý
