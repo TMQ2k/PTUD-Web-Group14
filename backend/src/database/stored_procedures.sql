@@ -1794,7 +1794,7 @@ BEGIN
         ur.to_user = user_id;
 END;
 $$ LANGUAGE plpgsql;
-
+select * from auto_bids
 drop FUNCTION fnc_user_won_product
 CREATE OR REPLACE FUNCTION fnc_user_won_product(p_user_id BIGINT)
 RETURNS TABLE (
@@ -1807,7 +1807,8 @@ RETURNS TABLE (
     seller_name TEXT,
     seller_qr_url TEXT,
     status VARCHAR(20),
-	payment TEXT
+	payment TEXT,
+	seller_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1821,7 +1822,8 @@ BEGIN
         CONCAT(ui.first_name, ' ', ui.last_name) AS seller_name,
         ui.qr_url AS seller_qr_url,
         uwp.status,
-		uwp.payment
+		uwp.payment,
+		uwp.seller_url
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
@@ -1851,7 +1853,8 @@ RETURNS TABLE (
     bidder_address TEXT,
     bidder_phone VARCHAR,
     status VARCHAR(20),
-	payment TEXT
+	payment TEXT,
+	seller_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1870,7 +1873,8 @@ BEGIN
         bi.address AS bidder_address,
         bi.phone_number AS bidder_phone,
         uwp.status,
-		uwp.payment
+		uwp.payment,
+		uwp.seller_url
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
@@ -1896,7 +1900,7 @@ CREATE OR REPLACE FUNCTION fnc_seller_change_status_won_product(
 RETURNS VOID AS $$
 BEGIN
     -- Kiểm tra trạng thái hợp lệ
-    IF p_status NOT IN ('invalid', 'sent', 'paid', 'received') THEN
+    IF p_status NOT IN ('invalid', 'sent', 'paid', 'received', 'cancelled') THEN
         RAISE EXCEPTION 'Trạng thái không hợp lệ: %', p_status;
     END IF;
 
