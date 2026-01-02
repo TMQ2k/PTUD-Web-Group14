@@ -21,6 +21,7 @@ const BuyNowDialog = ({
   const handleConfirmClick = async () => {
     // Trigger the purchase action with the ID
     await onConfirm(productId);
+    onClose();
   };
 
   return (
