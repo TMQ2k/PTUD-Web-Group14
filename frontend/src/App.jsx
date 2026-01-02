@@ -46,7 +46,7 @@ const App = () => {
         await productApi.deactivateExpiredProducts();
         console.log("Đã cập nhật trạng thái sản phẩm hết hạn");
       } catch (error) {
-        console.error("Lỗi khi deactivate expired products:", error);
+        console.error("Lỗi khi deactivate expired products:", error.message);
       }
     };
 

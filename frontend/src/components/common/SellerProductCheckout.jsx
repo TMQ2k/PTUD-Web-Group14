@@ -9,43 +9,75 @@ import { PackageOpen, ArrowRight } from "lucide-react";
 import { productApi } from "../../api/product.api";
 
 const SellerProductCheckout = () => {
-  // const data = [
+  // const mockCheckoutData = [
   //   {
-  //     productId: 1004,
-  //     name: "Vintage 1960s Leica M3 Rangefinder Camera with Summicron 50mm Lens (Excellent Condition)",
-  //     price: 2250.0,
-  //     productImageUrl:
-  //       "https://images.unsplash.com/photo-1627639685507-358459789474?q=80&w=2070&auto=format&fit=crop",
-  //     bidderImageUrl:
-  //       "https://inkythuatso.com/uploads/thumbnails/800/2023/03/hinh-anh-chuyen-tien-thanh-cong-vietcombank-1-07-12-28-47.jpg",
-  //     seller: {
-  //       name: "RetroOptics Ltd.",
-  //       id: 11,
-  //     },
-  //     bidder: {
-  //       username: "thienphu",
-  //       email: "truongcongthienphu1910@gmai.com",
-  //       address: "227 Nguyễn Văn Cừ",
-  //     },
-  //     status: "sent", // "invalid" - "sent" - "paid" - "received"
+  //     productId: "prod_001",
+  //     productName: "MacBook Pro 14-inch M3 Max - Space Black (32GB/1TB)",
+  //     productImage:
+  //       "https://images.unsplash.com/photo-1517336714731-489689fd1ca4?q=80&w=1000&auto=format&fit=crop",
+  //     wonId: "won_101",
+  //     sellerName: "TechStore Official",
+  //     sellerId: "sell_999",
+  //     // Case 1: 'sent' - Buyer uploaded proof, waiting for you to process
+  //     status: "sent",
+  //     price: 45000000,
+  //     transactionImage:
+  //       "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000&auto=format&fit=crop", // Bank transfer screenshot
   //   },
   //   {
-  //     productId: 1004,
-  //     name: "Vintage 1960s Leica M3 Rangefinder Camera with Summicron 50mm Lens (Excellent Condition)",
-  //     price: 2250.0,
-  //     productImageUrl:
-  //       "https://images.unsplash.com/photo-1627639685507-358459789474?q=80&w=2070&auto=format&fit=crop",
-  //     transactionImageUrl: null,
-  //     seller: {
-  //       name: "RetroOptics Ltd.",
-  //       id: 11,
-  //     },
-  //     bidder: {
-  //       username: "thienphu",
-  //       email: "truongcongthienphu1910@gmai.com",
-  //       address: "227 Nguyễn Văn Cừ",
-  //     },
-  //     status: "invalid", // "invalid" - "sent" - "paid" - "received"
+  //     productId: "prod_002",
+  //     productName: "Keychron Q1 Pro Mechanical Keyboard - Red Switch",
+  //     productImage:
+  //       "https://images.unsplash.com/photo-1595225476474-87563907a212?q=80&w=1000&auto=format&fit=crop",
+  //     wonId: "won_102",
+  //     sellerName: "GearHunters",
+  //     sellerId: "sell_888",
+  //     // Case 2: 'invalid' - You rejected the previous proof
+  //     status: "invalid",
+  //     price: 3200000,
+  //     transactionImage: null,
+  //   },
+  //   {
+  //     productId: "prod_003",
+  //     productName: "Sony WH-1000XM5 Noise Canceling Headphones",
+  //     productImage:
+  //       "https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?q=80&w=1000&auto=format&fit=crop",
+  //     wonId: "won_103",
+  //     sellerName: "AudioPhile VN",
+  //     sellerId: "sell_777",
+  //     // Case 3: 'paid' - You confirmed money received, waiting for buyer to receive item
+  //     status: "paid",
+  //     price: 6490000,
+  //     transactionImage:
+  //       "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000&auto=format&fit=crop",
+  //   },
+  //   {
+  //     productId: "prod_004",
+  //     productName: "Fujifilm X100V Digital Camera - Silver",
+  //     productImage:
+  //       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=1000&auto=format&fit=crop",
+  //     wonId: "won_104",
+  //     sellerName: "Camera World",
+  //     sellerId: "sell_666",
+  //     // Case 4: 'received' - Transaction fully completed
+  //     status: "received",
+  //     price: 32500000,
+  //     transactionImage:
+  //       "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=1000&auto=format&fit=crop",
+  //   },
+  //   {
+  //     productId: "prod_005",
+  //     productName: "Herman Miller Aeron Chair - Size B",
+  //     productImage:
+  //       "https://images.unsplash.com/photo-1505843490538-5133c6c7d0e1?q=80&w=1000&auto=format&fit=crop",
+  //     wonId: "won_105",
+  //     sellerName: "Office Setup",
+  //     sellerId: "sell_555",
+  //     // Case 5: Another 'sent' case to test layout with multiple active items
+  //     status: "sent",
+  //     price: 18000000,
+  //     transactionImage:
+  //       "https://images.unsplash.com/photo-1621981386829-9b747d6a9f9d?q=80&w=1000&auto=format&fit=crop",
   //   },
   // ];
 
@@ -120,7 +152,8 @@ const SellerProductCheckout = () => {
 
                 {/* Subtext */}
                 <p className="text-gray-500 text-center max-w-md mb-8">
-                  Có vẻ như bạn chưa đăng sản phẩm hoặc sản phẩm đã đăng nhưng chưa hết thời gian đấu giá!                  
+                  Có vẻ như bạn chưa đăng sản phẩm hoặc sản phẩm đã đăng nhưng
+                  chưa hết thời gian đấu giá!
                 </p>
 
                 {/* Call to Action Button */}
@@ -148,7 +181,18 @@ const SellerProductCheckout = () => {
                   onChangeStatus={onChangeStatus}
                 />
               ))
-            )}            
+            )}
+
+            {/* <div className="flex flex-col gap-6 p-8 bg-gray-50 min-h-screen items-center">
+              {mockCheckoutData.map((item) => (
+                <SellerProductCheckoutCard
+                  key={item.wonId}
+                  {...item} // Spread all data properties
+                  onChangeStatus={onChangeStatus}
+                  onPaid={() => console.log("Paid clicked")}
+                />
+              ))}
+            </div> */}
           </div>
         </>
       )}

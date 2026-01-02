@@ -83,21 +83,14 @@ const BiddingStatus = ({ className = "" }) => {
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Example Product Data
-  const currentProduct = {
-    id: "prod_abc123",
-    name: "Super Gadget X",
-    price: 99.99,
-  };
-
   const openBuyDialog = () => setIsDialogOpen(true);
   const closeBuyDialog = () => setIsDialogOpen(false);
 
   // The actual action to take when they click "Buy Now" in the dialog
   const handlePurchaseConfirm = (productId) => {
     console.log(`Processing purchase for Product ID: ${productId}...`);
-    // Call your API here...
-    // Then close dialog
+
+    
     closeBuyDialog();
     alert("Purchase confirmed!");
   };
@@ -208,8 +201,8 @@ const BiddingStatus = ({ className = "" }) => {
                                 isOpen={isDialogOpen}
                                 onClose={closeBuyDialog}
                                 onConfirm={handlePurchaseConfirm}
-                                buyNowPrice={currentProduct.price}
-                                productId={currentProduct.id}
+                                buyNowPrice={product.buy_now_price}
+                                productId={product.product_id}
                               />
                             </>
                           )}

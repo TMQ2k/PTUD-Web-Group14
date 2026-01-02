@@ -72,7 +72,7 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: product.top_bidder?.username || "",
+            highestBidder: product.top_bidder?.username || null,
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
@@ -128,7 +128,7 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: product.top_bidder?.username || "",
+            highestBidder: product.top_bidder?.username || null,
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
@@ -190,7 +190,7 @@ const ProductTopFives = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: product.top_bidder?.username || "", // Backend chưa trả về
+            highestBidder: product.top_bidder?.username || null, // Backend chưa trả về
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,
