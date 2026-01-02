@@ -84,7 +84,7 @@ router.put("/deactivate-expired", async (req, res) => {
     });
   }
 });
-router.get("/get/:productId", async (req, res) => {
+router.get("/:productId", async (req, res) => {
   try {
     const productId = req.params.productId;
     const user = req.user; // Assuming user info is attached to the request
@@ -248,7 +248,8 @@ router.get("/seller-products", authenticate, async (req, res) => {
 router.get("/:productId/winning-bidder", authenticate, authorize("seller"), async (req, res) => {
   try {
     const productId = req.params.productId;
-    const winningBidderId = await getWinningBidderByProductId(productId);
+    const user = req.user;
+    const winningBidderId = await getWinningBidderByProductId(user, productId);
     res.status(200).json({
       code: 200,
       message: "Winning bidder retrieved successfully",
