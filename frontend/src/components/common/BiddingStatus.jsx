@@ -79,7 +79,7 @@ const BiddingStatus = ({ className = "" }) => {
       type: "autobid-update",
       payload: respone.data,
     });
-  };
+  }; 
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -87,10 +87,10 @@ const BiddingStatus = ({ className = "" }) => {
   const closeBuyDialog = () => setIsDialogOpen(false);
 
   // The actual action to take when they click "Buy Now" in the dialog
-  const handlePurchaseConfirm = (productId) => {
+  const handlePurchaseConfirm = async (productId) => {
     console.log(`Processing purchase for Product ID: ${productId}...`);
 
-    
+    await bidderApi.buyNow(productId);
     closeBuyDialog();
     alert("Purchase confirmed!");
   };
@@ -170,7 +170,8 @@ const BiddingStatus = ({ className = "" }) => {
                             productId={product?.product_id || ""}
                             endTime={product.end_time}
                             onAutobidUpdate={handleAutobidUpdate}
-                            buyNowPrice={product?.buy_now_price || null}
+                            buyNowPrice={product?.buy_now_price || null} 
+                            openBuyDialog={openBuyDialog}                           
                           />
                           {buy_now && (
                             <>

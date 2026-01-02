@@ -17,6 +17,7 @@ const userEndpoint = {
   changeWonProductStatus: "/users/change-won-product-status",
   sellerDeactivatedProducts: "/users/seller-deactivated-products",
   uploadPaymentPicture: "/users/upload-payment-picture",
+  uploadBillPicture: "/users/upload-seller-url",
 };
 
 export const userApi = {
@@ -195,7 +196,7 @@ export const userApi = {
   },
 
   uploadPaymentPicture: async (formData) => {
-    const respone = await http.post(
+    const respone = await http.patch(
       userEndpoint.uploadPaymentPicture,
       formData,
       {
@@ -208,4 +209,19 @@ export const userApi = {
 
     return respone.data;
   },
+
+  uploadBillPicture: async (formData) => {
+    const respone = await http.patch(
+      userEndpoint.uploadBillPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  }
 };

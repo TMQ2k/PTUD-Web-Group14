@@ -18,9 +18,9 @@ const BuyNowDialog = ({
   //   currency: 'USD',
   // }).format(buyNowPrice);
 
-  const handleConfirmClick = () => {
+  const handleConfirmClick = async () => {
     // Trigger the purchase action with the ID
-    onConfirm(productId);
+    await onConfirm(productId);
   };
 
   return (

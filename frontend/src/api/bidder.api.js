@@ -44,7 +44,7 @@ export const bidderApi = {
   },
 
   buyNow: async (productId) => {
-    const respone = await http.get(`${bidderEndpoint.buyNow}/${productId}`);
+    const respone = await http.put(`${bidderEndpoint.buyNow}/${productId}`);
     return respone.data;
   }
 };

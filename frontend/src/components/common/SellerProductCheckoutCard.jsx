@@ -181,6 +181,7 @@ import {
 import { useState } from "react";
 import WonUserInformation from "./WonUserInformation";
 import TransactionProcessModal from "./TransactionProcessModal";
+import { userApi } from "../../api/user.api";
 
 const SellerProductCheckoutCard = ({
   productId,
@@ -211,12 +212,17 @@ const SellerProductCheckoutCard = ({
     // 1. Here you have the file! You can append it to FormData
     console.log("Bill File received from modal:", billFile);
 
-    // 2. Call your API (assuming onChangeStatus can handle the file)
-    // You might need to adjust your API to accept a third argument (the file)
-    const response = await onChangeStatus(wonId, "paid", billFile);
-
+    const formData = new FormData();
+    formData.append("seller-url", billFile);
+    formData.append("wonId", wonId);
+    
+    //const response = await onChangeStatus(wonId, "paid");
+    const [statusRespone, billRespone] = Promise.all([
+      await onChangeStatus(wonId, "paid"),
+      await userApi.uploadBillPicture(formData),
+    ])
     // 3. Update UI
-    if (response?.code === 200) {
+    if (statusRespone?.code === 200 && billRespone?.code === 200) {
       setProductStatus("paid");
       setShowProcessModal(false);
     }
@@ -230,7 +236,7 @@ const SellerProductCheckoutCard = ({
           className
         )}
       >
-        <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-amber-400 to-red-600"></div>
+        <div className="absolute left-0 top-0 h-full w-1.5 bg-linear-to-b from-amber-400 to-red-600"></div>
 
         {/* Left Side: Product Image */}
         <div className="h-full w-36 shrink-0 relative bg-gray-100 border-r border-gray-100">
@@ -245,7 +251,7 @@ const SellerProductCheckoutCard = ({
         </div>
 
         {/* Middle Side: Details */}
-        <div className="flex flex-col justify-center ml-4 pr-4 py-2 flex-grow min-w-0">
+        <div className="flex flex-col justify-center ml-4 pr-4 py-2 grow min-w-0">
           <h3
             className="text-base font-bold text-gray-900 leading-tight line-clamp-2 mb-1"
             title={productName}
