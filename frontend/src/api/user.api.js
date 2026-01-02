@@ -16,6 +16,7 @@ const userEndpoint = {
   userWonProducts: "/users/user-won-products",
   changeWonProductStatus: "/users/change-won-product-status",
   sellerDeactivatedProducts: "/users/seller-deactivated-products",
+  uploadPaymentPicture: "/users/upload-payment-picture",
 };
 
 export const userApi = {
@@ -174,10 +175,14 @@ export const userApi = {
   },
 
   updateWonProductStatus: async (wonId, status) => {
-    const repsone = await http.put(`${userEndpoint.changeWonProductStatus}`, {
-      wonId: wonId,
-      status: status,
-    }, {});
+    const repsone = await http.put(
+      `${userEndpoint.changeWonProductStatus}`,
+      {
+        wonId: wonId,
+        status: status,
+      },
+      {}
+    );
     return repsone.data;
   },
   /**
@@ -187,5 +192,20 @@ export const userApi = {
   getSellerDeactivatedProducts: async () => {
     const response = await http.get(userEndpoint.sellerDeactivatedProducts);
     return response.data;
+  },
+
+  uploadPaymentPicture: async (formData) => {
+    const respone = await http.post(
+      userEndpoint.uploadPaymentPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
   },
 };

@@ -166,18 +166,8 @@ const ProductPosting = () => {
                   </span>{" "}
                   của bạn đã được niêm yết và hiển thị với người mua.
                 </p>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  {/* Primary Action: View the new product */}
-                  {/* <Link 
-                to="/products/latest" 
-                className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors shadow-sm focus:ring-4 focus:ring-blue-100"
-              >
-                Xem bài đăng
-              </Link> */}
-
-                  {/* Secondary Action: Post another or Go Home */}
+                
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">                  
                   <button
                     onClick={() => {
                       setPosted(false);
@@ -196,9 +186,7 @@ const ProductPosting = () => {
                   >
                     View Product
                   </Link>
-                </div>
-
-                {/* Optional: Return to home link */}
+                </div>                
                 <div className="mt-6">
                   <Link
                     to="/"

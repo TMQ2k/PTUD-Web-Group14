@@ -41,7 +41,7 @@ const BuyNowDialog = ({
       >
         {/* HEADER BAR */}
         {/* - bg-gradient-to-br from-blue-400 to-purple-600: The requested gradient */}
-        <div className="flex items-center justify-between bg-gradient-to-br from-blue-400 to-purple-600 p-4 text-white">
+        <div className="flex items-center justify-between bg-linear-to-br from-blue-400 to-purple-600 p-4 text-white">
           <h3 className="text-lg font-bold leading-6">
             Confirm Purchase
           </h3>
@@ -63,18 +63,18 @@ const BuyNowDialog = ({
         <div className="p-6">
           <div className="mt-2">
             <p className="text-sm text-gray-600">
-              Are you sure you want to buy this item immediately?
+              Bạn chắc chắn xác nhận mua ngay?
             </p>
 
             {/* Price Display */}
             <div className="mt-5 flex flex-col items-center justify-center rounded-lg bg-gray-50 p-4 border border-gray-100">
-              <span className="text-xs font-semibold uppercase text-gray-500 tracking-wider">Total amount</span>
+              <span className="text-xs font-semibold uppercase text-gray-500 tracking-wider">Giá mua ngay</span>
               <span className="text-3xl font-extrabold text-gray-900 mt-1">
                 {formattedPrice}
               </span>
             </div>
             {/* Helpful ID display for debugging/confirmation */}
-            <p className="text-xs text-center text-gray-400 mt-2">Item ID: {productId}</p>
+            {/* <p className="text-xs text-center text-gray-400 mt-2">: {productId}</p> */}
           </div>
         </div>
 
@@ -82,7 +82,7 @@ const BuyNowDialog = ({
         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
           <button
             type="button"
-            className="inline-flex w-full justify-center rounded-md border border-transparent bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+            className="inline-flex w-full justify-center rounded-md border border-transparent bg-linear-to-r from-blue-500 to-purple-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:from-blue-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
             onClick={handleConfirmClick}
           >
             Buy Now

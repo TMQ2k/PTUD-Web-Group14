@@ -2,140 +2,149 @@ import React, { useState, useRef } from "react";
 import { ImagePlus } from "lucide-react";
 import { FourSquare } from "react-loading-indicators";
 import Image from "./Image";
+import { userApi } from "../../api/user.api";
 
-const QRcode = React.memo(({ sellerName, qrCodeUrl, productId, wonId, status, onChangeStatus }) => {
-  const [pending, setPending] = useState(status);  
-  const [previewImages, setPreviewImages] = useState(null);
-  const [image, setImage] = useState(null);
-  const ref = useRef();  
+const QRcode = React.memo(
+  ({ sellerName, qrCodeUrl, productId, wonId, status, onImageUpload, onChangeStatus }) => {
+    const [pending, setPending] = useState(status);
+    const [previewImages, setPreviewImages] = useState(null);
+    const [image, setImage] = useState(null);
+    const ref = useRef();
 
-  const handleUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;    
+    const handleUpload = (e) => {
+      const files = Array.from(e.target.files);
+      if (files.length === 0) return;
 
-    const newPreviews = files.map((file) => ({
-      id: crypto.randomUUID(),
-      url: URL.createObjectURL(file),
-      file, // Keep original file for the form
-    }));
+      const newPreviews = files.map((file) => ({
+        id: crypto.randomUUID(),
+        url: URL.createObjectURL(file),
+        file, // Keep original file for the form
+      }));
 
-    setPreviewImages(newPreviews);
-    // Only 1 image is uploaded
-    setImage(files[0]);
-  };
+      setPreviewImages(newPreviews);
+      // Only 1 image is uploaded
+      setImage(files[0]);
+    };
 
-  const handleRemove = async () => {
-    setPreviewImages(null);
-    setImage(null);
-    
-    const updatedStatus = "invalid";
-    const respone = await onChangeStatus(wonId, updatedStatus);
-    if (respone.code === 200) setPending(updatedStatus);
-  };
+    const handleRemove = async () => {
+      setPreviewImages(null);
+      setImage(null);
 
-  const handleClick = async (e) => {
-    e.preventDefault();
+      const updatedStatus = "invalid";
+      const respone = await onChangeStatus(wonId, updatedStatus);
+      if (respone.code === 200) setPending(updatedStatus);
+    };
 
-    const updatedStatus = "sent";
-    const respone = await onChangeStatus(wonId, updatedStatus);
-    if (respone.code === 200) setPending(updatedStatus);
-    
-  };
+    const handleClick = async (e) => {
+      e.preventDefault();
 
-  return (
-    <>
-      {pending === "sent" && (
-        <div className="max-w-52 flex flex-col justify-center items-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
-          <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
-          <div className="text-wrap text-center font-semibold text-blue-500">
-            Giao dịch của bạn đang chờ người bán xử lý
+      const updatedStatus = "sent";
+      const formData = new FormData();
+      formData.append("payment_picture", image);
+      formData.append("wonId", wonId);
+      const uploadRespone = await userApi.uploadPaymentPicture(formData);
+      if (uploadRespone.code === 200) {
+        const statusRespone = await onChangeStatus(wonId, updatedStatus);
+        if (statusRespone.code === 200) setPending(updatedStatus);
+      }
+    };
+
+    return (
+      <>
+        {pending === "sent" && (
+          <div className="max-w-52 flex flex-col justify-center items-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
+            <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+            <div className="text-wrap text-center font-semibold text-blue-500">
+              Giao dịch của bạn đang chờ người bán xử lý
+            </div>
           </div>
-        </div>
-      )}
-      {(pending === "invalid") && (image ? (
-       <div className="flex flex-col gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
-          {previewImages.map((img) => (
-            <div
-              key={img.id}
-              className="relative size-28 group border-3 border-blue-400 rounded-lg"
-            >
-              <img
-                src={img.url}
-                alt="preview"
-                className="w-full h-full object-cover rounded-lg border border-gray-200"
-              />
-              <button
-                type="button"
-                onClick={handleRemove}
-                className="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 transition-all border border-gray-200"
-              >
-                <svg
-                  className="w-3 h-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+        )}
+        {pending === "invalid" &&
+          (image ? (
+            <div className="flex flex-col gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
+              {previewImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="relative size-28 group border-3 border-blue-400 rounded-lg"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="3"
-                    d="M6 18L18 6M6 6l12 12"
-                  ></path>
-                </svg>
+                  <img
+                    src={img.url}
+                    alt="preview"
+                    className="w-full h-full object-cover rounded-lg border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemove}
+                    className="absolute -top-2 -right-2 bg-white text-red-500 rounded-full p-1 shadow-md hover:bg-red-50 transition-all border border-gray-200"
+                  >
+                    <svg
+                      className="w-3 h-3"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="3"
+                        d="M6 18L18 6M6 6l12 12"
+                      ></path>
+                    </svg>
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={handleClick}
+                className="hover:scale-104 hover:shadow-xl active:scale-98 duration-300 transition-all w-full py-1 font-semibold text-white bg-linear-to-br from-blue-400 to-purple-600 rounded-lg"
+              >
+                Gửi
               </button>
             </div>
-          ))}
-          <button
-            onClick={handleClick}
-            className="hover:scale-104 hover:shadow-xl active:scale-98 duration-300 transition-all w-full py-1 font-semibold text-white bg-linear-to-br from-blue-400 to-purple-600 rounded-lg"
-          >
-            Gửi
-          </button>
-        </div>        
-      ) : (
-        <div className="flex flex-row gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">         
-          <div className="flex flex-col items-center">
-            <Image src={qrCodeUrl} alt={"QR Code"}/>
-            <div className="mt-3 text-center">
-              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
-                Pay to Seller
-              </p>
-              <div className="flex items-center justify-center bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
-                <div className="size-4 rounded-full bg-linear-to-tr from-blue-400 to-purple-600 mr-2"></div>
-                <p className="text-sm font-bold text-gray-700 truncate max-w-[110px]">
-                  {sellerName}
+          ) : (
+            <div className="flex flex-row gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">
+              <div className="flex flex-col items-center">
+                <Image src={qrCodeUrl} alt={"QR Code"} />
+                <div className="mt-3 text-center">
+                  <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-0.5">
+                    Pay to Seller
+                  </p>
+                  <div className="flex items-center justify-center bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                    <div className="size-4 rounded-full bg-linear-to-tr from-blue-400 to-purple-600 mr-2"></div>
+                    <p className="text-sm font-bold text-gray-700 truncate max-w-[110px]">
+                      {sellerName}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center justify-center h-full gap-3">
+                <button
+                  onClick={() => ref.current.click()}
+                  className="border-3 border-dashed border-blue-300 rounded-xl p-2 hover:bg-blue-50"
+                >
+                  <ImagePlus className="size-20 stroke-blue-500 stroke-1" />
+                </button>
+                <p className="font-bold text-blue-400 bg-gray-100 border border-gray-200 text-sm px-2 py-1 rounded-full">
+                  Gửi ảnh giao dịch
                 </p>
+                <input
+                  hidden
+                  type="file"
+                  accept="image/*"
+                  ref={ref}
+                  onChange={handleUpload}
+                />
               </div>
             </div>
-          </div>
-          <div className="flex flex-col items-center justify-center h-full gap-3">
-            <button
-              onClick={() => ref.current.click()}
-              className="border-3 border-dashed border-blue-300 rounded-xl p-2 hover:bg-blue-50"
-            >
-              <ImagePlus className="size-20 stroke-blue-500 stroke-1" />
-            </button>
-            <p className="font-bold text-blue-400 bg-gray-100 border border-gray-200 text-sm px-2 py-1 rounded-full">
-              Gửi ảnh giao dịch
-            </p>            
-            <input
-              hidden
-              type="file"
-              accept="image/*"
-              ref={ref}
-              onChange={handleUpload}
-            />
-          </div>
-        </div>
-      ))}          
-    </>
-  );
-});
+          ))}
+      </>
+    );
+  }
+);
 
 export default QRcode;
 
-
-{/* <div className="flex flex-row gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">          
+{
+  /* <div className="flex flex-row gap-4 items-center justify-center pl-6 ml-2 border-l-2 border-dashed border-gray-200/70 shrink-0">          
           <div className="flex flex-col items-center">
             <div
               onClick={() => setIsQrZoomed(true)}
@@ -185,4 +194,5 @@ export default QRcode;
               onChange={handleUpload}
             />
           </div>
-        </div> */}
+        </div> */
+}

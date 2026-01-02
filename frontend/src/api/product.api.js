@@ -7,6 +7,7 @@ const productEndpoint = {
   productBiddingHistory: "/products/bid-history",
   winningBidder: "/winning-bidder",
   enableExtension: "/products/enable-extension",
+  deactivateExpired: "/products/deactive-expired"
 };
 
 export const productApi = {

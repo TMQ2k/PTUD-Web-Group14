@@ -146,7 +146,7 @@ const App = () => {
           <Route index element={<Home />} />
           <Route path="profile" element={<UserInformation />} />
           <Route path="category/:categoryId" element={<CategoryProducts />} />
-          <Route path="watchlist" element={<WatchList />} />
+          <Route path="/watchlist" element={<WatchList />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
           <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    

@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer, Suspense } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ProductGalleryCard from "./ProductGalleryCard";
 import AuctionBidCard from "./AuctionBidCard";
 import {
@@ -14,6 +14,7 @@ import ProductCard from "./ProductCard";
 import ProductComments from "./ProductComments";
 import { AiFillProduct } from "react-icons/ai";
 import { formatNumberToCurrency } from "../../utils/NumberHandler";
+import { useSelector } from "react-redux";
 
 const ProductDetails = () => {
   const params = useParams();
@@ -21,6 +22,12 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
 
   const [product, dispatch] = useReducer(productReducer, {});
+  const user = useSelector((state) => state.user);
+  const navigate = useNavigate(); 
+  
+  if (!user.isLoggedIn) {
+    navigate("/");    
+  }
 
   useEffect(() => {
     let isMounted = true;
