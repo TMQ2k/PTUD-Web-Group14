@@ -269,4 +269,31 @@ router.get(
     }
   }
 );
+
+router.put(
+  "/:productId/buy-now",
+  authenticate,
+  authorize("bidder"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const user = req.user;
+      const result = await deactiveProductById(user,productId);
+      return res.status(200).json({
+        code: 200,
+        message: "Product deactivated successfully",
+        data: result,
+      });
+    }
+    catch (err) {
+      console.error("❌ Error in /:productId/deactivate route:", err);
+      return res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to deactivate product",
+        data: null,
+      });
+    }
+  }
+);
+
 export default router;

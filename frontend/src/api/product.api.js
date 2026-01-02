@@ -5,6 +5,7 @@ const productEndpoint = {
   getAll: "/products",
   postProduct: "/products",
   productBiddingHistory: "/products/bid-history",
+  deactivateExpired: "/products/deactivate-expired",
 };
 
 export const productApi = {

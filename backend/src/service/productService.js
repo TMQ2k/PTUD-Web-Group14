@@ -377,13 +377,12 @@ export const getWinningBidderByProductId = async (user, productId) => {
   }
 }
 
-export const deactiveProductById = async (productId) => {
+export const deactiveProductById = async (user, productId) => {
   const result = await deactiveProductByIdRepo(productId);
   if (!result) {
     throw new Error("Failed to deactivate product");
   }
-  const userId = await getTopBidderIdByProductId(productId);
   const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
-  await addUserWonProductRepo(productId, userId, winning_bid);
+  await addUserWonProductRepo(productId, user.id, winning_bid);
   return result;
 }
