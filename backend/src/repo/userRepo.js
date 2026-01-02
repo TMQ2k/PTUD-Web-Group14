@@ -252,3 +252,11 @@ export const uploadPaymentPictureRepo = async (wonId, payment_picture_url) => {
   );
   return result.rows[0];
 };
+
+export const uploadSellerUrlRepo = async (wonId, seller_url) => {
+  const result = await pool.query(
+    "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
+    [seller_url, wonId]
+  );
+  return result.rows[0];
+};

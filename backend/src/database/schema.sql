@@ -145,6 +145,8 @@ CREATE TABLE auto_bids (
     UNIQUE (user_id, product_id)
 );
 go
+select * from products
+delete from products where product_id in (54, 55, 56)
 select * from bid_rejections
 CREATE TABLE bid_rejections (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -350,7 +352,15 @@ CREATE TABLE user_won_products (
 ALTER TABLE user_won_products
 ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'invalid'
 CHECK (status IN ('invalid', 'sent', 'paid', 'received'));
+ALTER TABLE user_won_products
+DROP CONSTRAINT user_won_products_status_check;
+ALTER TABLE user_won_products
+ADD CONSTRAINT user_won_products_status_check
+CHECK (status IN ('invalid', 'sent', 'paid', 'received', 'cancelled'));
+
+
 
 ALTER TABLE user_won_products
-ADD COLUMN payment TEXT DEFAULT NULL
+ADD COLUMN seller_url TEXT DEFAULT NULL
+select * from user_won_products
 

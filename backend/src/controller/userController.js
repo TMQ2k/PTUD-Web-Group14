@@ -23,6 +23,7 @@ import {
   changeStatusWonProductsService,
   getBiddedProductsService,
   uploadPaymentPictureService,
+  uploadSellerUrlService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -636,4 +637,49 @@ router.patch(
   }
 );
 
+router.patch(
+  "/upload-seller-url",
+  authenticate,
+  upload.single("seller_url"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+      const { wonId } = req.body;
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "seller_urls" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      // Cập nhật seller_url trong DB
+      await uploadSellerUrlService(wonId, uploadResult.secure_url);
+      return res.status(200).json({
+        code: 200,
+        message: "Upload seller url thành công",
+        data: {
+          seller_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload seller url:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
 export default router;

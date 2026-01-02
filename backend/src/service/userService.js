@@ -19,6 +19,7 @@ import {
   getSellerDeactivatedProductsRepo,
   getBiddedProductsRepo,
   uploadPaymentPictureRepo,
+  uploadSellerUrlRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -447,6 +448,15 @@ export const uploadPaymentPictureService = async (
     return result;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi tải lên hình ảnh thanh toán:", err);
+    throw err;
+  }
+};
+export const uploadSellerUrlService = async (wonId, seller_url) => {
+  try {
+    const result = await uploadSellerUrlRepo(wonId, seller_url);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi tải lên URL người bán:", err);
     throw err;
   }
 };
