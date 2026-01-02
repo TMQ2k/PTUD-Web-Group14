@@ -42,6 +42,7 @@ import {
 } from "../model/productModel.js";
 
 import { sendNotificationEmail } from "./emailService.js";
+import { composer } from "googleapis/build/src/apis/composer/index.js";
 
 export const getSearchProducts = async (
   search,

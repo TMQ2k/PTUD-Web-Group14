@@ -388,7 +388,7 @@ export const getWinningBidderByProductId = async (productId) => {
 
 export const deactiveProductById = async (productId) => {
   const result = await pool.query(
-    `UPDATE products SET is_active = false WHERE product_id = $1 RETURNING *`,
+    `UPDATE products SET end_time = NOW(), is_active = FALSE WHERE product_id = $1 RETURNING *`,
     [productId]
   );
   return result.rows[0];
