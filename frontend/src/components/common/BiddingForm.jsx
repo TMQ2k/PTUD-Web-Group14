@@ -14,7 +14,7 @@ import { GrSubtractCircle, GrAddCircle } from "react-icons/gr";
 import { sellerApi } from "../../api/seller.api";
 
 const BiddingForm = React.memo(
-  ({ price, steps, productId, onAutobidUpdate, endTime }) => {
+  ({ price, steps, productId, onAutobidUpdate, endTime, buyNowPrice }) => {
     const {
       register,
       handleSubmit,

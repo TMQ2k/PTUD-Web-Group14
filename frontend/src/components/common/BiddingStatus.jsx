@@ -170,6 +170,7 @@ const BiddingStatus = ({ className = "" }) => {
                             productId={product?.product_id || ""}
                             endTime={product.end_time}
                             onAutobidUpdate={handleAutobidUpdate}
+                            buyNowPrice={product?.buy_now_price || null}
                           />
                           {buy_now && (
                             <>
