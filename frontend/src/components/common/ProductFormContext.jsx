@@ -34,7 +34,7 @@ const ProductFormContext = ({
   sellerExpiredTime,
   createdDate,
   defaultCategories,
-  setQuillContents
+  setQuillContents,
 }) => {
   const {
     register,
@@ -160,11 +160,11 @@ const ProductFormContext = ({
       // quill.clipboard.dangerouslyPasteHTML('<h1>Initial content</h1>');
 
       // 2. Listen for changes
-      quill.on('text-change', () => {
+      quill.on("text-change", () => {
         // 3. Update parent state immediately
-        setQuillContents(quill.getContents()); 
+        setQuillContents(quill.getContents());
         setValue("description", quill.getContents());
-        
+
         // OR if you decided to switch to HTML string later:
         // setQuillContents(quill.root.innerHTML);
       });
@@ -245,10 +245,7 @@ const ProductFormContext = ({
                 required: "Starting price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue(
-                    "starting_price",
-                    convert(e.target.value.trim())
-                  );
+                  setValue("starting_price", convert(e.target.value.trim()));
                 },
               })}
             />
@@ -291,8 +288,34 @@ const ProductFormContext = ({
               {...register("buy_now_price", {
                 required: false,
                 min: 1,
+                // --- NEW VALIDATION LOGIC START ---
+                validate: (value) => {
+                  // 1. If empty (optional), skip validation
+                  if (!value) return true;
+
+                  // 2. Get current starting price
+                  const startPriceVal = getValues("starting_price");
+
+                  // 3. Helper to clean string (e.g., "100,000" -> 100000) for comparison
+                  const parseNumber = (v) => {
+                    if (!v) return 0;
+                    if (typeof v === "number") return v;
+                    return Number(v.toString().replace(/[^0-9]/g, ""));
+                  };
+
+                  const buyNow = parseNumber(value);
+                  const start = parseNumber(startPriceVal);
+
+                  // 4. Compare
+                  return (
+                    buyNow > start || "Giá mua ngay phải lớn hơn giá khởi điểm"
+                  );
+                },
+                // --- NEW VALIDATION LOGIC END ---
                 onChange: (e) => {
                   setValue("buy_now_price", convert(e.target.value.trim()));
+                  // Optional: Trigger validation immediately when typing
+                  trigger("buy_now_price");
                 },
               })}
             />
@@ -505,7 +528,6 @@ const ProductFormContext = ({
           />
         </InputField> */}
 
-        
         <InputField
           label="Mô tả sản phẩm"
           id="description"
@@ -514,11 +536,16 @@ const ProductFormContext = ({
           noteClassName="text-green-500"
         >
           <div
-          id="description"
-          ref={quillRef}                   
-          style={{width: '100%', height: 200, border: '2px solid blue', borderRadius: '5px', }}          
-        ></div>      
-        </InputField>              
+            id="description"
+            ref={quillRef}
+            style={{
+              width: "100%",
+              height: 200,
+              border: "2px solid blue",
+              borderRadius: "5px",
+            }}
+          ></div>
+        </InputField>
 
         {/* Submit Button */}
         <div className="mt-4 flex justify-end">
@@ -529,7 +556,8 @@ const ProductFormContext = ({
                         rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95
                         disabled:bg-blue-300 disabled:cursor-not-allowed`}
           >
-            {buttonLabel}{isSubmitting ? "..." : ""}
+            {buttonLabel}
+            {isSubmitting ? "..." : ""}
           </button>
         </div>
       </form>

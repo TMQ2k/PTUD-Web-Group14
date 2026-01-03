@@ -66,7 +66,7 @@ const PostedProducts = () => {
               ).padStart(2, "0")}`;
               return (
                 <ProductCard
-                  key={p.product_id}
+                  key={p.product_id}                  
                   id={p.product_id}
                   name={p.name}
                   image={p.image_cover_url}
