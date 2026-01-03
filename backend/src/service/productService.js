@@ -27,6 +27,7 @@ import {
   getHighestBidInfoofUserOnProduct,
   getTopBidderIdByProductId,
   countHistoryByProductId,
+  upsertAutoBid,
 } from "../repo/bidderRepo.js";
 
 import { 
@@ -387,11 +388,13 @@ export const deactiveProductById = async (user, productId) => {
     throw new Error("Failed to deactivate product");
   }
   const winning_bid = result.buy_now_price ? result.buy_now_price : result.current_price;
+  await upsertAutoBid(result.seller_id, productId, winning_bid);
   await updateCurrentPrice(productId, winning_bid);
   await addUserWonProductRepo(productId, user.id, winning_bid);
+  const userProfile = await getUserProfile(user.id);
   await sendWinningBidderNotificationEmail(
-    user.email,
-    user.username,
+    userProfile.email,
+    userProfile.username,
     result.name,
     winning_bid
   );
@@ -402,7 +405,7 @@ export const deactiveProductById = async (user, productId) => {
     sellerProfile.username,
     result.name,
     winning_bid,
-    user.username
+    userProfile.username
   );
 
   return result;
