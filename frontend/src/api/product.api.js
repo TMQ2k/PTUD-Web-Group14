@@ -9,6 +9,7 @@ const productEndpoint = {
   enableExtension: "/products/enable-extension",
   deactivateExpired: "/products/deactivate-expired",
   sellerProducts: "/products/seller-products",
+  search: "search/products",
 };
 
 export const productApi = {

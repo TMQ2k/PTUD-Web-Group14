@@ -42,6 +42,12 @@ const BiddingForm = React.memo(
       setValue("bidder_price", formatNumberToCurrency(formattedPrice));
       if (buyNowPrice && currentBidPrice >= buyNowPrice) {
         openBuyDialog();       
+        // const respone = await bidderApi.autobid(productId, buyNowPrice);
+
+        // if (respone.code === 200) {
+        //   //await sellerApi.enableAuctionExtension(productId);
+        //   await onAutobidUpdate();
+        // }
       } else {
         const respone = await bidderApi.autobid(productId, formattedPrice);
 

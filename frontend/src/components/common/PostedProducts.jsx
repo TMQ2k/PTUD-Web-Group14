@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ProductCard from "./ProductCard";
 import { productApi } from "../../api/product.api";
 import { formatNumberToCurrency } from "../../utils/NumberHandler";
 
