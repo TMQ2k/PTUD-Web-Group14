@@ -138,6 +138,7 @@ export const otherProductsByCategory = async (
         JOIN product_categories pc ON p.product_id = pc.product_id
         WHERE pc.category_id = ANY($1)
         AND p.product_id != $2
+        AND p.is_active = true
         LIMIT $3`,
     [categoryIds, excludeProductId, limit]
   );
