@@ -48,40 +48,42 @@ const PostedProducts = () => {
             {/* TODO: Thêm danh sách sản phẩm */}
           </div>
         ) : (
-          postedProducts.map((p) => {
-            const endTime = new Date(p.end_time);
-            const now = new Date();
-            const diffMs = endTime - now;
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffMinutes = Math.floor(
-              (diffMs % (1000 * 60 * 60)) / (1000 * 60)
-            );
-            const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-            const remainingTime = `${String(diffHours).padStart(
-              2,
-              "0"
-            )}:${String(diffMinutes).padStart(2, "0")}:${String(
-              diffSeconds
-            ).padStart(2, "0")}`;
-            return (
-              <ProductCard
-                key={p.product_id}
-                id={p.product_id}
-                name={p.name}
-                image={p.image_cover_url}
-                currentPrice={formatNumberToCurrency(p.current_price) || -1}
-                highestBidder={p?.top_bidder?.name || null}
-                buyNowPrice={formatNumberToCurrency(p.buy_now_price) || -1}
-                postedDate={`${String(
-                  new Date(p.created_at).getDate()
-                ).padStart(2, "0")}/${String(
-                  new Date(p.created_at).getMonth() + 1
-                ).padStart(2, "0")}/${new Date(p.created_at).getFullYear()}`}
-                remainingTime={remainingTime}
-                bidCount={p.history_count}
-              />
-            );
-          })
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 justify-start items-center">
+            {postedProducts.map((p) => {
+              const endTime = new Date(p.end_time);
+              const now = new Date();
+              const diffMs = endTime - now;
+              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+              const diffMinutes = Math.floor(
+                (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+              );
+              const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+              const remainingTime = `${String(diffHours).padStart(
+                2,
+                "0"
+              )}:${String(diffMinutes).padStart(2, "0")}:${String(
+                diffSeconds
+              ).padStart(2, "0")}`;
+              return (
+                <ProductCard
+                  key={p.product_id}
+                  id={p.product_id}
+                  name={p.name}
+                  image={p.image_cover_url}
+                  currentPrice={formatNumberToCurrency(p.current_price) || -1}
+                  highestBidder={p?.top_bidder?.name || null}
+                  buyNowPrice={formatNumberToCurrency(p.buy_now_price) || -1}
+                  postedDate={`${String(
+                    new Date(p.created_at).getDate()
+                  ).padStart(2, "0")}/${String(
+                    new Date(p.created_at).getMonth() + 1
+                  ).padStart(2, "0")}/${new Date(p.created_at).getFullYear()}`}
+                  remainingTime={remainingTime}
+                  bidCount={p.history_count}
+                />
+              );
+            })}
+          </div>
         ))}
     </>
   );
