@@ -46,7 +46,7 @@ const BiddingForm = React.memo(
         const respone = await bidderApi.autobid(productId, formattedPrice);
 
         if (respone.code === 200) {
-          await sellerApi.enableAuctionExtension(productId);
+          //await sellerApi.enableAuctionExtension(productId);
           await onAutobidUpdate();
         }
       }

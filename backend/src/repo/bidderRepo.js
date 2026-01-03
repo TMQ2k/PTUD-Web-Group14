@@ -40,7 +40,7 @@ export const getHighestBidInfoofUserOnProduct = async (productId, userId) => {
 
 export const getTopBidderIdByProductId = async (productId) => {
   const result = await pool.query(
-    `SELECT ab.user_id FROM auto_bids ab WHERE ab.product_id = $1 ORDER BY ab.current_bid_amount DESC LIMIT 1`,
+    `SELECT ab.user_id FROM auto_bids ab WHERE ab.product_id = $1 ORDER BY ab.max_bid_amount DESC LIMIT 1`,
     [productId]
   );
   if (result.rows.length === 0) {

@@ -12,7 +12,7 @@ import ProgressBar from "./ProgressBar";
 import Label from "./Label";
 import NavigateButton from "./NavigateButton";
 import BiddingForm from "./BiddingForm";
-import default_image from "../../../public/images/default/unavailable_item.jpeg";
+import default_image from "../../../public/images/default/default_avatar.jfif";
 import { useNavigate } from "react-router-dom";
 import { bidderApi } from "../../api/bidder.api";
 import { FaShippingFast } from "react-icons/fa";
