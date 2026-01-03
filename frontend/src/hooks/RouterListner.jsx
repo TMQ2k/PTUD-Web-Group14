@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { sellerApi } from "../api/seller.api";
-import { productApi } from "../api/product.api";
 //import { useNavigate } from "react-router-dom";
 
 const RouterListner = () => {
