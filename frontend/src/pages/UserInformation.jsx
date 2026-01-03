@@ -7,6 +7,7 @@ import WonAuction from "../components/common/WonAuction";
 import RatingHistory from "../components/common/RatingHistory";
 import UpgradeToSeller from "../components/common/UpgradeToSeller";
 import SellerWonProducts from "../components/common/SellerWonProducts";
+import PostedProducts from "../components/common/PostedProducts";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -57,15 +58,7 @@ const UserInformation = () => {
 
       case "sellerActive":
         return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Sản phẩm đã đăng & còn hạn
-            </h2>
-            <p className="text-gray-600">
-              Danh sách sản phẩm đang trong thời gian đấu giá...
-            </p>
-            {/* TODO: Thêm danh sách sản phẩm */}
-          </div>
+          <PostedProducts />
         );
 
       case "sellerWon":

@@ -177,6 +177,8 @@ import {
   Trophy,
   XCircle,
   FileText,
+  Eye, // Import Eye icon
+  X, // Import X for the new modal close button
 } from "lucide-react";
 import { useState } from "react";
 import WonUserInformation from "./WonUserInformation";
@@ -195,11 +197,15 @@ const SellerProductCheckoutCard = ({
   status,
   onPaid,
   onChangeStatus,
+  billImage,
   className = "",
 }) => {
   const [productStatus, setProductStatus] = useState(status);
   const [showWinnerModal, setShowWinnerModal] = useState(false);
   const [showProcessModal, setShowProcessModal] = useState(false);
+
+  // New state for the Bill Modal
+  const [showBillModal, setShowBillModal] = useState(false);
 
   // General handler for simple status changes (cancel, reject)
   const handleClick = async (updatedStatus) => {
@@ -207,21 +213,18 @@ const SellerProductCheckoutCard = ({
     if (response?.code === 200) setProductStatus(updatedStatus);
   };
 
-  // Specific handler for CONFIRMING payment (Receives the file from the Modal)
+  // Specific handler for CONFIRMING payment
   const handleConfirmTransaction = async (billFile) => {
-    // 1. Here you have the file! You can append it to FormData
-    console.log("Bill File received from modal:", billFile);
-
     const formData = new FormData();
-    formData.append("seller-url", billFile);
+    formData.append("seller_url", billFile);
     formData.append("wonId", wonId);
-    
-    //const response = await onChangeStatus(wonId, "paid");
-    const [statusRespone, billRespone] = Promise.all([
-      await onChangeStatus(wonId, "paid"),
-      await userApi.uploadBillPicture(formData),
-    ])
-    // 3. Update UI
+
+    // Corrected Promise.all syntax from previous step
+    const [statusRespone, billRespone] = await Promise.all([
+      onChangeStatus(wonId, "paid"),
+      userApi.uploadBillPicture(formData),
+    ]);
+
     if (statusRespone?.code === 200 && billRespone?.code === 200) {
       setProductStatus("paid");
       setShowProcessModal(false);
@@ -274,15 +277,21 @@ const SellerProductCheckoutCard = ({
 
         {/* Right Side: Actions */}
         <div className="flex flex-col gap-2 items-center justify-center px-4 border-l border-dashed border-gray-200 w-48 shrink-0 bg-gray-50/50">
-          
           {/* Status Badge */}
           {productStatus === "sent" && (
             <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
               Chờ xử lý
             </span>
           )}
+          {productStatus === "paid" && (
+            <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">
+              Đã thanh toán
+            </span>
+          )}
 
-          {/* Primary Action Button */}
+          {/* --- PRIMARY ACTIONS --- */}
+
+          {/* 1. Process Transaction (Sent) */}
           {productStatus === "sent" ? (
             <button
               onClick={() => setShowProcessModal(true)}
@@ -297,7 +306,25 @@ const SellerProductCheckoutCard = ({
             </div>
           ) : null}
 
-          {/* Secondary Actions */}
+          {productStatus === "received" && (
+            <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+              Đã nhận hàng
+            </span>
+          )}
+          {/* 2. View Bill (Paid/Received) - Only if billImage exists */}
+          {(productStatus === "paid" || productStatus === "received") &&
+            billImage && (
+              <button
+                onClick={() => setShowBillModal(true)}
+                className="flex items-center justify-center gap-2 w-full bg-teal-600 text-white text-xs font-medium py-1.5 px-3 rounded-lg hover:bg-teal-700 transition-colors shadow-sm"
+              >
+                <Eye size={14} />
+                <span>Xem hóa đơn</span>
+              </button>
+            )}
+
+          {/* --- SECONDARY ACTIONS --- */}
+
           <button
             onClick={() => setShowWinnerModal(true)}
             className="text-xs text-gray-500 hover:text-amber-600 flex items-center gap-1 transition-colors"
@@ -306,18 +333,30 @@ const SellerProductCheckoutCard = ({
             Xem người thắng
           </button>
 
-          <button
-            onClick={() => handleClick("cancelled")}
-            className="mt-1 text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors"
-          >
-            <XCircle size={14} />
-            Hủy đơn
-          </button>
+          {/* Cancel Button OR Cancelled Label */}
+          {productStatus === "cancelled" ? (
+            <div className="mt-1 flex items-center justify-center gap-1 w-full bg-red-50 text-red-600 border border-red-100 py-1 px-2 rounded-md">
+              <span className="text-[10px] font-bold uppercase">
+                Đơn hàng đã hủy
+              </span>
+            </div>
+          ) : (
+            productStatus !== "received" && (
+              <button
+                onClick={() => handleClick("cancelled")}
+                className="mt-1 text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors"
+              >
+                <XCircle size={14} />
+                Hủy đơn
+              </button>
+            )
+          )}
         </div>
       </div>
 
       {/* --- MODALS --- */}
 
+      
       <WonUserInformation
         isOpen={showWinnerModal}
         onClose={() => setShowWinnerModal(false)}
@@ -326,21 +365,51 @@ const SellerProductCheckoutCard = ({
         onPaid={onPaid}
       />
 
-      {/* HERE IS THE CORRECT INTEGRATION */}
       <TransactionProcessModal
         isOpen={showProcessModal}
         onClose={() => setShowProcessModal(false)}
         transactionImage={transactionImage}
-        
-        // This receives the file from the Modal state
         onConfirm={handleConfirmTransaction}
-        
-        // This handles rejection
         onReject={() => {
-            handleClick("invalid");
-            setShowProcessModal(false);
+          handleClick("invalid");
+          setShowProcessModal(false);
         }}
       />
+
+      {/* NEW: Bill Image Modal */}
+      {showBillModal && billImage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-bold text-gray-800">
+                Hóa đơn thanh toán
+              </h3>
+              <button
+                onClick={() => setShowBillModal(false)}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Image Container */}
+            <div className="p-4 overflow-y-auto flex justify-center bg-gray-50">
+              <img
+                src={billImage}
+                alt="Bill"
+                className="max-w-full h-auto rounded-lg shadow-sm border border-gray-200"
+              />
+            </div>
+          </div>
+
+          {/* Backdrop click to close */}
+          <div
+            className="absolute inset-0 -z-10"
+            onClick={() => setShowBillModal(false)}
+          ></div>
+        </div>
+      )}
     </>
   );
 };

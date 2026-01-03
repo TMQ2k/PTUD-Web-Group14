@@ -19,6 +19,23 @@ import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
+router.get("/seller-products", authenticate, async (req, res) => {
+  try {
+    const sellerId = req?.user?.id || null;
+    const products = await getProductBySellerIdService(sellerId);
+    res.json({
+      code: 200,
+      message: "Seller's products retrieved successfully",
+      data: products,
+    });
+  } catch (error) {
+    res.status(500).json({
+      code: 500,
+      message: error.message,
+      data: null,
+    });
+  }
+});
 router.get("/", async (req, res) => {
   try {
     const categoryId = req.query.categoryId;
@@ -228,43 +245,33 @@ router.put(
     }
   }
 );
-router.get("/seller-products", authenticate, async (req, res) => {
-  try {
-    const sellerId = req.user.id;
-    const products = await getProductBySellerIdService(sellerId);
-    res.json({
-      code: 200,
-      message: "Seller's products retrieved successfully",
-      data: products,
-    });
-  } catch (error) {
-    res.status(500).json({
-      code: 500,
-      message: error.message,
-      data: null,
-    });
-  }
-});
 
-router.get("/:productId/winning-bidder", authenticate, authorize("seller"), async (req, res) => {
-  try {
-    const productId = req.params.productId;
-    const user = req.user;
-    const winningBidderId = await getWinningBidderByProductId(user, productId);
-    res.status(200).json({
-      code: 200,
-      message: "Winning bidder retrieved successfully",
-      data: { winningBidderId },
-    });
-  } catch (error) {
-    res.status(500).json({
-      code: 500,
-      message: error.message,
-      data: null,
-    });
+router.get(
+  "/:productId/winning-bidder",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const user = req.user;
+      const winningBidderId = await getWinningBidderByProductId(
+        user,
+        productId
+      );
+      res.status(200).json({
+        code: 200,
+        message: "Winning bidder retrieved successfully",
+        data: { winningBidderId },
+      });
+    } catch (error) {
+      res.status(500).json({
+        code: 500,
+        message: error.message,
+        data: null,
+      });
+    }
   }
-});
-
+);
 
 router.post(
   "/enable-extension",

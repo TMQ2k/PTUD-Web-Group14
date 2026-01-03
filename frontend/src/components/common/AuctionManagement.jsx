@@ -17,7 +17,7 @@ const AuctionManagement = () => {
   const [pendingList, setPendingList] = useState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  //const [bannedList, setBannedList] = useState([]);
+  const [bannedList, setBannedList] = useState([]);
 
   // const mockData = [
   //   {
@@ -206,7 +206,7 @@ const AuctionManagement = () => {
             <PendingBidsList
               requests={pendingList}
               bidderList={history}
-              bannedBidders={[]}
+              bannedBidders={bannedList}
               productName={productName}
             />
           )}

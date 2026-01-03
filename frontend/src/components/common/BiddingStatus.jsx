@@ -90,7 +90,10 @@ const BiddingStatus = ({ className = "" }) => {
   const handlePurchaseConfirm = async (productId) => {
     console.log(`Processing purchase for Product ID: ${productId}...`);
 
-    await bidderApi.buyNow(productId);    
+    const respone = await bidderApi.buyNow(productId);    
+    if (respone?.code === 200) {
+      navigate("/productcheckout");
+    }
     closeBuyDialog();
     alert("Purchase confirmed!");
   };

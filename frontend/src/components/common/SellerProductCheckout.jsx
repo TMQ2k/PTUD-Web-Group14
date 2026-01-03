@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { PackageOpen, ArrowRight } from "lucide-react";
 import { productApi } from "../../api/product.api";
 import CheckoutFilterBar from "./CheckoutFilterBar";
+import { filterWonProductStatus } from "../../utils/arrayhandler";
 
 const SellerProductCheckout = () => {
   // const mockCheckoutData = [
@@ -87,6 +88,7 @@ const SellerProductCheckout = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userWonProducts, setUserWonProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,6 +99,8 @@ const SellerProductCheckout = () => {
         const respone = await userApi.getSellerDeactivatedProducts();
         if (isMounted) {
           setUserWonProducts(respone.data);
+          setFilteredProducts(respone.data);
+          console.log(respone.data)
         }
       } catch (err) {
         if (isMounted) setError(err);
@@ -121,6 +125,12 @@ const SellerProductCheckout = () => {
     return respone;
   };
 
+  const onFilter = (target_status) => {    
+    if (target_status === null) setFilteredProducts(userWonProducts);
+    else setFilteredProducts(filterWonProductStatus(userWonProducts, target_status));
+    console.log(userWonProducts)
+  }
+
   return (
     <>
       {loading && (
@@ -132,14 +142,14 @@ const SellerProductCheckout = () => {
       {!loading && !error && (
         <>
           <div className="flex items-center justify-center w-full">
-            <CheckoutFilterBar mainColor={"amber"} onFilter={null} />
+            <CheckoutFilterBar mainColor={"amber"} onFilter={onFilter} />
           </div>
           <h1 className="flex flex-row gap-2 justify-center items-center h-fit p-1 mt-4 ml-4 text-4xl font-bold text-transparent bg-linear-to-br from-amber-400 to-red-600 bg-clip-text ">
             <Package className="size-12 stroke-red-500 bg-red-200 p-2 rounded-full" />
             Sản phẩm của bạn đang chờ xử lý
           </h1>
           <div className="flex flex-col justify-center items-center gap-4 my-4">
-            {userWonProducts && userWonProducts.length === 0 ? (
+            {filteredProducts && filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-xl border-2 border-dashed border-amber-100 mt-6">
                 {/* Decorative Icon Circle */}
                 <div className="bg-amber-50 p-6 rounded-full mb-4 animate-pulse">
@@ -170,8 +180,9 @@ const SellerProductCheckout = () => {
                 </Link>
               </div>
             ) : (
-              userWonProducts.map((p) => (
+              filteredProducts.map((p) => (
                 <SellerProductCheckoutCard
+                  key={p.product_id}
                   productId={p.product_id}
                   wonId={p.won_id}
                   productName={p.product_name}
@@ -182,6 +193,7 @@ const SellerProductCheckout = () => {
                   transactionImage={p.payment}
                   price={p.winning_bid}
                   status={p.status}
+                  billImage={p.seller_url}
                   onChangeStatus={onChangeStatus}
                 />
               ))

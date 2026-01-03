@@ -7,7 +7,8 @@ const productEndpoint = {
   productBiddingHistory: "/products/bid-history",
   winningBidder: "/winning-bidder",
   enableExtension: "/products/enable-extension",
-  deactivateExpired: "/products/deactivate-expired"
+  deactivateExpired: "/products/deactivate-expired",
+  sellerProducts: "/products/seller-products",
 };
 
 export const productApi = {
@@ -163,7 +164,7 @@ export const productApi = {
   },
 
   getWinningBidder: async (productId) => {
-    const respone = await http.get(`/products/${productId}/${productEndpoint.winningBidder}`);
+    const respone = await http.get(`/products/${productId}${productEndpoint.winningBidder}`);
     return respone.data;
   },
 
@@ -172,6 +173,11 @@ export const productApi = {
       productId: productId,
     }, {});
 
+    return respone.data;
+  },
+
+  getSellerProducts: async () => {
+    const respone = await http.get(productEndpoint.sellerProducts);
     return respone.data;
   }
 };

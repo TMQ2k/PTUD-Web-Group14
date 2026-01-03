@@ -156,6 +156,7 @@ import { useSelector } from "react-redux";
 import { userApi } from "../../api/user.api";
 import { BlinkBlur } from "react-loading-indicators";
 import CheckoutFilterBar from "./CheckoutFilterBar";
+import { filterWonProductStatus } from "../../utils/arrayhandler";
 
 const ProductCheckout = () => {
   const { userData } = useSelector((state) => state.user);
@@ -163,6 +164,7 @@ const ProductCheckout = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [userWonProducts, setUserWonProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   // const mockUserWonProducts = [
   //   {
@@ -249,7 +251,8 @@ const ProductCheckout = () => {
         setError(null);
         const respone = await userApi.getUserWonProducts();
         if (isMounted) {
-          setUserWonProducts(respone.data);          
+          setUserWonProducts(respone.data); 
+          setFilteredProducts(respone.data);
         }
       } catch (err) {
         if (isMounted) setError(err);
@@ -270,6 +273,11 @@ const ProductCheckout = () => {
     return respone;
   };
 
+  const onFilter = (target_status) => {
+    if (target_status === null) setFilteredProducts(userWonProducts)
+    else setFilteredProducts(filterWonProductStatus(userWonProducts, target_status));
+  }
+
   return (
     <>
       {loading && (
@@ -282,14 +290,14 @@ const ProductCheckout = () => {
         <>
           {role === "guest" && <Navigate to="/" />}
           <div className="flex items-center justify-center w-full">
-            <CheckoutFilterBar mainColor={"purple"} onFilter={null} />
+            <CheckoutFilterBar mainColor={"purple"} onFilter={onFilter} />
           </div>
           <h1 className="flex flex-row gap-2 justify-center items-center h-fit p-1 mt-4 text-center text-4xl font-bold text-transparent bg-linear-to-br from-blue-400 to-purple-600 bg-clip-text ">
             <Package className="size-12 stroke-purple-500 bg-purple-200 p-2 rounded-full" />
             Sản phẩm đã thắng
           </h1>
           <div className=" bg-gray-50 my-8 gap-8 flex flex-col justify-center items-center">
-            {userWonProducts && userWonProducts.length === 0 ? (
+            {filteredProducts && filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-xl border-2 border-dashed border-purple-100 mt-6">
                 <div className="bg-purple-50 p-6 rounded-full mb-4 animate-pulse">
                   <PackageOpen
@@ -314,7 +322,7 @@ const ProductCheckout = () => {
                 </Link>
               </div>
             ) : (
-              userWonProducts.map((p) => (
+              filteredProducts.map((p) => (
                 <ProductCheckoutCard
                   key={p.product_id}
                   productName={p.product_name}
@@ -324,11 +332,8 @@ const ProductCheckout = () => {
                   qrCodeUrl={p.seller_qr_url}
                   productId={p.productId}
                   status={p.status}
-                  wonId={p.won_id}
-                  // --- NEW PROP PASSED HERE ---
-                  // Ensure your API response 'p' has the bill image url.
-                  // I am assuming the field name is 'bill_confirmation_url' or similar.
-                  billImage={p.bill_confirmation_url}
+                  wonId={p.won_id}                
+                  billImage={p.seller_url}
                   onChangeStatus={onChangeStatus}
                 />
               ))

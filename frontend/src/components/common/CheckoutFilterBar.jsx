@@ -2,23 +2,22 @@ import React, { useState } from 'react';
 
 const CheckoutFilterBar = ({ mainColor, onFilter }) => {
   // We keep track of the active filter in a state
-  const [activeFilter, setActiveFilter] = useState("Tất cả");
+  const [activeFilter, setActiveFilter] = useState("Tất cả"); 
 
-  const filterOptions = [
-    "Tất cả", // Added "All" to allow resetting the view
-    "Chưa có ảnh giao dịch",
-    "Đang chờ xử lý",
-    "Đã xác nhận giao dịch",
-    "Đang chờ vận chuyển",
-    "Huỷ giao dịch",
-    "Đã nhận hàng"
-  ];
+  const optionsMap = new Map([
+    ["Tất cả", null],
+    ["Chưa có ảnh giao dịch", "invalid"],
+    ["Đang chờ xử lý", "sent"],    
+    ["Đang chờ vận chuyển", "paid"],
+    ["Huỷ giao dịch", "cancelled"],
+    ["Đã nhận hàng", "received"],
+  ]);
+
+  const keys = Array.from(optionsMap.keys());
 
   const handleFilterClick = (filter) => {
-    setActiveFilter(filter);
-    // Determine the value to send back to the parent
-    // If "Tất cả" is selected, we might send null or an empty string depending on your backend logic
-    const filterValue = filter === "Tất cả" ? "" : filter;
+    setActiveFilter(filter);   
+    const filterValue = optionsMap.get(filter);
     onFilter(filterValue);
   };
 
@@ -26,7 +25,7 @@ const CheckoutFilterBar = ({ mainColor, onFilter }) => {
     <div className="w-full mb-6">
       {/* Scrollable container for mobile responsiveness, or flex-wrap for desktop */}
       <div className="flex flex-wrap items-center justify-center gap-3">
-        {filterOptions.map((filter) => (
+        {keys.map((filter) => (
           <button
             key={filter}
             onClick={() => handleFilterClick(filter)}

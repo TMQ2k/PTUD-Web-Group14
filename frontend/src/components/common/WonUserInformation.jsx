@@ -3,13 +3,7 @@ import { FourSquare } from "react-loading-indicators";
 import { CheckCheck } from "lucide-react";
 import Dialog from "./Dialog"; // Adjust path as needed
 
-const WonUserInformation = ({ 
-  isOpen, 
-  onClose, 
-  wonId, 
-  productId, 
-  onPaid 
-}) => {
+const WonUserInformation = ({ isOpen, onClose, wonId, productId, onPaid }) => {
   const [bidderInfo, setBidderInfo] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,8 +19,9 @@ const WonUserInformation = ({
         setLoading(true);
         setError(null);
         // Assuming onPaid returns the data object directly
-        const response = await onPaid(wonId, productId);
-        if (isMounted) setBidderInfo(response);
+        const respone = await onPaid(wonId, productId);
+        if (isMounted) setBidderInfo(respone?.winningBidderId || {});
+        console.log(respone);
       } catch (err) {
         if (isMounted) setError(err);
       } finally {
@@ -42,9 +37,9 @@ const WonUserInformation = ({
   }, [isOpen, wonId, productId, onPaid]);
 
   return (
-    <Dialog 
-      isOpen={isOpen} 
-      onClose={onClose} 
+    <Dialog
+      isOpen={isOpen}
+      onClose={onClose}
       title={!loading && !error ? "Chi tiết đơn hàng" : "Đang xử lý"}
     >
       <div className="flex flex-col items-center justify-center min-h-[200px]">
@@ -58,7 +53,9 @@ const WonUserInformation = ({
         {error && (
           <div className="text-center text-red-500 bg-red-50 p-4 rounded-lg w-full">
             <p className="font-semibold">Đã xảy ra lỗi</p>
-            <p className="text-sm mt-1">{error?.message || "Không thể lấy thông tin người thắng"}</p>
+            <p className="text-sm mt-1">
+              {error?.message || "Không thể lấy thông tin người thắng"}
+            </p>
           </div>
         )}
 
@@ -79,14 +76,14 @@ const WonUserInformation = ({
               <InfoRow label="SĐT" value={bidderInfo.phone} />
               <InfoRow label="Địa chỉ" value={bidderInfo.address} />
             </div>
-            
+
             <div className="mt-6 flex justify-end">
-                <button 
-                    onClick={onClose}
-                    className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
-                >
-                    Đóng
-                </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+              >
+                Đóng
+              </button>
             </div>
           </div>
         )}
@@ -99,9 +96,15 @@ const WonUserInformation = ({
 const InfoRow = ({ label, value }) => (
   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center border border-gray-100 bg-gray-50 rounded-lg px-3 py-2 shadow-sm">
     <span className="text-sm font-medium text-amber-600">{label}:</span>
-    <span className="text-sm font-semibold text-gray-900 mt-1 sm:mt-0">
-      {value || "N/A"}
-    </span>
+    {value ? (
+      <span className="text-sm font-semibold text-gray-900 mt-1 sm:mt-0">
+        {value}
+      </span>
+    ) : (
+      <span className="text-sm font-semibold text-red-700 mt-1 sm:mt-0">
+        Chưa có thông tin
+      </span>
+    )}
   </div>
 );
 
