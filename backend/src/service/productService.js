@@ -20,7 +20,8 @@ import {
   getProductProfile,
   enableExtentionForProductRepo,
   deactiveProductById as deactiveProductByIdRepo,
-  updateCurrentPrice
+  updateCurrentPrice,
+  bannedListProductRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -423,5 +424,10 @@ export const deactiveProductById = async (user, productId) => {
 }
 export const enableExtentionForProductService = async (sellerId, productId) => {
   const result = await enableExtentionForProductRepo(sellerId, productId);
+  return result;
+};
+
+export const bannedListProductService = async (productId) => {
+  const result = await bannedListProductRepo(productId);
   return result;
 };

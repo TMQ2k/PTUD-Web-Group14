@@ -24,6 +24,7 @@ import {
   getBiddedProductsService,
   uploadPaymentPictureService,
   uploadSellerUrlService,
+  getUserByNameService,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
@@ -682,4 +683,24 @@ router.patch(
     }
   }
 );
+
+router.get("/search-by-name", async (req, res) => {
+  try {
+    const { name } = req.query;
+    const users = await getUserByNameService(name);
+    res.status(200).json({
+      code: 200,
+      message: "Tìm kiếm user thành công",
+      data: users,
+    });
+  } catch (err) {
+    console.error("❌ Error in /search-by-name route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to search users by name",
+      data: null,
+    });
+  }
+});
+
 export default router;

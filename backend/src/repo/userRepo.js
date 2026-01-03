@@ -265,3 +265,11 @@ export const uploadSellerUrlRepo = async (wonId, seller_url) => {
   );
   return result.rows[0];
 };
+
+export const getUserByNameRepo = async (name) => {
+  const result = await pool.query(
+    `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
+    [`%${name}%`]
+  );
+  return result.rows;
+};
