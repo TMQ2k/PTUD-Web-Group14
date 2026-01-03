@@ -14,6 +14,7 @@ import {
   getProductBidHistory as getProductBidHistoryRepo,
   getProductBySellerIdRepo,
   enableExtentionForProductRepo,
+  bannedListProductRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -244,5 +245,10 @@ export const getProductBySellerIdService = async (sellerId) => {
 
 export const enableExtentionForProductService = async (sellerId, productId) => {
   const result = await enableExtentionForProductRepo(sellerId, productId);
+  return result;
+};
+
+export const bannedListProductService = async (productId) => {
+  const result = await bannedListProductRepo(productId);
   return result;
 };

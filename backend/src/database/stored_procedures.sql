@@ -1,5 +1,6 @@
 select * from users_rating where user_id in (42, 43)
 select * from users
+select * from user_won_products
 
 CREATE OR REPLACE FUNCTION fnc_product_extra_images(
     _product_id INTEGER,
@@ -1032,6 +1033,7 @@ BEGIN
     FROM user_upgrade_requests r
     JOIN users u ON u.user_id = r.user_id
     LEFT JOIN users_rating ur ON ur.user_id = u.user_id
+	WHERE r.status = 'pending'
     ORDER BY r.created_at DESC;
 END;
 $$;
@@ -1618,11 +1620,12 @@ BEGIN
     LEFT JOIN users_rating ur ON ur.user_id = r.bidder_id
     WHERE p.seller_id = p_seller_id
       AND r.product_id = p_product_id
+	  AND r.
     ORDER BY r.created_at DESC;
 END;
 $$;
 select * from products
-select * from auction_extensions
+select * from bid_allow_requests
 delete from auction_extensions
 
 
@@ -1834,11 +1837,11 @@ BEGIN
     WHERE uwp.user_id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
-select * from fnc_user_won_product(43)
+select * from fnc_user_won_product(36)
 select * from users
 drop function fnc_seller_deactive_product
 CREATE OR REPLACE FUNCTION fnc_seller_deactive_product(p_seller_id BIGINT)
-RETURNS TABLE (
+RETURNS TABLE (s
 	won_id BIGINT, 
     product_id INTEGER,
     product_name VARCHAR,
@@ -1944,3 +1947,45 @@ BEGIN
 END;
 $$;
 select * from fnc_get_products_bidded(42)
+select * from fnc_banned_in_product(1)
+drop function fnc_banned_in_product
+CREATE OR REPLACE FUNCTION fnc_banned_in_product(
+    p_product_id INTEGER
+)
+RETURNS TABLE (
+    user_id INTEGER,
+    username VARCHAR,
+    email VARCHAR,
+    role VARCHAR,
+    user_status BOOLEAN,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    phone_number VARCHAR,
+    reason VARCHAR,
+    banned_at TIMESTAMPTZ,
+    banned_by BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        u.user_id,
+        u.username,
+        u.email,
+        u.role,
+        u.status,
+        ui.first_name,
+        ui.last_name,
+        ui.phone_number,
+        br.reason,
+        br.created_at,
+        br.created_by
+    FROM bid_rejections br
+    JOIN users u
+        ON br.bidder_id = u.user_id
+    LEFT JOIN users_info ui
+        ON u.user_id = ui.user_id
+    WHERE br.product_id = p_product_id;
+END;
+$$;

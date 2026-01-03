@@ -20,6 +20,7 @@ import {
   getBiddedProductsRepo,
   uploadPaymentPictureRepo,
   uploadSellerUrlRepo,
+  getUserByNameRepo,
 } from "../repo/userRepo.js";
 import { sendOTPEmail } from "./emailService.js";
 import crypto from "crypto";
@@ -457,6 +458,16 @@ export const uploadSellerUrlService = async (wonId, seller_url) => {
     return result;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi tải lên URL người bán:", err);
+    throw err;
+  }
+};
+
+export const getUserByNameService = async (name) => {
+  try {
+    const result = await getUserByNameRepo(name);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi tìm kiếm user theo tên:", err);
     throw err;
   }
 };

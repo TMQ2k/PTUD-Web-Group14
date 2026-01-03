@@ -8,6 +8,7 @@ import {
   getProductBidHistoryService,
   getProductBySellerIdService,
   enableExtentionForProductService,
+  bannedListProductService,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -204,4 +205,23 @@ router.post(
     }
   }
 );
+
+router.get("/banned-list/:productId", async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const result = await bannedListProductService(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Banned list retrieved successfully",
+      data: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /banned-list route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to retrieve banned list",
+      data: null,
+    });
+  }
+});
 export default router;

@@ -173,7 +173,7 @@ CREATE TABLE bid_rejections (
     CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
 );
 go
-select * from bid_allowances
+select * from bid_rejections
 delete from bid_allowances
 CREATE TABLE bid_allowances (
     id BIGSERIAL PRIMARY KEY,
