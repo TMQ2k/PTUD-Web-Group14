@@ -64,8 +64,7 @@ const ProductOverview = () => {
         ["clean"], 
       ],
     },
-  });
-  console.log(userData);
+  });  
   const handleConfirmAppend = async (e) => {
     e.preventDefault();
     if (viewQuill && appendQuill) {

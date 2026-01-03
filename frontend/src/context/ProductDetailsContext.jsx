@@ -1,5 +1,5 @@
 import { createContext, useContext, } from "react";
-
+import default_avatar from "../../public/images/default/default_avatar.jfif"
 export const ProductContext = createContext(null);
 export const ProductDispatchContext = createContext(null);
 
@@ -31,9 +31,9 @@ export const productReducer = (product, action) => {
         current_price: action.payload.current_price,
         top_bidder: {
           ...product.top_bidder,
-          points: action.payload.points,
+          points: action.payload.rating,
           name: action.payload.username,
-          avatar_url: action.payload.avatar_url || product.top_bidder?.avatar_url,
+          avatar_url: action.payload.avatar_url || default_avatar,
         }
       }
     }
