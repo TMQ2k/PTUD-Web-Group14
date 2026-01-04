@@ -182,7 +182,7 @@ export default function Header() {
 
         {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
         <div className="hidden md:flex items-center gap-4 ml-auto">
-          <Link
+          {/* <Link
             to="/watchlist"
             className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all relative group"
             aria-label="Danh sách yêu thích"
@@ -196,8 +196,8 @@ export default function Header() {
             aria-label="Danh sách yêu thích"
             title="Danh sách yêu thích"
           >
-            <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600"/>
-          </Link>
+            <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600" />
+          </Link> */}
 
           {!isLoggedIn ? (
             // Hiển thị nút đăng nhập/đăng ký khi chưa login
@@ -220,17 +220,33 @@ export default function Header() {
           ) : (
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
             <>
-              {userData.role === "seller" && 
-                 (<AddProductButton />)                  
+              <Link
+                to="/watchlist"
+                className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all relative group"
+                aria-label="Danh sách yêu thích"
+                title="Danh sách yêu thích"
+              >
+                <FaRegHeart className="size-6 text-blue-600 group-focus:fill-red-500 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+              </Link>
+              <Link
+                to="/productcheckout"
+                className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:text-green-600 focus:ring-2 focus:ring-green-500 transition-all relative group"
+                aria-label="Danh sách yêu thích"
+                title="Danh sách yêu thích"
+              >
+                <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600" />
+              </Link>
+              {
+                userData.role === "seller" && <AddProductButton />
                 //: (<Link
                 //     to="/guide"
-                //     className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
+                //     className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent
                 //                hover:opacity-80 transition-all text-[16px]"
                 //   >
                 //     Cách thao tác trên website
                 //   </Link>)
               }
-              
+
               <div className="relative user-menu-container">
                 <button
                   type="button"

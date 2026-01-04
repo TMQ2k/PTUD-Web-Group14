@@ -157,6 +157,7 @@ import { userApi } from "../../api/user.api";
 import { BlinkBlur } from "react-loading-indicators";
 import CheckoutFilterBar from "./CheckoutFilterBar";
 import { filterWonProductStatus } from "../../utils/arrayhandler";
+import Spinner from "./Spinner";
 
 const ProductCheckout = () => {
   const { userData } = useSelector((state) => state.user);
@@ -282,7 +283,7 @@ const ProductCheckout = () => {
     <>
       {loading && (
         <div className="h-screen w-full flex items-center justify-center">
-          <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+          <Spinner />
         </div>
       )}
       {error && <div>{error}</div>}

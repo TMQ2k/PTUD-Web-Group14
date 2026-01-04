@@ -24,7 +24,7 @@ const BiddingRequestForm = React.memo(({ productId, state }) => {
             {/* Icon placeholder if you don't use lucide-react */}
             <span className="text-xl">⚠️</span>
             <p className="text-sm text-red-600 font-medium leading-tight">
-              Bạn chưa đủ điểm để tham gia đấu giá. Hãy gửi yêu cầu cho người
+              Bạn chưa đủ điểm để tham gia đấu giá hoặc đã bị người bán cấm đấu giá. Hãy gửi yêu cầu cho người
               bán.
             </p>
           </div>

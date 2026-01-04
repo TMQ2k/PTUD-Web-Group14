@@ -16,19 +16,17 @@ const ProductCard = ({
   postedDate,
   remainingTime,
   bidCount,
-  onBuyNow,
-  topBidder,
+  onBuyNow,  
   isInWatchlist = false,
   onRemoveFromWatchlist,
   is_active = true,
   isNew = false, // Sản phẩm mới đăng (trong vòng 60 phút)
-}) => {
+}) => {  
   const [timeLeft, setTimeLeft] = useState(remainingTime);
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
   const [isToggling, setIsToggling] = useState(false);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-
   useEffect(() => {
     setIsFavorite(isInWatchlist);
   }, [isInWatchlist]);

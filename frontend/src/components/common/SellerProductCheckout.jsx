@@ -9,6 +9,7 @@ import { PackageOpen, ArrowRight } from "lucide-react";
 import { productApi } from "../../api/product.api";
 import CheckoutFilterBar from "./CheckoutFilterBar";
 import { filterWonProductStatus } from "../../utils/arrayhandler";
+import Spinner from "./Spinner";
 
 const SellerProductCheckout = () => {
   // const mockCheckoutData = [
@@ -135,7 +136,7 @@ const SellerProductCheckout = () => {
     <>
       {loading && (
         <div className="h-screen w-full flex items-center justify-center">
-          <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+          <Spinner />
         </div>
       )}
       {error && <div>{error?.message}</div>}

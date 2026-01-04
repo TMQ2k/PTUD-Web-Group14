@@ -4,13 +4,13 @@ import ProductFormContext from "./ProductFormContext";
 import { categoryApi } from "../../api/category.api";
 import { sellerApi } from "../../api/seller.api";
 import { productApi } from "../../api/product.api";
-import { BlinkBlur } from "react-loading-indicators";
 import { parseIntFromCurrency } from "../../utils/NumberHandler";
 import { CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import EnableProductExtension from "./EnableProductExtension";
+import Spinner from "./Spinner";
 
 const ProductPosting = () => {
   const [systemCategories, setSystemCategories] = useState([]);
@@ -124,7 +124,7 @@ const ProductPosting = () => {
       {userData?.role !== "seller" && <Navigate to="/" />}
       {loading && (
         <div className="h-screen w-full flex items-center justify-center">
-          <BlinkBlur color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+          <Spinner />
         </div>
       )}
       {error && (

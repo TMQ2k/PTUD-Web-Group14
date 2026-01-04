@@ -274,6 +274,7 @@ import ProductHistory from "./ProductHistory";
 import BidderBannedList from "./BidderBannedList";
 import BidderRequests from "./BidderRequests";
 import BidderSearching from "./BidderSearching";
+import Spinner from "./Spinner";
 
 const AuctionManagement = () => {
   const params = useParams();
@@ -357,7 +358,7 @@ const AuctionManagement = () => {
   if (loading) {
     return (
       <div className="h-[60vh] w-full flex items-center justify-center">
-        <BlinkBlur color={["#3b82f6", "#8b5cf6", "#ef4444"]} size="medium" />
+        <Spinner />
       </div>
     );
   }

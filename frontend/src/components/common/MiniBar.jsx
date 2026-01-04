@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { IoMenu, IoClose, IoHome, IoPerson } from "react-icons/io5";
+import { useSelector } from "react-redux";
 
 const MiniBar = () => {
+  const user = useSelector((state) => state.user);  
   const [isOpen, setIsOpen] = useState(false);
 
   const actions = [
@@ -11,6 +13,7 @@ const MiniBar = () => {
       label: "Trang chủ", 
       icon: <IoHome className="size-5" />, 
       to: "/", 
+      loggedIn: false,
       color: "bg-blue-500" 
     },    
     { 
@@ -18,6 +21,7 @@ const MiniBar = () => {
       label: "Tài khoản", 
       icon: <IoPerson className="size-5" />, 
       to: "/profile", 
+      loggedIn: true,
       color: "bg-pink-500" 
     },
   ];
@@ -33,7 +37,7 @@ const MiniBar = () => {
             : "opacity-0 scale-0 translate-y-10 pointer-events-none"
         }`}>
         
-        {actions.map((action) => (
+        {actions.map((action) => ((action.loggedIn === false || action.loggedIn === user.isLoggedIn) && 
           <Link
             key={action.id}
             to={action.to}

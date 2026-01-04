@@ -78,7 +78,7 @@ const ProductTopFives = () => {
               : null,
             postedDate: postedDate,
             remainingTime: remainingTime,
-            bidCount: product.bid_count || 0,
+            bidCount: product.history_count || 0,
             is_active: product.is_active,
           };
         });
@@ -134,7 +134,7 @@ const ProductTopFives = () => {
               : null,
             postedDate: postedDate,
             remainingTime: remainingTime,
-            bidCount: product.bid_count || 0,
+            bidCount: product.history_count || 0,
             is_active: product.is_active,
           };
         });
@@ -153,8 +153,7 @@ const ProductTopFives = () => {
   useEffect(() => {
     const fetchTop5HighestPriceProducts = async () => {
       try {
-        const response = await productApi.getTop5HighestPrice();
-
+        const response = await productApi.getTop5HighestPrice();        
         // Transform backend data to match ProductCard props
         const transformedProducts = response.data.map((product) => {
           // Calculate remaining time
@@ -183,8 +182,7 @@ const ProductTopFives = () => {
           // Format price
           const formattedPrice = new Intl.NumberFormat("vi-VN").format(
             product.current_price
-          );
-
+          );          
           return {
             id: product.product_id,
             image: product.image_cover_url || electronicsImg,
@@ -196,7 +194,7 @@ const ProductTopFives = () => {
               : null,
             postedDate: postedDate,
             remainingTime: remainingTime,
-            bidCount: product.history_count || 0, // Backend chưa trả về
+            bidCount: product.history_count || 0,
             is_active: product.is_active,
           };
         });
@@ -226,7 +224,7 @@ const ProductTopFives = () => {
           <ClockFading className="inline-block w-6 h-6 text-zinc-500 ml-2 animate-bounce" />
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {top5EndingProducts.map((product, index) => (
+          {top5EndingProducts.map((product, index) => (            
             <ProductCard
               key={index}
               {...product}
