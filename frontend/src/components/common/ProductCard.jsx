@@ -21,6 +21,7 @@ const ProductCard = ({
   onRemoveFromWatchlist,
   is_active = true,
   isNew = false, // Sản phẩm mới đăng (trong vòng 60 phút)
+  isLeadingBidder = false, // Bidder đang dẫn đầu
 }) => {
   const [timeLeft, setTimeLeft] = useState(remainingTime);
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
@@ -103,7 +104,9 @@ const ProductCard = ({
     <div
       onClick={() => navigate(`/products/${id}`)}
       className={`cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col ${
-        isNew
+        isLeadingBidder
+          ? "border-2 border-red-500 ring-4 ring-red-100 shadow-red-200/50"
+          : isNew
           ? "border-2 border-green-500 ring-4 ring-green-100 shadow-green-200/50"
           : "border-gray-100 hover:border-purple-200"
       }`}

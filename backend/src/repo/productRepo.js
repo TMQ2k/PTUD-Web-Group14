@@ -461,3 +461,55 @@ export const bannedListProductRepo = async (productId) => {
   ]);
   return result.rows[0];
 };
+export const getProdudctsListByBidderId = async (
+  bidderId,
+  limit,
+  page,
+  is_active
+) => {
+  let offset = 0;
+  if (page && limit) {
+    offset = (page - 1) * limit;
+  }
+  let baseQuery = `SELECT DISTINCT p.*
+    FROM products p
+    LEFT JOIN auto_bids ab ON p.product_id = ab.product_id
+    WHERE ab.user_id = $1`;
+  const queryParams = [bidderId];
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    } else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  if (limit) {
+    queryParams.push(limit, offset);
+    baseQuery += ` LIMIT $${queryParams.length - 1} OFFSET $${
+      queryParams.length
+    }`;
+  }
+  //Sort by end time ascending
+  baseQuery += ` ORDER BY p.end_time ASC`;
+  const result = await pool.query(baseQuery, queryParams);
+  return result.rows;
+};
+
+export const countProductsByBidderId = async (bidderId, is_active) => {
+  let baseQuery = `SELECT COUNT(DISTINCT p.product_id) AS total
+    FROM products p
+    LEFT JOIN auto_bids ab ON p.product_id = ab.product_id
+    WHERE ab.user_id = $1`;
+  const queryParams = [bidderId];
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    } else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  const result = await pool.query(baseQuery, queryParams);
+  return parseInt(result.rows[0].total, 10);
+};

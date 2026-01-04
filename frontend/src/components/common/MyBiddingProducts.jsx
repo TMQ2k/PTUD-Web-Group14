@@ -15,7 +15,7 @@ const MyBiddingProducts = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("active"); // "active" hoặc "expired"
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 8; // 4 dòng x 2 sản phẩm = 8 sản phẩm mỗi trang
+  const itemsPerPage = 4; // 4 sản phẩm mỗi trang
 
   useEffect(() => {
     fetchBiddedProducts();
@@ -33,16 +33,47 @@ const MyBiddingProducts = () => {
         const endTime = new Date(item.end_time);
         const isActive = endTime > now;
 
+        // Calculate remaining time
+        const diffMs = endTime - now;
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor(
+          (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+        );
+        const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        const remainingTime = `${String(Math.max(0, diffHours)).padStart(
+          2,
+          "0"
+        )}:${String(Math.max(0, diffMinutes)).padStart(2, "0")}:${String(
+          Math.max(0, diffSeconds)
+        ).padStart(2, "0")}`;
+
+        // Format prices
+        const formattedCurrentPrice = new Intl.NumberFormat("vi-VN").format(
+          item.current_bid_amount
+        );
+        const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
+          item.max_bid_amount
+        );
+
         return {
           id: item.product_id,
           name: item.product_name,
-          currentPrice: item.current_bid_amount,
-          myBidPrice: item.max_bid_amount,
+          currentPrice: formattedCurrentPrice,
+          myBidPrice: formattedMyBidPrice,
+          highestBidder: item.is_winner ? "Bạn" : "Người khác",
+          image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
+            item.product_name.substring(0, 20)
+          )}`,
+          postedDate: new Date(item.end_time).toLocaleDateString("vi-VN"),
+          remainingTime: remainingTime,
+          bidCount: 0,
           endTime: item.end_time,
           status: isActive ? "active" : "expired",
           isWinning: item.is_winner,
+          isLeadingBidder: isActive && item.is_winner, // Đang dẫn đầu nếu đang active và là winner
           finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
           sellerId: item.seller_id,
+          is_active: isActive,
         };
       });
 
