@@ -330,8 +330,8 @@ const AuctionManagement = () => {
     try {
       const response = await apiCall(params.id, bidder_id);
       // Simple optimistic update: remove the processed item from lists
-      setPendingList(prev => prev.filter(item => item.bidder_id !== bidder_id));
-      setBannedList(prev => prev.filter(item => item.user_id !== bidder_id));
+      // setPendingList(prev => prev.filter(item => item.bidder_id !== bidder_id));
+      // setBannedList(prev => prev.filter(item => item.user_id !== bidder_id));
       return response.data;
     } catch (e) {
       console.error("Action failed", e);
