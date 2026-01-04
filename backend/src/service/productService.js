@@ -189,8 +189,11 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
     const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
     if (top_bidder_id) {
       const top_bidder_info = await getUserInfoById(top_bidder_id);
-      prod.top_bidder = {
+      prod.top_bidder = { 
+        id: top_bidder_info.id,
         name: top_bidder_info.username,
+        avatar_url: top_bidder_info.avatar_url,
+        points: top_bidder_info.points
       };
     } else {
       prod.top_bidder = null;
@@ -221,6 +224,20 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
       user.user_id
     );
   }
+
+  //Mask 3/4 of top bidder's username
+  if (topBidderInfo && topBidderInfo.username) {
+    const username = topBidderInfo.username;
+    const len = username.length;
+    const maskLength = Math.floor(len * 0.75);
+    const maskedUsername =  username
+      .split("")
+      .map((char, index) =>
+        index < maskLength ? "*" : char
+      ).join("");
+    topBidderInfo.username = maskedUsername;
+  }
+  
 
   return {
     product_id: productInfo.product_id,
