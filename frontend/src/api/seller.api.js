@@ -59,13 +59,16 @@ export const sellerApi = {
   },
 
   deleteBannedBidder: async (product_id, bidder_id) => {
+    console.log(product_id);
     const respone = await http.delete(
       sellerEndpoints.deleteBannedBidder,
       {
-        productId: product_id,
-        bidderId: bidder_id,
-      },
-      {
+        // 1. Put the body inside the "data" key
+        data: {
+          productId: product_id,
+          bidderId: bidder_id,
+        },
+        // 2. Headers go in the same config object
         headers: {
           Authorization: `Bearer ${authStorage.getToken()}`,
         },

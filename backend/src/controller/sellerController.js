@@ -79,7 +79,7 @@ router.post(
 router.delete(
   "/seller-delete-banned-bidder",
   authenticate,
-  authorize("seller"),
+  //authorize("seller"),
   async (req, res) => {
     try {
       const { productId, bidderId } = req.body;
