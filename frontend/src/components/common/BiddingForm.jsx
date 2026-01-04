@@ -12,7 +12,8 @@ const BiddingForm = React.memo(
     price,
     steps,
     productId,
-    onAutobidUpdate,
+    openAutoBidDialog,
+    setAutoBidPrice,
     endTime,
     openBuyDialog,
     buyNowPrice,    
@@ -43,12 +44,13 @@ const BiddingForm = React.memo(
         //   await onAutobidUpdate();
         // }
       } else {
-        const respone = await onAutoBid(productId, formattedPrice);
-
-        if (respone.code === 200) {
-          //await sellerApi.enableAuctionExtension(productId);
-          await onAutobidUpdate();
-        }
+        //const respone = await onAutoBid(productId, formattedPrice);
+        setAutoBidPrice(formattedPrice);
+        openAutoBidDialog();
+        // if (respone.code === 200) {
+        //   //await sellerApi.enableAuctionExtension(productId);
+        //   await onAutobidUpdate();
+        // }
       }
     };
 

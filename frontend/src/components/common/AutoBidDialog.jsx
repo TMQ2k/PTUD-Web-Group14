@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react'; // 1. Import useState
 import PropTypes from 'prop-types'; 
 import { formatNumberToCurrency } from '../../utils/NumberHandler';
 
@@ -6,20 +6,43 @@ const AutoBidDialog = ({
   isOpen,
   onClose,
   onConfirm,
-  price, // Changed from buyNowPrice
+  price,
   productId
 }) => {
+  // 2. Local state to track loading status
+  const [isProcessing, setIsProcessing] = useState(false);
+
   if (!isOpen) return null;
 
   const handleConfirmClick = async () => {
-    await onConfirm(productId);
-    onClose();
+    // Prevent double clicks
+    if (isProcessing) return;
+
+    try {
+      setIsProcessing(true); // Start loading
+      await onConfirm(productId, price);
+      // Only close if successful. 
+      // If onConfirm throws an error, the catch block (if added) or finally block handles it.
+      onClose(); 
+    } catch (error) {
+      console.error("Error during auto bid:", error);
+    } finally {
+      // Reset state (useful if the parent component keeps this dialog mounted)
+      setIsProcessing(false); 
+    }
+  };
+
+  // Helper to handle backdrop click (prevent closing while processing)
+  const handleBackdropClick = (e) => {
+    if (!isProcessing) {
+      onClose();
+    }
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 backdrop-blur-sm p-4 transition-opacity"
-      onClick={onClose}
+      onClick={handleBackdropClick} // Use safe handler
       role="dialog"
       aria-modal="true"
     >     
@@ -27,7 +50,7 @@ const AutoBidDialog = ({
         className="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
       >        
-        {/* HEADER: Changed to Orange/Red Gradient */}
+        {/* HEADER */}
         <div className="flex items-center justify-between bg-linear-to-br from-orange-400 to-red-500 p-4 text-white">
           <h3 className="text-lg font-bold leading-6">
             Xác nhận đấu giá
@@ -35,7 +58,8 @@ const AutoBidDialog = ({
           
           <button
             type="button"
-            className="rounded-md p-1 hover:bg-white/20 focus:outline-none"
+            disabled={isProcessing} // 3. Disable Close Button
+            className="rounded-md p-1 hover:bg-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
             aria-label="Close"
           >
@@ -48,7 +72,6 @@ const AutoBidDialog = ({
         {/* CONTENT BODY */}
         <div className="p-6">
           <div className="mt-2">
-            {/* Updated Text Content */}
             <p className="text-sm text-gray-600 text-center">
               Bạn có muốn đấu giá với số tiền tối đa?
             </p>
@@ -56,7 +79,7 @@ const AutoBidDialog = ({
             {/* Price Display */}
             <div className="mt-5 flex flex-col items-center justify-center rounded-lg bg-orange-50 p-4 border border-orange-100">
               <span className="text-xs font-semibold uppercase text-orange-500 tracking-wider">
-                Giá đấu dự kiến
+                Mức giá tối đa của bạn
               </span>
               <span className="text-3xl font-extrabold text-orange-600 mt-1">
                 {formatNumberToCurrency(price)} đ
@@ -69,19 +92,35 @@ const AutoBidDialog = ({
         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
           <button
             type="button"
-            className="inline-flex w-full justify-center rounded-md border border-transparent 
-                       bg-gradient-to-r from-orange-500 to-red-600 
-                       px-4 py-2 text-base font-medium text-white shadow-sm 
-                       hover:from-orange-600 hover:to-red-700 
-                       focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 
-                       sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200"
+            disabled={isProcessing} // 4. Disable Confirm Button
+            className={`inline-flex w-full justify-center rounded-md border border-transparent 
+                        px-4 py-2 text-base font-medium text-white shadow-sm 
+                        focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 
+                        sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200
+                        ${isProcessing 
+                            ? 'bg-gray-400 cursor-not-allowed' 
+                            : 'bg-linear-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700'
+                        }`}
             onClick={handleConfirmClick}
           >
-            Xác nhận
+            {/* 5. Conditional Text and Spinner */}
+            {isProcessing ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Đang xử lý...
+              </span>
+            ) : (
+              "Xác nhận"
+            )}
           </button>
+          
           <button
             type="button"
-            className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            disabled={isProcessing} // 6. Disable Cancel Button
+            className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
           >
             Huỷ bỏ
@@ -97,7 +136,7 @@ AutoBidDialog.propTypes = {
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   price: PropTypes.number.isRequired,
-  // productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default AutoBidDialog;

@@ -76,21 +76,29 @@ const BiddingStatus = ({ className = "" }) => {
     };
   }, [product.product_id, userData.id, product.seller.id]);
 
-  const handleAutobidUpdate = async () => {
-    try {
-      const respone = await bidderApi.autobidUpdate(product?.product_id);
-      dispatch({
-        type: "autobid-update",
-        payload: respone.data,
-      });
-    } catch (err) {
-      console.log(err.message);
-    }
-  };
+  // const handleAutobidUpdate = async () => {
+  //   try {
+  //     const respone = await bidderApi.autobidUpdate(product?.product_id);
+  //     dispatch({
+  //       type: "autobid-update",
+  //       payload: respone.data,
+  //     });
+  //   } catch (err) {
+  //     console.log(err.message);
+  //   }
+  // };
 
   const onAutoBid = async (productId, formattedPrice) => {
     try {
       const respone = await bidderApi.autobid(productId, formattedPrice);
+      if (respone.code === 200) {
+        const updateRespone = await bidderApi.autobidUpdate(product?.product_id);
+        dispatch({
+          type: "autobid-update",
+          payload: updateRespone.data,
+        });
+      }
+
       return respone;
     } catch (err) {
       console.log(err.message);
@@ -107,7 +115,17 @@ const BiddingStatus = ({ className = "" }) => {
   const openAutoBidDialog = () => setIsAutoBidDialogOpen(true);
   const closeAutoBidDialog = () => setIsAutoBidDialogOpen(false);
 
-  
+  const handleAutoBidConfirm = async (productId, price) => {
+    try {
+      console.log(price);
+      await onAutoBid(productId, price);
+      
+    } catch (err) {
+      console.log(err.message);
+    }
+    closeAutoBidDialog();
+    alert("Autobid confirmed!");
+  }
 
   // The actual action to take when they click "Buy Now" in the dialog
   const handlePurchaseConfirm = async (productId) => {
@@ -211,6 +229,10 @@ const BiddingStatus = ({ className = "" }) => {
                                         bg-white text-orange-600 border border-orange-200 shadow-sm
                                         hover:bg-orange-500 hover:text-white hover:border-orange-500 hover:shadow-orange-200 hover:shadow-md
                                         active:scale-95 transition-all duration-300"
+                              onClick={() => {
+                                setBidPrice(suggest_price);
+                                openAutoBidDialog();
+                              }}
                             >
                               {formatNumberToCurrency(suggest_price)} đ
                             </button>
@@ -219,11 +241,12 @@ const BiddingStatus = ({ className = "" }) => {
                             price={product?.bidder?.maximum_price || 0}
                             steps={parseInt(product?.step_price) || 0}
                             productId={product?.product_id || ""}
-                            endTime={product.end_time}
-                            onAutobidUpdate={handleAutobidUpdate}
+                            endTime={product.end_time}                            
                             buyNowPrice={product?.buy_now_price || null}
+                            setAutoBidPrice={setBidPrice}
                             openBuyDialog={openBuyDialog}
-                            onAutoBid={onAutoBid}
+                            openAutoBidDialog={openAutoBidDialog}
+                            onAutoBid={onAutoBid}                            
                           />
 
                           {buy_now && (
@@ -262,7 +285,7 @@ const BiddingStatus = ({ className = "" }) => {
                               <AutoBidDialog
                                 isOpen={isAutoBidDialogOpen}
                                 onClose={closeAutoBidDialog}
-                                onConfirm={handlePurchaseConfirm}
+                                onConfirm={handleAutoBidConfirm}
                                 price={bidPrice}
                                 productId={product.product_id}
                               />
