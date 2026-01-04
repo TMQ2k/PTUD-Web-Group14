@@ -136,6 +136,7 @@ export const getUserInfoById = async (user_id) => {
     [user_id]
   );
   return new UserSimpleProfile(
+    user_id,
     userRow.rows[0]?.username || null,
     userRow.rows[0]?.avatar_url || null,
     userRow.rows[0]?.rating_percent || null
