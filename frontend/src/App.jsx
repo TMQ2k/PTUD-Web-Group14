@@ -25,6 +25,9 @@ import "react-toastify/dist/ReactToastify.css";
 import ProductPostingPage from "./pages/ProductPostingPage";
 import ProductUpdatingPage from "./pages/ProductUpdatingPage";
 import RouterListner from "./hooks/RouterListner";
+import { Pen } from "lucide-react";
+import AuctionManegementPage from "./pages/AuctionManagementPage";
+import ProductCheckoutPage from "./pages/ProductCheckoutPage";
 import SearchPage from "./pages/SearchPage";
 
 const App = () => {
@@ -72,7 +75,7 @@ const App = () => {
         // Gọi API /profile với token
         const response = await userApi.getProfile();
         const userData = response.data;
-
+    
         console.log("✅ Khôi phục thành công:", userData);
 
         const fullName = `${userData.first_name || ""} ${
@@ -94,6 +97,7 @@ const App = () => {
             role: userData.role,
             avatar: userData.avatar_url,
             qr_url: userData.qr_url,
+            rating_percent: userData.rating_percent,
           })
         );
       } catch (error) {
@@ -145,10 +149,9 @@ const App = () => {
           <Route path="watchlist" element={<WatchList />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
-          <Route
-            path="/productupdating/:id"
-            element={<ProductUpdatingPage />}
-          />
+          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    
+          <Route path="/auctionmanagement/:id" element={<AuctionManegementPage />} />
+          <Route path="/productcheckout" element={<ProductCheckoutPage />} />
         </Route>
 
         {/* Admin Routes - Standalone (no MainLayouts) */}

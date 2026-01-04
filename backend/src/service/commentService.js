@@ -55,28 +55,6 @@ export const getCommentsByProductId = async (productId) => {
 export const postComment = async (user, productId, content, linkProduct, parentCommentId = null) => {
     const newComment = await postCommentRepo(user.id, productId, content, parentCommentId);
     const sellerId = await getSellerIdByProductIdRepo(productId);
-    const sellerProfile = await getUserProfileRepo(sellerId);
-
-    //Find all bidders and commenters emails on this product except the user who just commented
-    const bidders = await getAllBiddersByProductIdRepo(productId);
-    const commenters = await getAllCommentersByProductIdRepo(productId);
-    console.log("🔔 [Service] Commenters on product:", commenters);
-    const userIdsToNotifySet = new Set();
-    bidders.forEach(bidder => {
-        if (bidder && bidder.user_id !== user.id) {
-            userIdsToNotifySet.add(bidder.user_id);
-        }
-    });
-
-    commenters.forEach(commenter => {
-        if (commenter && commenter !== user.id) {
-            userIdsToNotifySet.add(commenter);
-        }
-    });
-    
-    const userProfilesToNotify = await Promise.all(
-        Array.from(userIdsToNotifySet).map(userId => getUserProfileRepo(userId))
-    );
 
     //Truncate content if too long
 
@@ -84,14 +62,33 @@ export const postComment = async (user, productId, content, linkProduct, parentC
         content = content.substring(0, 47) + "...";
     }
     // Send notification email to product owner
-    if (user.role === "bidder" && sellerProfile.email != null) {
-
+    if (sellerId !== user.id) {
+        const sellerProfile = await getUserProfileRepo(sellerId);
         const subject = "CÂU HỎI MỚI VỀ SẢN PHẨM CỦA BẠN";
         const message = "Bạn có một câu hỏi mới về sản phẩm của bạn. Nội dung câu hỏi: \n" + content + "\nVui lòng bấm vào link sau để trả lời: " + linkProduct;
         await sendNotificationEmail(sellerProfile.email, subject, message);
      
     }
     else { 
+        const bidders = await getAllBiddersByProductIdRepo(productId);
+        const commenters = await getAllCommentersByProductIdRepo(productId);
+        console.log("🔔 [Service] Commenters on product:", commenters);
+        const userIdsToNotifySet = new Set();
+        bidders.forEach(bidder => {
+            if (bidder && bidder.user_id !== user.id) {
+                userIdsToNotifySet.add(bidder.user_id);
+            }
+        });
+
+        commenters.forEach(commenter => {
+            if (commenter && commenter !== user.id) {
+                userIdsToNotifySet.add(commenter);
+            }
+        });
+        
+        const userProfilesToNotify = await Promise.all(
+            Array.from(userIdsToNotifySet).map(userId => getUserProfileRepo(userId))
+        );
         // Send notification email to all user has commented on this product and user participated in bidding
         for (const userProfile of userProfilesToNotify) {
             if (userProfile.email != null) {
@@ -102,5 +99,22 @@ export const postComment = async (user, productId, content, linkProduct, parentC
         }
     }
 
-    return newComment;
+    //Change parent_comment_id to parent_id for consistency
+    newComment.parent_id = newComment.parent_comment_id;
+    
+
+    const userInfo =  await getUserProfileRepo(newComment.user_id);
+    newComment.username = userInfo.username;
+    newComment.user_avatar_url = userInfo.avatar_url;
+    newComment.posted_at = newComment.created_at;
+    return new Comment(
+        newComment.comment_id,
+        newComment.user_id,
+        newComment.username,
+        newComment.user_avatar_url,
+        newComment.content,
+        newComment.posted_at,
+        newComment.parent_id,
+        []
+    );
 }

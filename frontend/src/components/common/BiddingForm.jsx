@@ -9,17 +9,22 @@ import {
   parseIntFromCurrency,
   convert,
 } from "../../utils/NumberHandler";
+import { bidderApi } from "../../api/bidder.api";
 import { GrSubtractCircle, GrAddCircle } from "react-icons/gr";
 
-const BiddingForm = ({ price, steps }) => {
-  const { register, handleSubmit, watch, setValue, getValues } = useForm({
-    defaultValues: {
-      bidder_price: formatNumberToCurrency(price),
+const BiddingForm = React.memo(({ price, steps, productId, onAutobidUpdate }) => {
+  const { register, handleSubmit, setValue, getValues } = useForm({
+    values: {
+      bidder_price: formatNumberToCurrency(price) || 0,
     },
-  });
+  });  
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const currentBidPrice = parseIntFromCurrency(getValues("bidder_price"));
+    const formattedPrice = currentBidPrice - (currentBidPrice % steps);
+    setValue("bidder_price", formatNumberToCurrency(formattedPrice));
+    const respone = await bidderApi.autobid(productId, formattedPrice);    
+    await onAutobidUpdate();
   };
 
   //console.log(bidder_price);
@@ -35,7 +40,7 @@ const BiddingForm = ({ price, steps }) => {
   };
   const onAdd = () => {
     const value = parseIntFromCurrency(getValues("bidder_price"));
-    setValue("bidder_price", formatNumberToCurrency(value + steps));
+    setValue("bidder_price", formatNumberToCurrency(value + steps));    
   };
 
   return (
@@ -50,8 +55,8 @@ const BiddingForm = ({ price, steps }) => {
         <input
           type="text"
           {...register("bidder_price", {
-            onChange: (e) => {
-              setValue("bidder_price", convert(e.target.value.trim()));
+            onChange: (e) => {              
+              setValue("bidder_price", convert(e.target.value.trim()) || 0);
             },
           })}
           className="text-center text-2xl focus:outline-none max-w-40
@@ -74,7 +79,7 @@ const BiddingForm = ({ price, steps }) => {
         onClick={onSubtract}
         type="button"
       >
-        <GrSubtractCircle className="size-8 group-hover:scale-110 stroke-blue-400" />
+        <GrSubtractCircle className="size-8 group-hover:scale-110 stroke-blue-500" />
       </button>
       <button
         type="submit"
@@ -87,6 +92,6 @@ const BiddingForm = ({ price, steps }) => {
       </button>
     </form>
   );
-};
+});
 
 export default BiddingForm;

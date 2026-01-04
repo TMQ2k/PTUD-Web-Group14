@@ -14,6 +14,8 @@ const userEndpoint = {
   resetPassword: "/users/reset-password",
   userRatings: "/users/user-ratings",
   sellerDeactivatedProducts: "/users/seller-deactivated-products",
+  userWonProducts: "/users/user-won-products",
+  changeWonProductStatus: "/users/change-won-product-status",
 };
 
 export const userApi = {
@@ -178,5 +180,16 @@ export const userApi = {
   getSellerDeactivatedProducts: async () => {
     const response = await http.get(userEndpoint.sellerDeactivatedProducts);
     return response.data;
+  },
+  updateWonProductStatus: async (wonId, status) => {
+    const repsone = await http.put(
+      `${userEndpoint.changeWonProductStatus}`,
+      {
+        wonId: wonId,
+        status: status,
+      },
+      {}
+    );
+    return repsone.data;
   },
 };

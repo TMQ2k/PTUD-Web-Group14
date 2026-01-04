@@ -3,7 +3,7 @@ import CommentForm from "./CommentForm";
 import { formatCustomDate } from "../../utils/DateTimeCalculation";
 import { IoChevronDownOutline, IoChevronUp } from "react-icons/io5";
 
-const CommentItem = ({ comment, comments, addReply, isShowReplying=true }) => {
+const CommentItem = ({ comment, comments, addReply, userRole, isShowReplying=true }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [showReplying, setShowReplying] = useState(isShowReplying);
 
@@ -37,26 +37,28 @@ const CommentItem = ({ comment, comments, addReply, isShowReplying=true }) => {
 
         {/* Actions */}
         <div className="flex flex-row items-center gap-4 mb-4">
-          <button
-            onClick={() => setIsReplying(!isReplying)}
-            className="text-sm font-medium text-gray-500 hover:text-blue-600 transition"
-          >
-            Reply
-          </button>
-          {comment?.replies?.length > 0 && (
+          {userRole !== "guest" && (
+            <button
+              onClick={() => setIsReplying(!isReplying)}
+              className="text-sm font-medium text-gray-500 hover:text-blue-600 transition"
+            >
+              Phản hồi
+            </button>
+          )}
+          {comment?.replies?.length > 0  && (
             <button
               onClick={() => setShowReplying(!showReplying)}
               className="flex flex-row gap-1 items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition"
             >
               
-              {showReplying ? "Close" : "Show"} Replies
+              {showReplying ? "Đóng" : "Hiện"} phản hồi
               {showReplying ? <IoChevronUp/> : <IoChevronDownOutline className="size-4"/>}
             </button>
           )}
         </div>
 
         {/* Reply Form (Conditional) */}
-        {isReplying && (
+        {isReplying && userRole !== "guest" && (
           <div className="mb-6">
             <CommentForm
               submitLabel="Reply"
@@ -74,6 +76,7 @@ const CommentItem = ({ comment, comments, addReply, isShowReplying=true }) => {
                 comment={comments?.find((c) => c?.comment_id === arr[arr.length - 1 - i])}
                 addReply={addReply}
                 comments={comments}
+                userRole={userRole}
               />
             ))}
           </div>

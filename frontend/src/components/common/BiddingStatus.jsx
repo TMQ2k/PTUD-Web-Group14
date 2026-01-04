@@ -13,15 +13,25 @@ import Label from "./Label";
 import NavigateButton from "./NavigateButton";
 import BiddingForm from "./BiddingForm";
 import default_image from "../../../public/images/default/unavailable_item.jpeg";
+import { useNavigate } from "react-router-dom";
+import { bidderApi } from "../../api/bidder.api";
+import { FaShippingFast } from "react-icons/fa";
+import BiddingRequestForm from "./BiddingRequestForm";
 
 const BiddingStatus = ({ className = "" }) => {
+  const navigate = useNavigate();
   const product = useProduct();
   const dispatch = useProductDispatch();
-  const { user } = useSelector((state) => state.user);
-  const role = user?.role;
+  const { userData } = useSelector((state) => state.user);
+  const role = userData?.role || "guest";
+  //console.log("Role: ", role)
+  const rating_percent = userData?.rating_percent || 0.0;
+  //console.log(userData.id !== product.seller.id)
 
   // Create the formatter and format the number
-  const formattedCurrentBid = formatNumberToCurrency(product.current_price);
+  const formattedCurrentBid = formatNumberToCurrency(
+    product.current_price || product.starting_price
+  );
   const formattedProductSteps = formatNumberToCurrency(product.step_price);
 
   const [expired, setExpired] = useState(false);
@@ -42,38 +52,58 @@ const BiddingStatus = ({ className = "" }) => {
     };
   }, [product.end_time]);
 
+  const handleAutobidUpdate = async () => {
+    const respone = await bidderApi.autobidUpdate(product?.product_id);
+    dispatch({
+      type: "autobid-update",
+      payload: respone.data,
+    });
+  };
+
   return (
     <>
       <main className={className}>
         <section>
-          <h2 className="text-slate-400 text-md font-normal">CURRENT BID</h2>
+          <h2 className="text-slate-400 text-md font-normal uppercase">
+            {product?.current_price && product?.top_bidder
+              ? "Giá hiện tại"
+              : "Giá khởi điểm"}
+          </h2>
           <p className="text-3xl font-semibold">{formattedCurrentBid} đ</p>
           <ProgressBar className="mt-2" />
         </section>
         <section className="mt-6 flex flex-row gap-2">
-          <div className="">
-            <img
-              src={product?.top_bidder?.avatar_url || default_image}
-              alt="Highest payed Bidder"
-              className="rounded-full object-cover w-24 h-24 border border-blue-400"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <div className="flex flex-row gap-1 align-center">
-              <PiMedalFill className="fill-amber-400 size-5 self-end" />
-              <p className="text-amber-300">Leading Bidder</p>
+          {product?.top_bidder ? (
+            <>
+              <div className="">
+                <img
+                  src={product?.top_bidder?.avatar_url || default_image}
+                  alt="Highest payed Bidder"
+                  className="rounded-full object-cover w-24 h-24 border border-blue-400"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className="flex flex-row gap-1 align-center">
+                  <PiMedalFill className="fill-amber-400 size-5 self-end" />
+                  <p className="text-amber-300">Leading Bidder</p>
+                </div>
+                <p className="font-bold text-xl text-blue-700">
+                  Bidder:
+                  <span className="font-normal text-black ml-2">
+                    {product?.top_bidder?.name || "********"}
+                  </span>
+                </p>
+                <BidderRating
+                  className="w-fit"
+                  points={product?.top_bidder?.points || "NaN"}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="font-bold text-red-500 text-center w-full">
+              Sản phẩm chưa có người đấu giá
             </div>
-            <p className="font-bold text-xl text-blue-700">
-              Bidder:
-              <span className="font-normal text-black ml-2">
-                {product?.top_bidder?.name || "********"}
-              </span>
-            </p>
-            <BidderRating
-              className="w-fit"
-              points={product?.top_bidder?.points || "NaN"}
-            />
-          </div>
+          )}
         </section>
         <div className="w-full h-px bg-gray-400 mt-5 mb-2"></div>
         <section>
@@ -82,45 +112,100 @@ const BiddingStatus = ({ className = "" }) => {
           <div className="flex flex-col gap-2">
             <div className="flex flex-col w-full gap-4 mx-auto my-3 justify-center align-center">
               {expired ? (
-                <div className="bg-[#A1AFFF] text-white text-center rounded-3xl w-full py-1">
+                <div className="bg-none text-red-500 text-xl text-center rounded-lg w-full py-1">
                   Sản phẩm đã đấu giá xong
                 </div>
               ) : (
                 <>
-                  {role === "bidder" && (
-                    <>
-                      <BiddingForm
-                        price={product?.bidder?.maximum_price || "NaN"}
-                        steps={product?.steps || "NaN"}
-                      />
-
-                      {/*If buy_now_price exists*/}
-                      {buy_now && (
+                  {/* {role === "seller" &&
+                    product?.seller?.seller_id === userData.id && (
+                      <>
                         <NavigateButton
-                          to={`/products/${product?.product_id || ""}/bidding`}
+                          to={`/productbidspending/${
+                            product?.product_id || ""
+                          }`}
                           className="bg-linear-to-br from-blue-200 to-purple-400
                                  text-white text-center hover:from-blue-400 hover:to-purple-600
                                  font-bold rounded-md w-full py-2                                    
                                  relative group text-lg"
                         >
-                          <p>
-                            Mua ngay{" "}
-                            {formatNumberToCurrency(product?.buy_now_price || "NaN")} đ
-                          </p>
-                          <span
-                            className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500 
-                                        animate-ping"
-                          ></span>
-                          <span
-                            className="absolute -top-1 -right-1 size-3 rounded-full bg-red-300 group-hover:bg-red-500
-                                        "
-                          ></span>
+                          Danh sách bidder cần duyệt
                         </NavigateButton>
-                      )}
-                    </>
-                  )}
+                      </>
+                    )} */}
+                  {(role === "bidder" || role === "seller") &&
+                    userData.id !== product.seller.id && (
+                      <>
+                        {rating_percent < 80.0 ? (
+                          <BiddingRequestForm
+                            productId={product?.product_id || ""}
+                            state={false}
+                          />
+                        ) : (
+                          <BiddingForm
+                            price={product?.bidder?.maximum_price || 0}
+                            steps={parseInt(product?.step_price) || 0}
+                            productId={product?.product_id || ""}
+                            onAutobidUpdate={handleAutobidUpdate}
+                          />
+                        )}
+
+                        {/*If buy_now_price exists*/}
+                        {buy_now && (
+                          <NavigateButton
+                            to={`/products/${
+                              product?.product_id || ""
+                            }/bidding`}
+                            className="bg-white/50 hover:bg-purple-100
+                                       text-center text-purple-500
+                                       font-bold rounded-md w-full py-2                                    
+                                       relative group text-lg border-2 border-purple-500"
+                          >
+                            <p className="flex flex-row justify-center items-center gap-2">
+                              <FaShippingFast className="size-6" />
+                              Mua ngay{" "}
+                              {formatNumberToCurrency(
+                                product?.buy_now_price || "NaN"
+                              )}{" "}
+                              đ
+                            </p>
+                            <span
+                              className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500 
+                                        animate-ping"
+                            ></span>
+                            <span
+                              className="absolute -top-2 -right-2 size-3 rounded-full bg-pink-300 group-hover:bg-pink-500
+                                        "
+                            ></span>
+                          </NavigateButton>
+                        )}
+                      </>
+                    )}
                 </>
               )}
+              <button
+                className="bg-linear-to-br from-[#8711c1] to-[#2472fc] px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200"
+                onClick={() => {
+                  navigate(`/auctionmanagement/${product?.product_id}`, {
+                    state: {
+                      sellerId: product?.seller?.id || null,
+                      productName: product?.name || "",
+                    },
+                  });
+                }}
+              >
+                {(role === "seller" && userData.id === product.seller.id)
+                  ? "Quản lý đấu giá"
+                  : "Lịch sử đấu giá"}
+                <span
+                  className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
+                              animate-ping"
+                ></span>
+                <span
+                  className="absolute -top-1 -right-1 size-3 rounded-full bg-orange-500
+                              "
+                ></span>
+              </button>
             </div>
           </div>
         </section>

@@ -138,6 +138,7 @@ export const otherProductsByCategory = async (
         JOIN product_categories pc ON p.product_id = pc.product_id
         WHERE pc.category_id = ANY($1)
         AND p.product_id != $2
+        AND p.is_active = true
         LIMIT $3`,
     [categoryIds, excludeProductId, limit]
   );
@@ -190,7 +191,7 @@ export const getProductsList = async (
   if (page && limit) {
     offset = (page - 1) * limit;
   }
-  let baseQuery = `SELECT p.*
+  let baseQuery = `SELECT DISTINCT p.*
     FROM products p
     LEFT JOIN product_categories pc ON p.product_id = pc.product_id
     WHERE 1=1`;
@@ -210,7 +211,7 @@ export const getProductsList = async (
   if (sortBy === "highest_price") {
     baseQuery += ` ORDER BY p.current_price DESC`;
   } else if (sortBy === "most_bidded") {
-    baseQuery = `SELECT p.*, COUNT(ab.product_id) AS bid_count
+    baseQuery = `SELECT DISTINCT p.*, COUNT(ab.product_id) AS bid_count
         FROM products p
         JOIN auto_bids ab ON p.product_id = ab.product_id
         LEFT JOIN product_categories pc ON p.product_id = pc.product_id
@@ -243,12 +244,51 @@ export const getProductsList = async (
   return result.rows;
 };
 
+export const countProductsList = async (categoryId, is_active) => {
+  let baseQuery = `SELECT COUNT(DISTINCT p.product_id) AS total
+    FROM products p
+    LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+    WHERE 1=1`;
+  const queryParams = [];
+  if (categoryId) {
+    queryParams.push(categoryId);
+    baseQuery += ` AND pc.category_id = $${queryParams.length}`;
+  }
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    } else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  const result = await pool.query(baseQuery, queryParams);
+  return parseInt(result.rows[0].total, 10);
+};
+
 export const deactiveProduct = async () => {
+  const productsBefore = await pool.query(
+    `SELECT product_id FROM products WHERE is_active = false`
+  );
+
+  const productBeforeIds = new Set(
+    productsBefore.rows.map((row) => row.product_id)
+  );
+
   const result = await pool.query(
     `SELECT * FROM fnc_deactivate_expired_products()`
   );
-  return result.rows;
+  const productsAfter = await pool.query(
+    `SELECT product_id FROM products WHERE is_active = false`
+  );
+
+  const newlyDeactivatedProducts = productsAfter.rows
+    .map((row) => row.product_id)
+    .filter((id) => !productBeforeIds.has(id));
+
+  return newlyDeactivatedProducts;
 };
+
 export const postProduct = async (
   seller_id,
   name,
@@ -288,8 +328,8 @@ export const postProduct = async (
       [productId, category_ids]
     );
   }
-  const message = "Product created successfully";
-  return message;
+
+  return productId;
 };
 
 export const getProductListByQuery = async (
@@ -330,6 +370,51 @@ export const getProductListByQuery = async (
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 };
+
+export const countProductsByQuery = async (query, is_active) => {
+  let baseQuery = `SELECT COUNT(DISTINCT p.product_id) AS total
+    FROM products p
+    LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+    LEFT JOIN categories c ON pc.category_id = c.category_id
+    WHERE (p.name ILIKE $1 OR c.name ILIKE $1 OR c.parent_id IN (
+      SELECT category_id FROM categories WHERE name ILIKE $1
+    ))`;
+  const queryParams = [`%${query}%`];
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    } else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  const result = await pool.query(baseQuery, queryParams);
+  return parseInt(result.rows[0].total, 10);
+};
+
+export const updateDescription = async (productId, newDescription) => {
+  const result = await pool.query(
+    `UPDATE products SET description = $1 WHERE product_id = $2 RETURNING *`,
+    [newDescription, productId]
+  );
+  return result.rows[0].description;
+};
+
+export const getProductProfile = async (productId) => {
+  const result = await pool.query(
+    `SELECT * FROM products WHERE product_id = $1`,
+    [productId]
+  );
+  return result.rows[0];
+};
+
+export const getRecentlyEndedProducts = async () => {
+  const result = await pool.query(
+    `SELECT * FROM products WHERE is_active = true AND end_time <= NOW()`
+  );
+  return result.rows;
+};
+
 export const getProductBySellerIdRepo = async (sellerId) => {
   const result = await pool.query(
     "SELECT * FROM products WHERE seller_id = $1 AND is_active = true",
@@ -342,6 +427,30 @@ export const enableExtentionForProductRepo = async (sellerId, productId) => {
   const result = await pool.query(
     `select * from fnc_enable_auction_extension( $1, $2 )`,
     [sellerId, productId]
+  );
+  return result.rows[0];
+};
+
+export const getWinningBidderByProductId = async (productId) => {
+  const result = await pool.query(
+    `SELECT user_id FROM user_won_products WHERE product_id = $1`,
+    [productId]
+  );
+  return result.rows[0]?.user_id || null;
+};
+
+export const deactiveProductById = async (productId) => {
+  const result = await pool.query(
+    `UPDATE products SET end_time = NOW(), is_active = FALSE WHERE product_id = $1 RETURNING *`,
+    [productId]
+  );
+  return result.rows[0];
+};
+
+export const updateCurrentPrice = async (productId, newPrice) => {
+  const result = await pool.query(
+    `UPDATE products SET current_price = $1 WHERE product_id = $2 RETURNING *`,
+    [newPrice, productId]
   );
   return result.rows[0];
 };

@@ -149,6 +149,7 @@ export const getUserInfoById = async (user_id) => {
     [user_id]
   );
   return new UserSimpleProfile(
+    user_id,
     userRow.rows[0]?.username || null,
     userRow.rows[0]?.avatar_url || null,
     userRow.rows[0]?.rating_percent || null
@@ -271,4 +272,17 @@ export const getUserByNameRepo = async (name) => {
     [`%${name}%`]
   );
   return result.rows;
+};
+//Update user_won_products with user_id when bidder wins the product
+export const addUserWonProductRepo = async (productId, userId, winning_bid) => {
+  try {
+    const result = await pool.query(
+      "INSERT INTO user_won_products (product_id, user_id, winning_bid) VALUES ($1, $2, $3) RETURNING *",
+      [productId, userId, winning_bid]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật người thắng sản phẩm:", err);
+    throw err;
+  }
 };

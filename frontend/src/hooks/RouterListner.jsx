@@ -1,11 +1,14 @@
-import { useEffect } from "react"
-import { sellerApi } from "../api/seller.api"
+import { useEffect } from "react";
+import { sellerApi } from "../api/seller.api";
+import { productApi } from "../api/product.api";
+//import { useNavigate } from "react-router-dom";
 
 const RouterListner = () => {
 
   useEffect(() => {
     const listenNavigation = async () => {
       await sellerApi.updateUserRole();
+      //await productApi.deactiveExpiredProduct();
       //console.log("Navigate");
     }
 

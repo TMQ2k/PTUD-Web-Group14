@@ -18,13 +18,14 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [watchlistIds, setWatchlistIds] = useState(new Set());
+  const [metadata, setMetadata] = useState(null);
 
   // Get params from URL
   const searchQuery = searchParams.get("q") || "";
   const sortBy = searchParams.get("sortBy") || "endtime_desc";
   const isActive = searchParams.get("is_active") || "";
   const page = parseInt(searchParams.get("page")) || 1;
-  const limit = 8; // 8 sản phẩm mỗi trang
+  const limit = parseInt(searchParams.get("limit"));
 
   const [totalPages, setTotalPages] = useState(1);
 
@@ -129,9 +130,14 @@ const SearchPage = () => {
 
         setProducts(transformedProducts);
 
-        // Calculate total pages (giả sử backend trả về tất cả, hoặc cần thêm total_count từ BE)
-        // Tạm thời set totalPages dựa vào số sản phẩm trả về
-        setTotalPages(transformedProducts.length < limit ? page : page + 1);
+        // Sử dụng metadata từ backend cho phân trang
+        if (response.metadata) {
+          setMetadata(response.metadata);
+          setTotalPages(response.metadata.total_pages || 1);
+        } else {
+          // Fallback: tính toán từ số sản phẩm trả về
+          setTotalPages(transformedProducts.length < limit ? page : page + 1);
+        }
       } catch (err) {
         console.error("❌ Lỗi khi fetch products:", err);
         setError(
@@ -201,12 +207,14 @@ const SearchPage = () => {
         </div>
 
         {/* Results Summary */}
-        {!loading && (
+        {!loading && metadata && (
           <div className="mb-6">
             <p className="text-gray-700 text-lg">
               Tìm thấy{" "}
-              <strong className="text-purple-600">{products.length}</strong> sản
-              phẩm
+              <strong className="text-purple-600">
+                {metadata.total_products}
+              </strong>{" "}
+              sản phẩm
             </p>
           </div>
         )}

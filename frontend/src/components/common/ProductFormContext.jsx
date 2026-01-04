@@ -6,6 +6,8 @@ import InputField from "./InputField";
 import CategorySelector from "./CategorySelector";
 import DatePicker from "react-datepicker";
 import { Calendar } from "lucide-react";
+import { useQuill } from "react-quilljs";
+import "quill/dist/quill.snow.css";
 import "react-datepicker/dist/react-datepicker.css";
 
 // Custom DateTimeInput giữ nguyên UI như datetime-local
@@ -32,6 +34,7 @@ const ProductFormContext = ({
   sellerExpiredTime,
   createdDate,
   defaultCategories,
+  setQuillContents
 }) => {
   const {
     register,
@@ -40,6 +43,7 @@ const ProductFormContext = ({
     getValues,
     formState: { errors },
     trigger,
+    formState: { isSubmitting },
   } = useFormContext();
 
   const [descCount, setDescCount] = useState(0);
@@ -124,6 +128,49 @@ const ProductFormContext = ({
     trigger("categories"); // Force validation check
   };
 
+  const toolbarOptions = [
+    ["bold", "italic", "underline", "strike"], // toggled buttons
+    ["blockquote", "code-block"],
+    ["link"],
+    //["link", "image", "video", "formula"],
+
+    [{ header: 1 }, { header: 2 }], // custom button values
+    [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
+    [{ script: "sub" }, { script: "super" }], // superscript/subscript
+    [{ indent: "-1" }, { indent: "+1" }], // outdent/indent
+    [{ direction: "rtl" }], // text direction
+
+    [{ size: ["small", false, "large", "huge"] }], // custom dropdown
+    [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+    [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+    [{ font: [] }],
+    [{ align: [] }],
+
+    ["clean"], // remove formatting button
+  ];
+  const modules = {
+    toolbar: toolbarOptions,
+  };
+  const { quill, quillRef } = useQuill({ modules });
+
+  useEffect(() => {
+    if (quill) {
+      // 1. Optional: Load initial content if you had any
+      // quill.clipboard.dangerouslyPasteHTML('<h1>Initial content</h1>');
+
+      // 2. Listen for changes
+      quill.on('text-change', () => {
+        // 3. Update parent state immediately
+        setQuillContents(quill.getContents()); 
+        setValue("description", quill.getContents());
+        
+        // OR if you decided to switch to HTML string later:
+        // setQuillContents(quill.root.innerHTML);
+      });
+    }
+  }, [quill, setQuillContents, setValue]);
+
   // Common Tailwind classes for all inputs
   const inputClasses =
     "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm placeholder-gray-400";
@@ -200,7 +247,7 @@ const ProductFormContext = ({
                 onChange: (e) => {
                   setValue(
                     "starting_price",
-                    convert(e.target.value.trim()) || "0"
+                    convert(e.target.value.trim())
                   );
                 },
               })}
@@ -222,7 +269,7 @@ const ProductFormContext = ({
                 required: "Step price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue("step_price", convert(e.target.value.trim()) || "0");
+                  setValue("step_price", convert(e.target.value.trim()));
                 },
               })}
             />
@@ -431,7 +478,7 @@ const ProductFormContext = ({
         </div>
 
         {/* Row 3: Description */}
-        <InputField
+        {/* <InputField
           label="Mô tả sản phẩm"
           id="description"
           error={errors.description}
@@ -456,15 +503,33 @@ const ProductFormContext = ({
               },
             })}
           />
-        </InputField>
+        </InputField> */}
+
+        
+        <InputField
+          label="Mô tả sản phẩm"
+          id="description"
+          error={errors.description}
+          note="(Tuỳ chọn)"
+          noteClassName="text-green-500"
+        >
+          <div
+          id="description"
+          ref={quillRef}                   
+          style={{width: '100%', height: 200, border: '2px solid blue', borderRadius: '5px', }}          
+        ></div>      
+        </InputField>              
 
         {/* Submit Button */}
         <div className="mt-4 flex justify-end">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95"
+            disabled={isSubmitting}
+            className={`px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium 
+                        rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95
+                        disabled:bg-blue-300 disabled:cursor-not-allowed`}
           >
-            {buttonLabel}
+            {buttonLabel}{isSubmitting ? "..." : ""}
           </button>
         </div>
       </form>

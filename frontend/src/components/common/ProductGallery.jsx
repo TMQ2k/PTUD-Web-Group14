@@ -44,9 +44,9 @@ const ProductGallery = () => {
             src={main_image}
             alt="Main product image"
             // object-cover ensures the image fills the box without stretching/distorting
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover hover:scale-105 transistion-all duration-500"
           />
-          <ImageOverLay />
+          {/* <ImageOverLay /> */}
         </div>
 
         {/* === SIDEBAR LIST === */}
@@ -62,9 +62,9 @@ const ProductGallery = () => {
                 src={path}
                 alt={`Extra ${i}`}
                 // absolute + inset-0: Forces image to conform to the li's calculated height
-                className="absolute inset-0 w-full h-full object-cover object-center"
+                className="absolute inset-0 w-full h-full object-cover object-center hover:scale-105 transistion-all duration-500"
               />
-              <ImageOverLay className="hover:text-base" />
+              {/* <ImageOverLay className="hover:text-base" /> */}
             </li>
           ))}
         </ul>

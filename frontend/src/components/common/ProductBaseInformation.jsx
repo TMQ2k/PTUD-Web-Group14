@@ -7,14 +7,16 @@ const ProductBaseInformation = () => {
   const product = useProduct();
 
   return (
-    <div className="grid grid-cols-2 gap-5">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <ProductBaseInformationCard
         title="Người bán"
-        value={product?.seller?.name || "None"}
+        value={product?.seller?.username || "None"}
+        points={product?.seller?.points || null}
       />
       <ProductBaseInformationCard
         title="Người đấu giá cao nhất"
         value={product?.top_bidder?.name || "None"}
+        points={product?.seller?.points || null}
       />
       <ProductBaseInformationCard
         title="Ngày đăng bán"
@@ -34,11 +36,11 @@ const ProductBaseInformation = () => {
       />
       <ProductBaseInformationCard
         title="Giá cao nhất"
-        value={formatNumberToCurrency(product.current_price)}
+        value={formatNumberToCurrency(product.current_price) + " đ"}
       />
       <ProductBaseInformationCard
         title="Số lượt ra giá"
-        value={product.history.length}
+        value={product.history_count}
       />
     </div>
   );

@@ -25,6 +25,17 @@ export const productReducer = (product, action) => {
         }
       }
     }
+    case "autobid-update": {
+      return {
+        ...product,
+        current_price: action.payload.current_price,
+        top_bidder: {
+          ...product.top_bidder,
+          name: action.payload.username,
+          avatar_url: action.payload.avatar_url || product.top_bidder?.avatar_url,
+        }
+      }
+    }
   }
 }
 

@@ -10,9 +10,10 @@ import {
   getUpgradeRequestsService,
   handleUpgradeRequestService,
   requestBidderOnProductService,
-  isBidsOnProductService,
+  isBidsOnProductService
 } from "../service/bidderService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
+import { deactiveProductById } from "../service/productService.js";
 
 const router = express.Router();
 router.post("/add-to-watchlist", authenticate, async (req, res) => {
@@ -269,4 +270,31 @@ router.get(
     }
   }
 );
+
+router.put(
+  "/buy-now/:productId",
+  authenticate,
+  authorize("bidder", "seller"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const user = req.user;
+      const result = await deactiveProductById(user,productId);
+      return res.status(200).json({
+        code: 200,
+        message: "Product deactivated successfully",
+        data: result,
+      });
+    }
+    catch (err) {
+      console.error("❌ Error in /:productId/deactivate route:", err);
+      return res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to deactivate product",
+        data: null,
+      });
+    }
+  }
+);
+
 export default router;

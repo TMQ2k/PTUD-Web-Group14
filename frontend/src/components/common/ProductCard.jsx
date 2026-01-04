@@ -101,7 +101,7 @@ const ProductCard = ({
 
   return (
     <div
-      onClick={() => navigate(`products/${id}`)}
+      onClick={() => navigate(`/products/${id}`)}
       className={`cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col ${
         isNew
           ? "border-2 border-green-500 ring-4 ring-green-100 shadow-green-200/50"
@@ -113,7 +113,7 @@ const ProductCard = ({
         <img
           src={image}
           alt={name}
-          className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+          className="object-cover object-top w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
         {/* Gradient overlay khi hover */}
@@ -193,7 +193,7 @@ const ProductCard = ({
               </span>
             </div>
             <p className="text-sm font-bold text-gray-900 truncate">
-              {highestBidder
+              {highestBidder !== null
                 ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
                 : "Chưa có"}
             </p>
@@ -234,11 +234,11 @@ const ProductCard = ({
             <>
               <button
                 onClick={onBuyNow}
-                className="flex-1 py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
+                className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
               >
                 Đấu giá
               </button>
-              <button className="px-5 py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
+              <button className="w-full py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
                 Mua ngay
               </button>
             </>
