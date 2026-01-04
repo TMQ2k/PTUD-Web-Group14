@@ -1,6 +1,7 @@
+import { twMerge } from "tailwind-merge";
 import { useState } from "react";
 
-const CommentForm = ({ submitLabel, handleSubmit, initialText = "", onCancel }) => {
+const CommentForm = ({ submitLabel, handleSubmit, initialText = "", onCancel, isTopBidder }) => {
   const [text, setText] = useState(initialText);
   const isTextDisabled = text.length === 0;
 
@@ -13,7 +14,9 @@ const CommentForm = ({ submitLabel, handleSubmit, initialText = "", onCancel }) 
   return (
     <form onSubmit={onSubmit}>
       <textarea
-        className="w-full p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none transition duration-200 ease-in-out"
+        className={twMerge("w-full p-3 text-sm border border-gray-300 rounded-lg focus:outline-none  focus:ring-1  resize-none transition duration-200 ease-in-out", 
+          isTopBidder ? "focus:border-orange-500 focus:ring-orange-500" : "focus:border-blue-500 focus:ring-blue-500"
+        )}
         placeholder="Write your comment..."
         rows={3}
         value={text}
@@ -32,7 +35,9 @@ const CommentForm = ({ submitLabel, handleSubmit, initialText = "", onCancel }) 
         <button
           type="submit"
           disabled={isTextDisabled}
-          className="px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className={twMerge("px-4 py-2 text-sm font-semibold text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition",
+            isTopBidder ? "bg-orange-600 hover:bg-orange-700" : "bg-blue-600 hover:bg-blue-700 "
+          )}
         >
           {submitLabel}
         </button>

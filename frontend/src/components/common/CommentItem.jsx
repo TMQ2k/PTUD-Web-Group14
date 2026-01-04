@@ -1,9 +1,10 @@
+import { twMerge } from "tailwind-merge";
 import { useState } from "react";
 import CommentForm from "./CommentForm";
 import { formatCustomDate } from "../../utils/DateTimeCalculation";
 import { IoChevronDownOutline, IoChevronUp } from "react-icons/io5";
 
-const CommentItem = ({ comment, comments, addReply, userRole, isShowReplying=true }) => {
+const CommentItem = ({ comment, comments, addReply, userRole, isTopBidder, isShowReplying=true }) => {
   const [isReplying, setIsReplying] = useState(false);
   const [showReplying, setShowReplying] = useState(isShowReplying);
 
@@ -26,7 +27,7 @@ const CommentItem = ({ comment, comments, addReply, userRole, isShowReplying=tru
       <div className="grow">
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-blue-600">
+          <span className={twMerge("font-semibold", isTopBidder ? "text-orange-600" : "text-blue-600")}>
             {comment?.username}
           </span>
           <span className="text-sm text-gray-500">{formatCustomDate(comment?.posted_at)}</span>
@@ -40,7 +41,9 @@ const CommentItem = ({ comment, comments, addReply, userRole, isShowReplying=tru
           {userRole !== "guest" && (
             <button
               onClick={() => setIsReplying(!isReplying)}
-              className="text-sm font-medium text-gray-500 hover:text-blue-600 transition"
+              className={twMerge("text-sm font-medium text-gray-500  transition", 
+                isTopBidder ? "hover:text-orange-600" : "hover:text-blue-600"
+              )}
             >
               Phản hồi
             </button>
@@ -48,7 +51,9 @@ const CommentItem = ({ comment, comments, addReply, userRole, isShowReplying=tru
           {comment?.replies?.length > 0  && (
             <button
               onClick={() => setShowReplying(!showReplying)}
-              className="flex flex-row gap-1 items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition"
+              className={twMerge("flex flex-row gap-1 items-center text-sm font-medium text-gray-500 transition", 
+                isTopBidder ? "hover:text-orange-600" : "hover:text-blue-600"
+              )}
             >
               
               {showReplying ? "Đóng" : "Hiện"} phản hồi

@@ -7,10 +7,17 @@ import ProductBaseInformation from "./ProductBaseInformation";
 import { productApi } from "../../api/product.api";
 import { useSelector } from "react-redux";
 
-const OverviewSection = ({ title, children, className = "" }) => {
+const OverviewSection = ({ title, children, isTopBidder, className = "" }) => {
   return (
     <section className={twMerge("w-full mb-6", className)}>
-      <h3 className="text-2xl text-blue-600 font-semibold mb-3">{title}</h3>
+      <h3
+        className={twMerge(
+          "text-2xl  font-semibold mb-3",
+          isTopBidder ? "text-orange-500" : "text-blue-500"
+        )}
+      >
+        {title}
+      </h3>
       {children}
     </section>
   );
@@ -19,20 +26,22 @@ const OverviewSection = ({ title, children, className = "" }) => {
 const ProductOverview = () => {
   const product = useProduct();
   const [isAppending, setIsAppending] = useState(false);
-  const { userData } = useSelector((state) => state.user);
+  const user = useSelector((state) => state.user);
+  const isTopBidder =
+    user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
 
   const { quill: viewQuill, quillRef: viewRef } = useQuill({
     readOnly: true,
-    modules: { toolbar: false }, 
+    modules: { toolbar: false },
   });
-  
+
   useEffect(() => {
     if (viewQuill && product?.description) {
       try {
         const descriptionDelta =
           typeof product.description === "string"
             ? JSON.parse(product.description)
-            : product.description;        
+            : product.description;
         viewQuill.setContents(descriptionDelta);
       } catch (error) {
         console.error("Error loading description:", error);
@@ -46,13 +55,13 @@ const ProductOverview = () => {
       toolbar: [
         ["bold", "italic", "underline", "strike"],
         ["blockquote", "code-block"],
-        ["link"],        
+        ["link"],
 
-        [{ header: 1 }, { header: 2 }], 
+        [{ header: 1 }, { header: 2 }],
         [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
-        [{ script: "sub" }, { script: "super" }], 
-        [{ indent: "-1" }, { indent: "+1" }], 
-        [{ direction: "rtl" }], 
+        [{ script: "sub" }, { script: "super" }],
+        [{ indent: "-1" }, { indent: "+1" }],
+        [{ direction: "rtl" }],
 
         [{ size: ["small", false, "large", "huge"] }],
         [{ header: [1, 2, 3, 4, 5, 6, false] }],
@@ -61,10 +70,10 @@ const ProductOverview = () => {
         [{ font: [] }],
         [{ align: [] }],
 
-        ["clean"], 
+        ["clean"],
       ],
     },
-  });  
+  });
   const handleConfirmAppend = async (e) => {
     e.preventDefault();
     if (viewQuill && appendQuill) {
@@ -89,16 +98,16 @@ const ProductOverview = () => {
 
   return (
     <article className="flex flex-col gap-5 bg-slate-100 hover:shadow-lg transition-all duration-300 rounded-md py-5 px-6 text-balance">
-      <OverviewSection title="Mô tả từ người bán">
+      <OverviewSection title="Mô tả từ người bán" isTopBidder={isTopBidder}>
         <div className="bg-white rounded-lg border border-gray-200">
           <div
             ref={viewRef}
             style={{ minHeight: "150px", border: "none", width: "100%" }}
           />
         </div>
-      </OverviewSection>      
+      </OverviewSection>
 
-      {userData.id === product.seller.id && (
+      {user.isLoggedIn && user.userData.id === product.seller.id && (
         <>
           <Activity mode={isAppending ? "hidden" : "visible"}>
             <button
@@ -153,7 +162,7 @@ const ProductOverview = () => {
         </>
       )}
 
-      <OverviewSection title="Thông tin chung">
+      <OverviewSection title="Thông tin chung" isTopBidder={isTopBidder}>
         <ProductBaseInformation />
       </OverviewSection>
     </article>

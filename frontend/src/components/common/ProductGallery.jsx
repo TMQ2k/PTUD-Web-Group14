@@ -2,6 +2,7 @@ import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useProduct } from "../../context/ProductDetailsContext";
 import default_image from "../../../public/images/default/unavailable_item.jpeg";
+import { useSelector } from "react-redux";
 
 // Simple Icon Components (Internal)
 const ChevronLeft = ({ size = 24 }) => (
@@ -12,7 +13,10 @@ const ChevronRight = ({ size = 24 }) => (
 );
 
 const ProductGallery = () => {
+  const user = useSelector((state) => state.user);
   const product = useProduct();
+  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);
+  console.log("Is top bidder: ", isTopBidder);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // 1. Data Preparation
@@ -62,7 +66,10 @@ const ProductGallery = () => {
             Fixes the "missing border" bug by sitting ON TOP of the image 
             pointer-events-none ensures clicks pass through to the image/arrows 
         */}
-        <div className="absolute inset-0 border-4 border-blue-600 rounded-xl pointer-events-none" />
+        <div 
+        className={twMerge(`absolute inset-0 border-4 rounded-xl pointer-events-none`,
+                   isTopBidder ? "border-orange-400" : "border-blue-400"
+        )} />
 
         {/* C. Navigation Arrows */}
         <button
@@ -111,8 +118,8 @@ const ProductGallery = () => {
                     // Added border-gray-200 so inactive items are visible against white backgrounds
                     "shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all duration-300 p-0.5",
                     currentIndex === idx 
-                        ? "border-blue-600 opacity-100 scale-105 ring-1 ring-blue-600" 
-                        : "border-gray-200 opacity-70 hover:opacity-100 hover:border-blue-300"
+                        ? isTopBidder ? "border-orange-400 opacity-100 scale-105 ring-1 ring-orange-600" : "border-blue-600 opacity-100 scale-105 ring-1 ring-blue-600" 
+                        : isTopBidder ? "border-gray-200 opacity-70 hover:opacity-100 hover:border-orange-300" : "border-gray-200 opacity-70 hover:opacity-100 hover:border-blue-300"
                 )}
             >
                 {/* Image Wrapper to respect the rounded corners inside the border */}

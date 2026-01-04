@@ -1,12 +1,15 @@
+import { twMerge } from "tailwind-merge";
 import React, { useState, useEffect, Suspense } from "react";
 import { useSelector } from "react-redux";
 import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { commentApi } from "../../api/comment.api";
-import { FourSquare } from "react-loading-indicators";
+import Spinner from "./Spinner";
 
-const ProductComments = React.memo(({ productId }) => {
-  const { userData } = useSelector((state) => state.user);
+
+const ProductComments = React.memo(({ productId, isTopBidder }) => {
+  const user = useSelector((state) => state.user);
+  const { userData } = user.isLoggedIn ? user : {};  
   const website_link =
     import.meta.env.WEBSITE_BASE_URL || "http://localhost:3000/products";
 
@@ -14,7 +17,7 @@ const ProductComments = React.memo(({ productId }) => {
   const [error, setError] = useState(null);
   const [comments, setComments] = useState([]);
 
-  const role = userData?.role || "guest";
+  const role = user.isLoggedIn ? userData.role : "guest";
 
   useEffect(() => {
     let isMounted = true;
@@ -126,12 +129,14 @@ const ProductComments = React.memo(({ productId }) => {
       <Suspense
         fallback={
           <div className="h-fit w-full mt-10 flex items-center justify-center">
-            <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
+            <Spinner />
           </div>
         }
       >
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
-          <h3 className="text-xl font-bold text-blue-600 mb-6">
+          <h3 className={twMerge("text-xl font-bold mb-6", 
+            isTopBidder ? "text-orange-600" : "text-blue-600"
+          )}>
             Bình luận ({comments.length})
           </h3>          
           <div className="mb-8">
@@ -139,6 +144,7 @@ const ProductComments = React.memo(({ productId }) => {
               <CommentForm
                 submitLabel="Đăng bình luận"
                 handleSubmit={(text) => handleAddComment(text, null)}
+                isTopBidder={isTopBidder}
               />
             )}
           </div>
@@ -162,6 +168,7 @@ const ProductComments = React.memo(({ productId }) => {
                     comments={comments}
                     addReply={handleAddComment}
                     userRole={role}
+                    isTopBidder={isTopBidder}
                   />
                 )
             )}

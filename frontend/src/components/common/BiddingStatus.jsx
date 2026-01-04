@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge";
 import { useEffect, useMemo, useState, Activity } from "react";
 import { PiMedalFill } from "react-icons/pi";
 import { useSelector } from "react-redux";
@@ -25,10 +26,11 @@ const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
   const product = useProduct();
   const dispatch = useProductDispatch();
-  const { userData } = useSelector((state) => state.user);
-  const role = userData?.role || "guest";
+  const user = useSelector((state) => state.user);
+  const { userData } = user.isLoggedIn ? user : {};
+  const role = user.isLoggedIn ? user.userData.role : "guest";
   const rating_percent = userData?.rating_percent || 0.0;
-
+  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(
     product.current_price || product.starting_price
@@ -69,12 +71,12 @@ const BiddingStatus = ({ className = "" }) => {
       }
     };
 
-    if (userData.id !== product.seller.id) loadIsBidOnProduct();
+    if (user.isLoggedIn &&  userData?.id !== product.seller.id) loadIsBidOnProduct();
 
     return () => {
       isMounted = false;
     };
-  }, [product.product_id, userData.id, product.seller.id]);
+  }, [user.isLoggedIn, product.product_id, userData?.id, product.seller.id]);
 
   // const handleAutobidUpdate = async () => {
   //   try {
@@ -152,7 +154,7 @@ const BiddingStatus = ({ className = "" }) => {
               : "Giá khởi điểm"}
           </h2>
           <p className="text-3xl font-semibold">{formattedCurrentBid} đ</p>
-          <ProgressBar className="mt-2" />
+          <ProgressBar isTopBidder={isTopBidder} className="mt-2" />
         </section>
         <section className="mt-6 flex flex-row gap-2">
           {product?.top_bidder ? (
@@ -189,7 +191,7 @@ const BiddingStatus = ({ className = "" }) => {
         </section>
         <div className="w-full h-px bg-gray-400 mt-5 mb-2"></div>
         <section>
-          <Label value={formattedProductSteps} />
+          <Label isTopBidder={isTopBidder} value={formattedProductSteps} />
           <div className="flex flex-col gap-2">
             <div className="flex flex-col w-full gap-4 mx-auto my-3 justify-center align-center">
               {expired ? (
@@ -298,7 +300,9 @@ const BiddingStatus = ({ className = "" }) => {
                 </>
               )}
               <button
-                className="bg-linear-to-br from-[#8711c1] to-[#2472fc] px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200"
+                className={twMerge("bg-linear-to-br px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200",
+                  isTopBidder ? "from-red-600 to-orange-400" : "from-[#8711c1] to-[#2472fc]"
+                )}
                 onClick={() => {
                   navigate(`/auctionmanagement/${product?.product_id}`, {
                     state: {
