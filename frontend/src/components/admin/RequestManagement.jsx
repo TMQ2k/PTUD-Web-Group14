@@ -4,7 +4,6 @@ import { adminApi } from "../../api/admin.api";
 import { toast } from "react-toastify";
 
 const RequestManagement = ({ onRequestUpdated }) => {
-  const [filterStatus, setFilterStatus] = useState("all"); // all, pending, approved, rejected, expired
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -24,11 +23,6 @@ const RequestManagement = ({ onRequestUpdated }) => {
       setLoading(false);
     }
   };
-
-  const filteredRequests = requests.filter((request) => {
-    if (filterStatus === "all") return true;
-    return request.status === filterStatus;
-  });
 
   const handleApprove = async (userId, username) => {
     if (
@@ -170,52 +164,6 @@ const RequestManagement = ({ onRequestUpdated }) => {
         </div>
       </div>
 
-      {/* Status Filter */}
-      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setFilterStatus("all")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              filterStatus === "all"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Tất cả
-          </button>
-          <button
-            onClick={() => setFilterStatus("pending")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              filterStatus === "pending"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Chờ duyệt
-          </button>
-          <button
-            onClick={() => setFilterStatus("approved")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              filterStatus === "approved"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Đã duyệt
-          </button>
-          <button
-            onClick={() => setFilterStatus("rejected")}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              filterStatus === "rejected"
-                ? "bg-purple-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            Từ chối
-          </button>
-        </div>
-      </div>
-
       {/* Requests Table */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {loading && (
@@ -248,7 +196,7 @@ const RequestManagement = ({ onRequestUpdated }) => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredRequests.length === 0 ? (
+                {requests.length === 0 ? (
                   <tr>
                     <td
                       colSpan="5"
@@ -258,7 +206,7 @@ const RequestManagement = ({ onRequestUpdated }) => {
                     </td>
                   </tr>
                 ) : (
-                  filteredRequests.map((request) => {
+                  requests.map((request) => {
                     return (
                       <tr
                         key={request.id}

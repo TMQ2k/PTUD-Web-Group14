@@ -10,10 +10,12 @@ import {
   getProductBidHistoryService,
   updateDescription,
   getProductBySellerIdService,
-  getWinningBidderByProductId,
-  deactiveProductById,
   enableExtentionForProductService,
   bannedListProductService,
+  getWinningBidderByProductId,
+  deactiveProductById,  
+  bannedListProductService,
+  getMetaDataForProductsList,
 } from "../service/productService.js";
 
 import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
@@ -52,10 +54,19 @@ router.get("/", async (req, res) => {
       sortBy,
       is_active
     );
+
+    const metaData = await getMetaDataForProductsList(
+      categoryId,
+      limit,
+      page,
+      is_active
+    );
+
     res.json({
       code: 200,
       message: "Products retrieved successfully",
       data: products,
+      metadata: metaData,
     });
   } catch (error) {
     res.status(500).json({
@@ -320,4 +331,32 @@ router.get("/banned-list/:productId", async (req, res) => {
     });
   }
 });
+
+router.get(
+  "/:productId/winning-bidder",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const user = req.user;
+      const winningBidderId = await getWinningBidderByProductId(
+        user,
+        productId
+      );
+      res.status(200).json({
+        code: 200,
+        message: "Winning bidder retrieved successfully",
+        data: { winningBidderId },
+      });
+    } catch (error) {
+      res.status(500).json({
+        code: 500,
+        message: error.message,
+        data: null,
+      });
+    }
+  }
+);
+
 export default router;

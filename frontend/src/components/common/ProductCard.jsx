@@ -99,13 +99,13 @@ const ProductCard = ({
       setIsToggling(false);
     }
   };
-    
+
   return (
     <div
       onClick={() => navigate(`/products/${id}`)}
       className={`cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col ${
         isNew
-          ? "border-2 border-yellow-400 ring-4 ring-yellow-100 shadow-yellow-200/50"
+          ? "border-2 border-green-500 ring-4 ring-green-100 shadow-green-200/50"
           : "border-gray-100 hover:border-purple-200"
       }`}
     >
@@ -125,21 +125,11 @@ const ProductCard = ({
           <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-[1px]" />
         )}
 
-        {/* Badge NEW cho sản phẩm mới */}
-        {isNew && (
-          <div className="absolute top-3 left-3 bg-linear-to-r from-yellow-400 via-amber-500 to-orange-500 text-white text-xs font-black px-3 py-1.5 rounded-full shadow-lg animate-pulse z-20 flex items-center gap-1">
-            <span className="text-lg">✨</span>
-            <span>MỚI</span>
-          </div>
-        )}
-
         {/* Nút yêu thích */}
         <button
           onClick={handleToggleFavorite}
           disabled={isToggling}
-          className={`absolute ${
-            isNew ? "top-14" : "top-3"
-          } left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-all duration-200 z-10 ${
+          className={`absolute top-3 left-3 p-2 bg-white/90 backdrop-blur-sm rounded-full shadow-lg hover:scale-110 transition-all duration-200 z-10 ${
             isToggling ? "opacity-50 cursor-not-allowed" : ""
           }`}
           aria-label="Yêu thích"

@@ -149,6 +149,7 @@ export const getUserInfoById = async (user_id) => {
     [user_id]
   );
   return new UserSimpleProfile(
+    user_id,
     userRow.rows[0]?.username || null,
     userRow.rows[0]?.avatar_url || null,
     userRow.rows[0]?.rating_percent || null
@@ -257,12 +258,26 @@ export const uploadPaymentPictureRepo = async (wonId, payment_picture_url) => {
   return result.rows[0];
 };
 
+export const uploadSellerUrlRepo = async (wonId, seller_url) => {
+  const result = await pool.query(
+    "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
+    [seller_url, wonId]
+  );
+  return result.rows[0];
+};
+
+export const getUserByNameRepo = async (name) => {
+  const result = await pool.query(
+    `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
+    [`%${name}%`]
+  );
+  return result.rows;
+};
 //Update user_won_products with user_id when bidder wins the product
 export const addUserWonProductRepo = async (productId, userId, winning_bid) => {
   try {
-    
     const result = await pool.query(
-      'INSERT INTO user_won_products (product_id, user_id, winning_bid) VALUES ($1, $2, $3) RETURNING *',
+      "INSERT INTO user_won_products (product_id, user_id, winning_bid) VALUES ($1, $2, $3) RETURNING *",
       [productId, userId, winning_bid]
     );
     return result.rows[0];

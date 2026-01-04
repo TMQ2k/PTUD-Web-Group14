@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Trash2 } from "lucide-react";
+import { Search, Trash2, Key } from "lucide-react";
 import { adminApi } from "../../api/admin.api";
 import { toast } from "react-toastify";
 
@@ -52,6 +52,27 @@ const UserManagement = () => {
     } catch (error) {
       console.error("Error deleting user:", error);
       toast.error(error.response?.data?.message || "Xóa user thất bại");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (userId, username, email) => {
+    if (
+      !window.confirm(
+        `Đặt lại mật khẩu cho "${username}"?\nMật khẩu mới sẽ được gửi qua email: ${email}`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await adminApi.resetUserPassword(userId);
+      toast.success("Đã gửi mật khẩu mới qua email!", { autoClose: 5000 });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      toast.error(error.response?.data?.message || "Đặt lại mật khẩu thất bại");
     } finally {
       setLoading(false);
     }
@@ -201,6 +222,22 @@ const UserManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Reset Password Button */}
+                          <button
+                            onClick={() =>
+                              handleResetPassword(
+                                user.user_id,
+                                user.username,
+                                user.email
+                              )
+                            }
+                            disabled={loading}
+                            className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Đặt lại mật khẩu"
+                          >
+                            <Key className="w-4 h-4" />
+                          </button>
+
                           {/* Delete Button */}
                           <button
                             onClick={() =>

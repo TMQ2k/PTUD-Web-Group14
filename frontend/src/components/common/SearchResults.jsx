@@ -33,18 +33,59 @@ const SearchResults = ({
     );
   }
 
+  // Phân chia sản phẩm theo thời gian đăng
+  const newProducts = products.filter((product) => product.isNew);
+  const otherProducts = products.filter((product) => !product.isNew);
+
   return (
     <div className="space-y-8">
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <ProductCard
-            key={product.id}
-            {...product}
-            isInWatchlist={watchlistIds.has(product.id)}
-          />
-        ))}
-      </div>
+      {/* Sản phẩm mới (trong 10 phút) */}
+      {newProducts.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-green-400 to-emerald-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <span className="font-bold">
+                Sản phẩm mới đăng (10 phút gần đây)
+              </span>
+            </div>
+            <span className="text-gray-600 font-semibold">
+              {newProducts.length} sản phẩm
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {newProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                {...product}
+                isInWatchlist={watchlistIds.has(product.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sản phẩm còn lại */}
+      {otherProducts.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-gradient-to-r from-blue-400 to-purple-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+              <span className="font-bold">Tất cả sản phẩm</span>
+            </div>
+            <span className="text-gray-600 font-semibold">
+              {otherProducts.length} sản phẩm
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {otherProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                {...product}
+                isInWatchlist={watchlistIds.has(product.id)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
