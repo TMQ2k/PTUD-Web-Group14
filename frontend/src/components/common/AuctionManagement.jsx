@@ -307,9 +307,17 @@ const AuctionManagement = () => {
         ]);
         
         if (isMounted) {
-          if (pendingResponse?.data?.requests) setPendingList(pendingResponse.data.requests);
+          if (pendingResponse?.data?.requests && bannedResponse?.data) {
+            const pending = pendingResponse.data.requests;
+            const banned = bannedResponse.data;            
+            console.log(pending);
+            console.log(banned);
+            setPendingList(pending.filter((p) => !banned.some((b) => b.user_id == p.bidder_id)));            
+            setBannedList(bannedResponse.data);
+          }
+          //if (pendingResponse?.data?.requests) setPendingList(pendingResponse.data.requests);
           if (historyResponse?.data) setHistory(historyResponse.data);
-          if (bannedResponse?.data) setBannedList(bannedResponse.data);
+          //if (bannedResponse?.data) setBannedList(bannedResponse.data);
         }
       } catch (err) {
         if (isMounted) setError(err);
@@ -339,9 +347,18 @@ const AuctionManagement = () => {
     }
   }
 
-  const handleAccept = (bidder_id) => handleAuctionAction(bidder_id, sellerApi.acceptBidder);
-  const handleReject = (bidder_id) => handleAuctionAction(bidder_id, sellerApi.rejectBidder); // Note: Assuming reject acts as Ban
-  const handleUnban = (bidder_id) => handleAuctionAction(bidder_id, sellerApi.deleteBannedBidder);
+  const handleAccept = (bidder_id) => {
+    handleAuctionAction(bidder_id, sellerApi.acceptBidder)
+    setPendingList(prev => prev.filter(item => item.bidder_id !== bidder_id))
+  };
+  const handleReject = (bidder_id) => {
+    handleAuctionAction(bidder_id, sellerApi.rejectBidder)
+    setSearchList(prev => prev.filter(item => item.user_id !== bidder_id));
+  };
+  const handleUnban = (bidder_id) => {
+    handleAuctionAction(bidder_id, sellerApi.deleteBannedBidder)
+    setBannedList(prev => prev.filter(item => item.user_id !== bidder_id));
+  };
 
   const handleSearch = async (target_name) => {
     if (!target_name) return;
