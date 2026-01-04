@@ -206,7 +206,7 @@ const BiddingStatus = ({ className = "" }) => {
                       userData?.id &&
                       userData.id !== product.seller.id)) && (
                     <>
-                      {rating_percent < 80.0 && !isBidOnProduct ? (
+                      {rating_percent < 80.0 || !isBidOnProduct ? (
                         <BiddingRequestForm
                           productId={product?.product_id || ""}
                           state={false}
