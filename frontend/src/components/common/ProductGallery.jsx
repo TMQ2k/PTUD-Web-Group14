@@ -62,14 +62,14 @@ const ProductGallery = () => {
             Fixes the "missing border" bug by sitting ON TOP of the image 
             pointer-events-none ensures clicks pass through to the image/arrows 
         */}
-        <div className="absolute inset-0 border-4 border-blue-600 rounded-xl pointer-events-none z-20" />
+        <div className="absolute inset-0 border-4 border-blue-600 rounded-xl pointer-events-none" />
 
         {/* C. Navigation Arrows */}
         <button
           onClick={prevSlide}
           className="absolute top-1/2 -translate-y-1/2 left-4 p-2 rounded-full 
                      bg-black/20 text-white hover:bg-black/50 cursor-pointer 
-                     transition-all duration-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 z-30"
+                     transition-all duration-200 backdrop-blur-sm opacity-0 group-hover:opacity-100"
         >
           <ChevronLeft size={30} />
         </button>
@@ -78,7 +78,7 @@ const ProductGallery = () => {
           onClick={nextSlide}
           className="absolute top-1/2 -translate-y-1/2 right-4 p-2 rounded-full 
                      bg-black/20 text-white hover:bg-black/50 cursor-pointer 
-                     transition-all duration-200 backdrop-blur-sm opacity-0 group-hover:opacity-100 z-30"
+                     transition-all duration-200 backdrop-blur-sm opacity-0 group-hover:opacity-100"
         >
           <ChevronRight size={30} />
         </button>
