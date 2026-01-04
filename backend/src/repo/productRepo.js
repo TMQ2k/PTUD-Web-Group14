@@ -452,3 +452,11 @@ export const bannedListProductRepo = async (productId) => {
   ]);
   return result.rows;
 };
+
+export const enableExtentionForProductRepo = async (sellerId, productId) => {
+  const result = await pool.query(
+    `select * from fnc_enable_auction_extension( $1, $2 )`,
+    [sellerId, productId]
+  );
+  return result.rows[0];
+};

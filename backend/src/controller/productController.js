@@ -13,8 +13,7 @@ import {
   enableExtentionForProductService,
   bannedListProductService,
   getWinningBidderByProductId,
-  deactiveProductById,  
-  bannedListProductService,
+  deactiveProductById,    
   getMetaDataForProductsList,
 } from "../service/productService.js";
 

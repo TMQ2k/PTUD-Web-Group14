@@ -286,18 +286,18 @@ export const addUserWonProductRepo = async (productId, userId, winning_bid) => {
     throw err;
   }
 };
-export const uploadSellerUrlRepo = async (wonId, seller_url) => {
-  const result = await pool.query(
-    "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
-    [seller_url, wonId]
-  );
-  return result.rows[0];
-};
+// export const uploadSellerUrlRepo = async (wonId, seller_url) => {
+//   const result = await pool.query(
+//     "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
+//     [seller_url, wonId]
+//   );
+//   return result.rows[0];
+// };
 
-export const getUserByNameRepo = async (name) => {
-  const result = await pool.query(
-    `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
-    [`%${name}%`]
-  );
-  return result.rows;
-};
+// export const getUserByNameRepo = async (name) => {
+//   const result = await pool.query(
+//     `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
+//     [`%${name}%`]
+//   );
+//   return result.rows;
+// };
