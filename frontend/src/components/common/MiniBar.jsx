@@ -23,12 +23,11 @@ const MiniBar = () => {
   ];
 
   return (
-    // CHANGE 1: Remove 'size-fit' and 'gap'. We rely on absolute positioning now.
     <div className="fixed bottom-6 right-5 z-50 flex flex-col items-end">
       
       {/* --- EXPANDABLE MENU ITEMS --- */}
-      {/* CHANGE 2: Added 'absolute', 'bottom-full', 'mb-4', and 'origin-bottom' */}
-      <div className={`absolute bottom-full right-0 mb-4 flex flex-col items-end gap-3 transition-all duration-300 ease-out origin-bottom ${
+      {/* FIX: Added 'z-50' here so these items sit ON TOP of the backdrop (which is z-40) */}
+      <div className={`absolute bottom-full right-0 mb-4 z-50 flex flex-col items-end gap-3 transition-all duration-300 ease-out origin-bottom ${
           isOpen 
             ? "opacity-100 scale-100 translate-y-0" 
             : "opacity-0 scale-0 translate-y-10 pointer-events-none"
@@ -70,6 +69,7 @@ const MiniBar = () => {
       </button>
 
       {/* Backdrop */}
+      {/* This is z-40. The menu items above must be > z-40 to be clickable */}
       {isOpen && (
         <div 
           className="fixed inset-0 z-40" 
