@@ -16,7 +16,7 @@ const ProductBaseInformation = () => {
       <ProductBaseInformationCard
         title="Người đấu giá cao nhất"
         value={product?.top_bidder?.username || "None"}
-        points={product?.seller?.points || null}
+        points={product?.top_bidder?.points || null}
       />
       <ProductBaseInformationCard
         title="Ngày đăng bán"
