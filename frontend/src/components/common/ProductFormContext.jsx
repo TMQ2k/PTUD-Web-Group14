@@ -34,7 +34,7 @@ const ProductFormContext = ({
   sellerExpiredTime,
   createdDate,
   defaultCategories,
-  setQuillContents
+  setQuillContents,
 }) => {
   const {
     register,
@@ -160,11 +160,11 @@ const ProductFormContext = ({
       // quill.clipboard.dangerouslyPasteHTML('<h1>Initial content</h1>');
 
       // 2. Listen for changes
-      quill.on('text-change', () => {
+      quill.on("text-change", () => {
         // 3. Update parent state immediately
-        setQuillContents(quill.getContents()); 
+        setQuillContents(quill.getContents());
         setValue("description", quill.getContents());
-        
+
         // OR if you decided to switch to HTML string later:
         // setQuillContents(quill.root.innerHTML);
       });
@@ -245,10 +245,7 @@ const ProductFormContext = ({
                 required: "Starting price is required",
                 min: 1,
                 onChange: (e) => {
-                  setValue(
-                    "starting_price",
-                    convert(e.target.value.trim())
-                  );
+                  setValue("starting_price", convert(e.target.value.trim()));
                 },
               })}
             />
@@ -505,7 +502,6 @@ const ProductFormContext = ({
           />
         </InputField> */}
 
-        
         <InputField
           label="Mô tả sản phẩm"
           id="description"
@@ -514,11 +510,16 @@ const ProductFormContext = ({
           noteClassName="text-green-500"
         >
           <div
-          id="description"
-          ref={quillRef}                   
-          style={{width: '100%', height: 200, border: '2px solid blue', borderRadius: '5px', }}          
-        ></div>      
-        </InputField>              
+            id="description"
+            ref={quillRef}
+            style={{
+              width: "100%",
+              height: 200,
+              border: "2px solid blue",
+              borderRadius: "5px",
+            }}
+          ></div>
+        </InputField>
 
         {/* Submit Button */}
         <div className="mt-4 flex justify-end">
@@ -529,7 +530,8 @@ const ProductFormContext = ({
                         rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95
                         disabled:bg-blue-300 disabled:cursor-not-allowed`}
           >
-            {buttonLabel}{isSubmitting ? "..." : ""}
+            {buttonLabel}
+            {isSubmitting ? "..." : ""}
           </button>
         </div>
       </form>
