@@ -72,9 +72,7 @@ const UserManagement = () => {
       toast.success("Đã gửi mật khẩu mới qua email!", { autoClose: 5000 });
     } catch (error) {
       console.error("Error resetting password:", error);
-      toast.error(
-        error.response?.data?.message || "Đặt lại mật khẩu thất bại"
-      );
+      toast.error(error.response?.data?.message || "Đặt lại mật khẩu thất bại");
     } finally {
       setLoading(false);
     }

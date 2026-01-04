@@ -102,13 +102,13 @@ const SearchPage = () => {
             product.current_price
           );
 
-          // Check if new (trong vòng 60 phút)
+          // Check if new (trong vòng 10 phút)
           const createdTime = new Date(product.created_at);
           const nowTime = new Date();
           const diffMinutesFromCreation = Math.floor(
             (nowTime - createdTime) / (1000 * 60)
           );
-          const isNew = diffMinutesFromCreation <= 60;
+          const isNew = diffMinutesFromCreation <= 10;
 
           return {
             id: product.product_id,
