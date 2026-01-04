@@ -1,6 +1,19 @@
 import pool from "../config/db.js";
 import { UserSimpleProfile } from "../model/userModel.js";
 
+export const updatePasswordUser = async (userId, newPasswordHashed) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users SET password_hashed = $1 WHERE user_id = $2 RETURNING *`,
+      [newPasswordHashed, userId]
+    );
+    return result.rows[0]; // Trả về user đã được cập nhật
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật mật khẩu user:", err);
+    throw err;
+  }
+};
+
 export const registerUser = async (
   username,
   password_hashed,

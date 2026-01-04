@@ -25,11 +25,37 @@ import {
   uploadPaymentPictureService,
   uploadSellerUrlService,
   getUserByNameService,
+  changePasswordServiceAdmin,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
 
 const router = express.Router();
+
+router.post(
+  "/admin/change-password",
+  authenticate,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const msg = await changePasswordServiceAdmin(userId);
+
+      res.status(200).json({
+        code: 200,
+        message: "Password changed successfully",
+        data: { note: msg },
+      });
+    } catch (err) {
+      console.error("❌ Error in /admin/change-password route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to change password",
+        data: null,
+      });
+    }
+  }
+);
 
 router.post("/register", async (req, res) => {
   try {
