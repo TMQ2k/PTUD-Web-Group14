@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
-import { userApi } from "../../api/user.api";
+import { bidderApi } from "../../api/bidder.api";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 import {
   Clock,
   CheckCircle,
@@ -16,15 +17,14 @@ const MyBiddingProducts = () => {
   const [activeTab, setActiveTab] = useState("active"); // "active" hoặc "expired"
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4; // 4 sản phẩm mỗi trang
-
+  const user = useSelector((state) => state.user);
+  const userId = (user.isLoggedIn ? user.userData.id : null);
   useEffect(() => {
-    fetchBiddedProducts();
-  }, []);
-
-  const fetchBiddedProducts = async () => {
+    const fetchBiddedProducts = async () => {
     try {
       setLoading(true);
-      const response = await userApi.getBiddedProducts();
+      const response = await bidderApi.getBidderProducts();
+      console.log(response.data);
       const biddedProducts = response.data || [];
 
       // Transform data from backend
@@ -49,29 +49,27 @@ const MyBiddingProducts = () => {
 
         // Format prices
         const formattedCurrentPrice = new Intl.NumberFormat("vi-VN").format(
-          item.current_bid_amount
+          item.current_price
         );
-        const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
-          item.max_bid_amount
-        );
+        // const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
+        //   item.max_bid_amount
+        // );
 
         return {
           id: item.product_id,
-          name: item.product_name,
+          name: item.name,
           currentPrice: formattedCurrentPrice,
-          myBidPrice: formattedMyBidPrice,
-          highestBidder: item.is_winner ? "Bạn" : "Người khác",
-          image: `https://via.placeholder.com/300x300?text=${encodeURIComponent(
-            item.product_name.substring(0, 20)
-          )}`,
+          //myBidPrice: formattedMyBidPrice,
+          highestBidder: item.top_bidder?.username || null,
+          image: item.image_cover_url,
           postedDate: new Date(item.end_time).toLocaleDateString("vi-VN"),
           remainingTime: remainingTime,
           bidCount: 0,
           endTime: item.end_time,
           status: isActive ? "active" : "expired",
-          isWinning: item.is_winner,
-          isLeadingBidder: isActive && item.is_winner, // Đang dẫn đầu nếu đang active và là winner
-          finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
+          //isWinning: item.is_winner,
+          isLeadingBidder: isActive && userId === item.product_id, // Đang dẫn đầu nếu đang active và là winner
+          //finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
           sellerId: item.seller_id,
           is_active: isActive,
         };
@@ -85,6 +83,72 @@ const MyBiddingProducts = () => {
       setLoading(false);
     }
   };
+    fetchBiddedProducts();
+  }, [userId]);
+
+  // const fetchBiddedProducts = async () => {
+  //   try {
+  //     setLoading(true);
+  //     const response = await bidderApi.getBidderProducts();
+  //     console.log(response.data);
+  //     const biddedProducts = response.data || [];
+
+  //     // Transform data from backend
+  //     const transformedProducts = biddedProducts.map((item) => {
+  //       const now = new Date();
+  //       const endTime = new Date(item.end_time);
+  //       const isActive = endTime > now;
+
+  //       // Calculate remaining time
+  //       const diffMs = endTime - now;
+  //       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  //       const diffMinutes = Math.floor(
+  //         (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+  //       );
+  //       const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+  //       const remainingTime = `${String(Math.max(0, diffHours)).padStart(
+  //         2,
+  //         "0"
+  //       )}:${String(Math.max(0, diffMinutes)).padStart(2, "0")}:${String(
+  //         Math.max(0, diffSeconds)
+  //       ).padStart(2, "0")}`;
+
+  //       // Format prices
+  //       const formattedCurrentPrice = new Intl.NumberFormat("vi-VN").format(
+  //         item.current_price
+  //       );
+  //       // const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
+  //       //   item.max_bid_amount
+  //       // );
+
+  //       return {
+  //         id: item.product_id,
+  //         name: item.name,
+  //         currentPrice: formattedCurrentPrice,
+  //         //myBidPrice: formattedMyBidPrice,
+  //         highestBidder: item.top_bidder?.username || null,
+  //         image: item.image_cover_url,
+  //         postedDate: new Date(item.end_time).toLocaleDateString("vi-VN"),
+  //         remainingTime: remainingTime,
+  //         bidCount: 0,
+  //         endTime: item.end_time,
+  //         status: isActive ? "active" : "expired",
+  //         //isWinning: item.is_winner,
+  //         isLeadingBidder: isActive && userId === item.product_id, // Đang dẫn đầu nếu đang active và là winner
+  //         //finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
+  //         sellerId: item.seller_id,
+  //         is_active: isActive,
+  //       };
+  //     });
+
+  //     setProducts(transformedProducts);
+  //   } catch (error) {
+  //     console.error("Lỗi khi lấy sản phẩm đã đấu giá:", error);
+  //     toast.error("Không thể tải danh sách sản phẩm đã đấu giá");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Lọc sản phẩm theo tab
   const filteredProducts = products.filter(
