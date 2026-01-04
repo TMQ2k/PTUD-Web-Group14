@@ -10,6 +10,7 @@ const productEndpoint = {
   deactivateExpired: "/products/deactivate-expired",
   sellerProducts: "/products/seller-products",
   search: "search/products",
+  bannedList: "/products/banned-list",
 };
 
 export const productApi = {
@@ -179,6 +180,11 @@ export const productApi = {
 
   getSellerProducts: async () => {
     const respone = await http.get(productEndpoint.sellerProducts);
+    return respone.data;
+  },
+
+  getBannedList: async (productId) => {
+    const respone = await http.get(`${productEndpoint.bannedList}/${productId}`);
     return respone.data;
   }
 };

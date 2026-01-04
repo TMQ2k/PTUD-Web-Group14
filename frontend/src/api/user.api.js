@@ -18,6 +18,7 @@ const userEndpoint = {
   sellerDeactivatedProducts: "/users/seller-deactivated-products",
   uploadPaymentPicture: "/users/upload-payment-picture",
   uploadBillPicture: "/users/upload-seller-url",
+  searchByName: "/users/search-by-name",
 };
 
 export const userApi = {
@@ -222,6 +223,11 @@ export const userApi = {
       }
     );
 
+    return respone.data;
+  },
+
+  searchByName: async (target_name) => {
+    const respone = await http.get(`${userEndpoint.searchByName}?name=${target_name}`);
     return respone.data;
   }
 };

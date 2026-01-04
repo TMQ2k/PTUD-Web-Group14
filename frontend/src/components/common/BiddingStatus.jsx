@@ -18,6 +18,8 @@ import { bidderApi } from "../../api/bidder.api";
 import { FaShippingFast } from "react-icons/fa";
 import BiddingRequestForm from "./BiddingRequestForm";
 import BuyNowDialog from "./BuyNowDialog";
+import AutoBidDialog from "./AutoBidDialog";
+import { Zap } from "lucide-react";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const BiddingStatus = ({ className = "" }) => {
   const formattedProductSteps = formatNumberToCurrency(product.step_price);
 
   const [expired, setExpired] = useState(false);
+  const [bidPrice, setBidPrice] = useState(0.0);
 
   const buy_now = useMemo(() => {
     return product.buy_now_price;
@@ -74,29 +77,52 @@ const BiddingStatus = ({ className = "" }) => {
   }, [product.product_id, userData.id, product.seller.id]);
 
   const handleAutobidUpdate = async () => {
-    const respone = await bidderApi.autobidUpdate(product?.product_id);
-    dispatch({
-      type: "autobid-update",
-      payload: respone.data,
-    });
-  }; 
+    try {
+      const respone = await bidderApi.autobidUpdate(product?.product_id);
+      dispatch({
+        type: "autobid-update",
+        payload: respone.data,
+      });
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
+
+  const onAutoBid = async (productId, formattedPrice) => {
+    try {
+      const respone = await bidderApi.autobid(productId, formattedPrice);
+      return respone;
+    } catch (err) {
+      console.log(err.message);
+    }
+  };
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const openBuyDialog = () => setIsDialogOpen(true);
   const closeBuyDialog = () => setIsDialogOpen(false);
 
+  const [isAutoBidDialogOpen, setIsAutoBidDialogOpen] = useState(false);
+
+  const openAutoBidDialog = () => setIsAutoBidDialogOpen(true);
+  const closeAutoBidDialog = () => setIsAutoBidDialogOpen(false);
+
+  
+
   // The actual action to take when they click "Buy Now" in the dialog
   const handlePurchaseConfirm = async (productId) => {
     console.log(`Processing purchase for Product ID: ${productId}...`);
 
-    const respone = await bidderApi.buyNow(productId);    
+    const respone = await bidderApi.buyNow(productId);
     if (respone?.code === 200) {
       navigate("/productcheckout");
     }
     closeBuyDialog();
     alert("Purchase confirmed!");
   };
+
+  const suggest_price =
+    parseInt(product?.current_price) + parseInt(product?.step_price);
 
   return (
     <>
@@ -167,18 +193,42 @@ const BiddingStatus = ({ className = "" }) => {
                         />
                       ) : (
                         <>
+                          <div className="w-full flex items-center justify-between gap-3 p-2 rounded-xl bg-orange-50/50 border border-orange-100">
+                            {/* Label Section */}
+                            <div className="flex items-center gap-1.5 text-orange-800 font-semibold text-sm pl-1">
+                              <Zap
+                                size={16}
+                                className="fill-orange-500 text-orange-500"
+                              />
+                              <span className="whitespace-nowrap">
+                                Đấu giá nhanh
+                              </span>
+                            </div>
+
+                            {/* Button Section */}
+                            <button
+                              className="flex-1 max-w-[180px] text-sm font-bold py-2 px-3 rounded-lg 
+                                        bg-white text-orange-600 border border-orange-200 shadow-sm
+                                        hover:bg-orange-500 hover:text-white hover:border-orange-500 hover:shadow-orange-200 hover:shadow-md
+                                        active:scale-95 transition-all duration-300"
+                            >
+                              {formatNumberToCurrency(suggest_price)} đ
+                            </button>
+                          </div>
                           <BiddingForm
                             price={product?.bidder?.maximum_price || 0}
                             steps={parseInt(product?.step_price) || 0}
                             productId={product?.product_id || ""}
                             endTime={product.end_time}
                             onAutobidUpdate={handleAutobidUpdate}
-                            buyNowPrice={product?.buy_now_price || null} 
-                            openBuyDialog={openBuyDialog}                           
+                            buyNowPrice={product?.buy_now_price || null}
+                            openBuyDialog={openBuyDialog}
+                            onAutoBid={onAutoBid}
                           />
+
                           {buy_now && (
                             <>
-                              <button                                
+                              <button
                                 className="bg-white/50 hover:bg-purple-100
                                        text-center text-purple-500
                                        font-bold rounded-md w-full py-2                                    
@@ -207,6 +257,13 @@ const BiddingStatus = ({ className = "" }) => {
                                 onClose={closeBuyDialog}
                                 onConfirm={handlePurchaseConfirm}
                                 buyNowPrice={product.buy_now_price}
+                                productId={product.product_id}
+                              />
+                              <AutoBidDialog
+                                isOpen={isAutoBidDialogOpen}
+                                onClose={closeAutoBidDialog}
+                                onConfirm={handlePurchaseConfirm}
+                                price={bidPrice}
                                 productId={product.product_id}
                               />
                             </>

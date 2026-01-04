@@ -40,13 +40,13 @@ export const sellerApi = {
     return respone.data;
   },
 
-  rejectBidder: async (product_id, bidder_id, reason) => {
+  rejectBidder: async (product_id, bidder_id) => {
     const respone = await http.post(
       sellerEndpoints.rejectBidder,
       {
         productId: product_id,
         bidderId: bidder_id,
-        reason: reason,
+        reason: null,
       },
       {
         headers: {

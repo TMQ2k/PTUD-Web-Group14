@@ -32,7 +32,7 @@ export const productReducer = (product, action) => {
         top_bidder: {
           ...product.top_bidder,
           points: action.payload.rating,
-          name: action.payload.username,
+          username: action.payload.username,
           avatar_url: action.payload.avatar_url || default_avatar,
         }
       }

@@ -1,18 +1,11 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
-  useProduct,
-  useProductDispatch,
-} from "../../context/ProductDetailsContext";
-import {
   formatNumberToCurrency,
   parseIntFromCurrency,
   convert,
 } from "../../utils/NumberHandler";
-import { bidderApi } from "../../api/bidder.api";
 import { GrSubtractCircle, GrAddCircle } from "react-icons/gr";
-import { sellerApi } from "../../api/seller.api";
-import BuyNowDialog from "./BuyNowDialog";
 
 const BiddingForm = React.memo(
   ({
@@ -23,6 +16,7 @@ const BiddingForm = React.memo(
     endTime,
     openBuyDialog,
     buyNowPrice,    
+    onAutoBid,
   }) => {
     const {
       register,
@@ -49,7 +43,7 @@ const BiddingForm = React.memo(
         //   await onAutobidUpdate();
         // }
       } else {
-        const respone = await bidderApi.autobid(productId, formattedPrice);
+        const respone = await onAutoBid(productId, formattedPrice);
 
         if (respone.code === 200) {
           //await sellerApi.enableAuctionExtension(productId);
