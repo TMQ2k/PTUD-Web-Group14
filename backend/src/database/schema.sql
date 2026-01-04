@@ -1,3 +1,4 @@
+
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -7,8 +8,7 @@ CREATE TABLE users (
     is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
-select * from users
-go
+
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -19,13 +19,10 @@ CREATE TABLE users_info (
     gender VARCHAR(10),
     address TEXT,
     avatar_url TEXT,
+    address, VARCHAR(250),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-ALTER TABLE users_info
-ADD COLUMN address VARCHAR(250);
-select * from users_info
-select * from user_upgrade_requests
-go
+
 CREATE TABLE users_rating (
     user_rating_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
@@ -39,26 +36,20 @@ CREATE TABLE users_rating (
         END
     ) STORED
 );
-go
+
 ALTER TABLE users_rating
 ADD CONSTRAINT uq_users_rating_user_id UNIQUE (user_id);
-go
-drop table user_upgrade_requests
+
 CREATE TABLE user_upgrade_requests (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
 
     status VARCHAR(20) NOT NULL DEFAULT 'pending' 
-        CHECK (status IN ('pending', 'approved', 'rejected')),
+        CHECK (status IN ('pending', 'approved', 'rejected', 'expired')),
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-ALTER TABLE user_upgrade_requests
-ADD CONSTRAINT user_upgrade_requests_status_check
-CHECK (status IN ('pending', 'approved', 'rejected', 'expired'));
-select * from user_upgrade_requests
-go
 
 CREATE TABLE auction_extensions (
     product_id BIGINT PRIMARY KEY
@@ -73,6 +64,7 @@ CREATE TABLE products (
     starting_price NUMERIC(15,2) NOT NULL,
     step_price NUMERIC(15,2) DEFAULT 0,
     current_price NUMERIC(15,2) DEFAULT 0,
+    buy_now_price NUMERIC(15,2),
     image_cover_url TEXT,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -87,40 +79,29 @@ CHECK (
     (is_active = FALSE)
 );
 
-
-go
-ALTER TABLE products
-ADD COLUMN buy_now_price NUMERIC(15,2);
-go
 ALTER TABLE products
 ADD CONSTRAINT chk_min_duration
 CHECK (end_time >= created_at + INTERVAL '3 hours');
-go
-alter table products
-drop constraint chk_min_duration 
 
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
 	parent_id integer references categories(category_id) on delete cascade 
 );
-ALTER TABLE categories
-ALTER COLUMN parent_id SET DEFAULT NULL;
 
-go
+
 CREATE TABLE product_categories (
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     category_id INTEGER REFERENCES categories(category_id) ON DELETE CASCADE,
     PRIMARY KEY (product_id, category_id)
 );
-go
+
 CREATE TABLE product_images (
     image_id SERIAL PRIMARY KEY,
     product_id INTEGER REFERENCES products(product_id) ON DELETE CASCADE,
     image_url TEXT NOT NULL
 );
 
-go
 CREATE TABLE user_otp (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
@@ -128,7 +109,6 @@ CREATE TABLE user_otp (
     expires_at TIMESTAMP NOT NULL
 );
 
-go
 CREATE TABLE auto_bids (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -144,8 +124,7 @@ CREATE TABLE auto_bids (
 
     UNIQUE (user_id, product_id)
 );
-go
-select * from bid_rejections
+
 CREATE TABLE bid_rejections (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -170,9 +149,7 @@ CREATE TABLE bid_rejections (
     -- Mỗi bidder chỉ bị cấm 1 lần trên 1 product (để tránh trùng record)
     CONSTRAINT uq_bid_rej UNIQUE (product_id, bidder_id)
 );
-go
-select * from bid_allowances
-delete from bid_allowances
+
 CREATE TABLE bid_allowances (
     id BIGSERIAL PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -181,8 +158,7 @@ CREATE TABLE bid_allowances (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE (product_id, bidder_id)
 );
-go
-drop table bid_allow_requests
+
 CREATE TABLE bid_allow_requests (
     request_id BIGSERIAL PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -193,7 +169,6 @@ CREATE TABLE bid_allow_requests (
     -- mỗi bidder chỉ được request 1 lần trên 1 sản phẩm để tránh trùng
     CONSTRAINT uq_bid_allow_request UNIQUE (product_id, bidder_id)
 );
-
 
 CREATE TABLE product_questions (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -220,7 +195,7 @@ CREATE TABLE product_questions (
     CONSTRAINT fk_pq_hidden_by
         FOREIGN KEY (hidden_by) REFERENCES users(user_id)
 );
-go
+
 CREATE TABLE product_answers (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
 
@@ -246,7 +221,7 @@ CREATE TABLE product_answers (
     CONSTRAINT fk_pa_hidden_by
         FOREIGN KEY (hidden_by) REFERENCES users(user_id)
 );
-go
+
 CREATE TABLE product_descriptions (
     id BIGSERIAL PRIMARY KEY,
     product_id BIGINT NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -254,7 +229,7 @@ CREATE TABLE product_descriptions (
     created_by BIGINT REFERENCES users(user_id), -- seller thêm mô tả
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-go
+
 CREATE TABLE product_stats (
     product_id BIGINT PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
     
@@ -265,7 +240,6 @@ CREATE TABLE product_stats (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-go
 CREATE TABLE comments (
     comment_id BIGSERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE, -- Người viết comment
@@ -277,7 +251,7 @@ CREATE TABLE comments (
     CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(user_id),
     CONSTRAINT fk_comment_product FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
-go
+
 CREATE TABLE watchlist (
     id BIGSERIAL PRIMARY KEY,
 
@@ -343,14 +317,12 @@ CREATE TABLE user_won_products (
     winning_bid NUMERIC(15,2) NOT NULL,   -- giá thắng
     won_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), -- thời điểm thắng
 
+    status VARCHAR(20) NOT NULL DEFAULT 'invalid'
+        CHECK (status IN ('invalid', 'sent', 'paid', 'received', 'cancelled')),
+
+    seller_url TEXT DEFAULT NULL,  -- link seller cung cấp để người thắng thanh toán
     -- mỗi sản phẩm chỉ có 1 người thắng
     CONSTRAINT uq_won_product UNIQUE (product_id)
 );
 
-ALTER TABLE user_won_products
-ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'invalid'
-CHECK (status IN ('invalid', 'sent', 'paid', 'received'));
-
-ALTER TABLE user_won_products
-ADD COLUMN payment TEXT DEFAULT NULL
 

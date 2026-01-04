@@ -19,8 +19,11 @@ import {
   getSellerDeactivatedProductsRepo,
   getBiddedProductsRepo,
   uploadPaymentPictureRepo,
+  uploadSellerUrlRepo,
+  getUserByNameRepo,
+  updatePasswordUser,
 } from "../repo/userRepo.js";
-import { sendOTPEmail } from "./emailService.js";
+import { sendOTPEmail, sendNotificationEmail } from "./emailService.js";
 import crypto from "crypto";
 
 import pool from "../config/db.js"; // ⚠️ Đảm bảo bạn đã export pool từ config DB
@@ -33,6 +36,27 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "1d";
 // Hàm tạo OTP 6 chữ số ngẫu nhiên
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const generateRandomPassword = () => {
+  return crypto.randomBytes(4).toString("hex"); // 8 ký tự hex
+};
+
+export const changePasswordServiceAdmin = async (user_id) => {
+  // Tạo mật khẩu ngẫu nhiên
+  const newPassword = generateRandomPassword();
+  const newHashed = await bcrypt.hash(newPassword, 10);
+  const updatedUser = await updatePasswordUser(user_id, newHashed);
+  if (!updatedUser) {
+    throw new Error("Không tìm thấy user để đổi mật khẩu");
+  }
+  // Gửi email thông báo mật khẩu mới
+  await sendNotificationEmail(
+    updatedUser.email,
+    "Mật khẩu mới của bạn",
+    `Mật khẩu mới của bạn là: ${newPassword}`
+  );
+  return updatedUser;
 };
 
 export const register = async (
@@ -447,6 +471,25 @@ export const uploadPaymentPictureService = async (
     return result;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi tải lên hình ảnh thanh toán:", err);
+    throw err;
+  }
+};
+export const uploadSellerUrlService = async (wonId, seller_url) => {
+  try {
+    const result = await uploadSellerUrlRepo(wonId, seller_url);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi tải lên URL người bán:", err);
+    throw err;
+  }
+};
+
+export const getUserByNameService = async (name) => {
+  try {
+    const result = await getUserByNameRepo(name);
+    return result;
+  } catch (err) {
+    console.error("❌ [Service] Lỗi khi tìm kiếm user theo tên:", err);
     throw err;
   }
 };

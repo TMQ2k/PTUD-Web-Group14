@@ -5,7 +5,6 @@ import {
   sellerDeleteBannedBidderService,
   sellerAllowBidderService,
   getAllRequestsService,
-  enableAuctionExtensionService,
 } from "../service/sellerService.js";
 import express from "express";
 import { authenticate, authorize } from "../middleware/auth.js";
@@ -160,28 +159,4 @@ router.get(
   }
 );
 
-router.post(
-  "/enable-auction-extension",
-  authenticate,
-  authorize("seller"),
-  async (req, res) => {
-    try {
-      const { productId } = req.body;
-      const sellerId = req.user.id;
-      const result = await enableAuctionExtensionService(sellerId, productId);
-      res.status(200).json({
-        code: 200,
-        message: "Successfully enabled auction extension",
-        data: result,
-      });
-    } catch (err) {
-      console.error("❌ Error in /enable-auction-extension route:", err);
-      res.status(400).json({
-        code: 400,
-        message: err.message || "Failed to enable auction extension",
-        data: null,
-      });
-    }
-  }
-);
 export default router;

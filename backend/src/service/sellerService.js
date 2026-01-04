@@ -5,7 +5,6 @@ import {
   sellerDeleteBannedBidderRepo,
   sellerAllowBidderRepo,
   getAllRequestsRepo,
-  enableAuctionExtensionRepo,
 } from "../repo/sellerRepo.js";
 
 export const deactivateAllSellerExpiredService = async () => {
@@ -101,16 +100,6 @@ export const getAllRequestsService = async (sellerId, productId) => {
       "❌ [Service] Lỗi khi lấy tất cả yêu cầu của người bán:",
       err
     );
-    throw err;
-  }
-};
-
-export const enableAuctionExtensionService = async (sellerId, productId) => {
-  try {
-    const result = await enableAuctionExtensionRepo(sellerId, productId);
-    return result;
-  } catch (err) {
-    console.error("❌ [Service] Lỗi khi kích hoạt gia hạn đấu giá:", err);
     throw err;
   }
 };

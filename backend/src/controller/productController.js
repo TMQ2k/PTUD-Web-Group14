@@ -7,6 +7,8 @@ import {
   deactiveProduct,
   getProductBidHistoryService,
   getProductBySellerIdService,
+  enableExtentionForProductService,
+  bannedListProductService,
 } from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 
@@ -169,6 +171,53 @@ router.get("/seller-products", authenticate, async (req, res) => {
     res.status(500).json({
       code: 500,
       message: error.message,
+      data: null,
+    });
+  }
+});
+
+router.post(
+  "/enable-extension",
+  authenticate,
+  authorize("seller"),
+  async (req, res) => {
+    try {
+      const { productId } = req.body;
+      const sellerId = req.user.id;
+      const result = await enableExtentionForProductService(
+        sellerId,
+        productId
+      );
+      res.status(200).json({
+        code: 200,
+        message: "Successfully enabled auction extension",
+        data: result,
+      });
+    } catch (err) {
+      console.error("❌ Error in /enable-extension route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to enable auction extension",
+        data: null,
+      });
+    }
+  }
+);
+
+router.get("/banned-list/:productId", async (req, res) => {
+  try {
+    const productId = req.params.productId;
+    const result = await bannedListProductService(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Banned list retrieved successfully",
+      data: result,
+    });
+  } catch (err) {
+    console.error("❌ Error in /banned-list route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to retrieve banned list",
       data: null,
     });
   }

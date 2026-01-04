@@ -23,11 +23,39 @@ import {
   changeStatusWonProductsService,
   getBiddedProductsService,
   uploadPaymentPictureService,
+  uploadSellerUrlService,
+  getUserByNameService,
+  changePasswordServiceAdmin,
 } from "../service/userService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import pool from "../config/db.js"; // Import pool để query email
 
 const router = express.Router();
+
+router.post(
+  "/admin/change-password",
+  authenticate,
+  authorize("admin"),
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+      const msg = await changePasswordServiceAdmin(userId);
+
+      res.status(200).json({
+        code: 200,
+        message: "Password changed successfully",
+        data: { note: msg },
+      });
+    } catch (err) {
+      console.error("❌ Error in /admin/change-password route:", err);
+      res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to change password",
+        data: null,
+      });
+    }
+  }
+);
 
 router.post("/register", async (req, res) => {
   try {
@@ -635,5 +663,70 @@ router.patch(
     }
   }
 );
+
+router.patch(
+  "/upload-seller-url",
+  authenticate,
+  upload.single("seller_url"),
+  async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          code: 400,
+          message: "Không có file được gửi lên",
+        });
+      }
+      const { wonId } = req.body;
+
+      // Upload file lên Cloudinary bằng upload_stream
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "seller_urls" },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+        stream.end(req.file.buffer);
+      });
+
+      // Cập nhật seller_url trong DB
+      await uploadSellerUrlService(wonId, uploadResult.secure_url);
+      return res.status(200).json({
+        code: 200,
+        message: "Upload seller url thành công",
+        data: {
+          seller_url: uploadResult.secure_url,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi upload seller url:", err);
+      res.status(500).json({
+        code: 500,
+        message: "Upload thất bại",
+        error: err.message,
+      });
+    }
+  }
+);
+
+router.get("/search-by-name", async (req, res) => {
+  try {
+    const { name } = req.query;
+    const users = await getUserByNameService(name);
+    res.status(200).json({
+      code: 200,
+      message: "Tìm kiếm user thành công",
+      data: users,
+    });
+  } catch (err) {
+    console.error("❌ Error in /search-by-name route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to search users by name",
+      data: null,
+    });
+  }
+});
 
 export default router;

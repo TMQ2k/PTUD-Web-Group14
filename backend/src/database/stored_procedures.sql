@@ -1,6 +1,3 @@
-select * from users_rating where user_id in (42, 43)
-select * from users
-
 CREATE OR REPLACE FUNCTION fnc_product_extra_images(
     _product_id INTEGER,
     _image_urls TEXT[]
@@ -17,7 +14,7 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
-select * from users_info
+
 CREATE OR REPLACE FUNCTION fnc_register_user(
     p_username VARCHAR,
     p_password_hashed TEXT,
@@ -86,57 +83,74 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fnc_deactivate_expired_products()
-RETURNS VOID AS $$
+RETURNS TABLE (
+    product_id   INTEGER,
+    product_name VARCHAR,
+    end_time     TIMESTAMPTZ
+)
+LANGUAGE plpgsql
+AS $$
 BEGIN
     ------------------------------------------------------------
-    -- 1. Lưu người chiến thắng vào user_won_products
-    --    (lấy bid cao nhất từ product_history)
+    -- 1. Lưu danh sách sản phẩm hết hạn
+    ------------------------------------------------------------
+    CREATE TEMP TABLE tmp_expired_products ON COMMIT DROP AS
+    SELECT
+        p.product_id,
+        p.name AS product_name,
+        p.end_time
+    FROM products p
+    WHERE p.end_time <= NOW()
+      AND p.is_active = TRUE;
+
+    ------------------------------------------------------------
+    -- 2. Lưu người chiến thắng (chỉ khi có bid)
     ------------------------------------------------------------
     INSERT INTO user_won_products (user_id, product_id, winning_bid, won_at)
     SELECT
         ph.user_id,
-        ph.product_id,
+        tep.product_id,
         ph.bid_amount,
         NOW()
-    FROM products p
-    JOIN LATERAL (
-        SELECT user_id, product_id, bid_amount
-        FROM product_history
-        WHERE product_id = p.product_id
-        ORDER BY bid_amount DESC, bid_time ASC
+    FROM tmp_expired_products tep
+    LEFT JOIN LATERAL (
+        SELECT
+            ph2.user_id,
+            ph2.bid_amount
+        FROM product_history ph2
+        WHERE ph2.product_id = tep.product_id
+        ORDER BY ph2.bid_amount DESC, ph2.bid_time ASC
         LIMIT 1
     ) ph ON TRUE
-    WHERE p.end_time <= NOW()
-      AND p.is_active = TRUE
-      -- tránh insert trùng nếu function chạy nhiều lần
+    WHERE ph.user_id IS NOT NULL
       AND NOT EXISTS (
           SELECT 1
           FROM user_won_products uwp
-          WHERE uwp.product_id = p.product_id
+          WHERE uwp.product_id = tep.product_id
       );
 
     ------------------------------------------------------------
-    -- 2. Deactivate sản phẩm đã hết hạn
+    -- 3. Deactivate sản phẩm
     ------------------------------------------------------------
-    UPDATE products
+    UPDATE products p
     SET is_active = FALSE
-    WHERE end_time <= NOW()
-      AND is_active = TRUE;
-END;
-$$ LANGUAGE plpgsql;
+    WHERE p.product_id IN (
+        SELECT tep.product_id
+        FROM tmp_expired_products tep
+    );
 
-INSERT INTO products (
-    seller_id,
-    name,
-    starting_price,
-    end_time
-)
-VALUES (
-    13,
-    'Test product',
-    100000,
-    NOW() + INTERVAL '3 minutes'
-);
+    ------------------------------------------------------------
+    -- 4. Trả về danh sách sản phẩm đã hết hạn
+    ------------------------------------------------------------
+    RETURN QUERY
+    SELECT
+        tep.product_id,
+        tep.product_name,
+        tep.end_time
+    FROM tmp_expired_products tep;
+
+END;
+$$;
 
 
 CREATE OR REPLACE FUNCTION fnc_update_user_info(
@@ -209,8 +223,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-$$ LANGUAGE plpgsql;
-drop function fnc_create_product
 CREATE OR REPLACE FUNCTION fnc_create_product
 (
     p_seller_id INTEGER,
@@ -239,11 +251,6 @@ BEGIN
     RETURN new_product_id;
 END;
 $$ LANGUAGE plpgsql;
-
-SELECT fnc_product_categories(
-    p_product_id => 10,
-    p_category_ids => ARRAY[2, 5, 7]
-);
 
 CREATE OR REPLACE FUNCTION fnc_product_categories(
     p_product_id   INT,        -- ID sản phẩm
@@ -317,7 +324,6 @@ BEGIN
 END;
 $$;
 
-
 CREATE OR REPLACE FUNCTION fnc_get_products_by_seller(p_seller_id INT)
 RETURNS TABLE (
     product_id INT,
@@ -376,7 +382,7 @@ BEGIN
     RETURN 'Password changed successfully';
 END;
 $$ LANGUAGE plpgsql;
-drop function fnc_user_profile
+
 CREATE OR REPLACE FUNCTION fnc_user_profile(
     p_user_id INT
 )
@@ -494,8 +500,7 @@ BEGIN
     RETURN 'deleted';
 END;
 $$ LANGUAGE plpgsql;
-go
-drop function fnc_user_watchlist
+
 CREATE OR REPLACE FUNCTION fnc_user_watchlist(
     _user_id BIGINT
 )
@@ -533,10 +538,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-
-drop function fnc_update_auto_bids;
-
-go
 CREATE OR REPLACE FUNCTION fnc_update_auto_bids(_product_id BIGINT)
 RETURNS TABLE (
     current_price NUMERIC(12,2),
@@ -544,7 +545,9 @@ RETURNS TABLE (
     username VARCHAR,
     email VARCHAR,
     first_name VARCHAR,
-    last_name VARCHAR
+    last_name VARCHAR,
+	avatar_url TEXT,
+	rating NUMERIC(5, 2)
 ) AS $$
 DECLARE
     v_highest_bid RECORD;
@@ -556,7 +559,17 @@ DECLARE
     v_bid_count INT;
     v_old_price NUMERIC(12,2);
     v_history_exists BOOLEAN;
+    v_last_bidder BIGINT;
+
 BEGIN
+
+	SELECT ph.user_id
+	INTO v_last_bidder
+	FROM product_history ph
+	WHERE ph.product_id = _product_id
+	ORDER BY ph.bid_time DESC
+	LIMIT 1;
+
     SELECT p.end_time, p.step_price, p.starting_price, p.current_price
     INTO v_auction_end, v_step_price, v_start_price, v_old_price
     FROM products p
@@ -635,10 +648,13 @@ BEGIN
         SELECT 1 FROM product_history WHERE product_id = _product_id
     ) INTO v_history_exists;
 
-    IF v_new_price <> v_old_price OR NOT v_history_exists THEN
-        INSERT INTO product_history(product_id, user_id, bid_amount)
-        VALUES (_product_id, v_highest_bid.user_id, v_new_price);
-    END IF;
+	IF v_new_price <> v_old_price
+	   OR v_last_bidder IS DISTINCT FROM v_highest_bid.user_id
+	THEN
+	    INSERT INTO product_history(product_id, user_id, bid_amount)
+	    VALUES (_product_id, v_highest_bid.user_id, v_new_price);
+	END IF;
+
 
     RETURN QUERY
     SELECT
@@ -647,18 +663,17 @@ BEGIN
         u.username,
         u.email,
         ui.first_name,
-        ui.last_name
+        ui.last_name,
+		ui.avatar_url,
+		ur.rating_percent
     FROM users u
     LEFT JOIN users_info ui ON u.user_id = ui.user_id
+	LEFT JOIN users_rating ur ON u.user_id = ur.user_id
     WHERE u.user_id = v_highest_bid.user_id;
 
 END;
 $$ LANGUAGE plpgsql;
 
-DROP FUNCTION IF EXISTS fnc_update_auto_bids(BIGINT);
-
-
-drop function fnc_history_bids_product
 CREATE OR REPLACE FUNCTION fnc_history_bids_product(_product_id BIGINT)
 RETURNS TABLE (
 	bidder_id INTEGER,
@@ -744,7 +759,6 @@ BEGIN
 END; 
 $$ LANGUAGE plpgsql;
 
-drop function fnc_delete_category
 CREATE OR REPLACE FUNCTION fnc_delete_category(p_category_id integer)
 RETURNS TEXT
 LANGUAGE plpgsql
@@ -896,9 +910,6 @@ BEGIN
 END;
 $$;
 
-select * from fnc_delete_product(7)
-select * from products
-
 CREATE OR REPLACE FUNCTION fnc_add_upgrade_request(
     p_user_id BIGINT
 )
@@ -948,7 +959,7 @@ BEGIN
     RETURN 'Tạo request nâng cấp thành công.';
 END;
 $$;
-drop function fnc_get_upgrade_requests()
+
 CREATE OR REPLACE FUNCTION fnc_get_upgrade_requests()
 RETURNS TABLE (
     request_id BIGINT,
@@ -982,6 +993,7 @@ BEGIN
     FROM user_upgrade_requests r
     JOIN users u ON u.user_id = r.user_id
     LEFT JOIN users_rating ur ON ur.user_id = u.user_id
+	WHERE r.status = 'pending'
     ORDER BY r.created_at DESC;
 END;
 $$;
@@ -1056,7 +1068,7 @@ BEGIN
 
 END;
 $$;
-DROP FUNCTION fnc_delete_user(integer)
+
 CREATE OR REPLACE FUNCTION fnc_delete_user(p_user_id INTEGER)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -1079,10 +1091,6 @@ BEGIN
 END;
 $$;
 
-select * from users
-update users
-set status = true
-where user_id = 36
 CREATE OR REPLACE FUNCTION fnc_deactivate_expired_sellers()
 RETURNS VOID AS $$
 BEGIN
@@ -1208,14 +1216,22 @@ BEGIN
         p_seller_id
     );
 
+	delete from bid_allow_requests 
+	where p_product_id = product_id 
+		AND p_bidder_id = bidder_id;
+
+	delete from auto_bids
+	where p_product_id = product_id
+		AND p_bidder_id = user_id;
+
+	delete from product_history
+	where p_product_id = product_id
+		AND p_bidder_id = user_id;
+		
     RETURN 'Bidder banned successfully.';
 END;
 $$;
-select * from bid_rejections
-select * from products where product_id = 30
-select * from product_history
 
-select * from auto_bids
 CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
     _user_id BIGINT,
     _product_id BIGINT,
@@ -1223,6 +1239,7 @@ CREATE OR REPLACE FUNCTION fnc_upsert_auto_bid(
 )
 RETURNS TEXT AS $$
 DECLARE
+	start_price NUMERIC(12,2);
     old_max_bid NUMERIC(12,2);
     auction_end TIMESTAMPTZ;
     user_rating NUMERIC(5,2);
@@ -1231,12 +1248,13 @@ DECLARE
     is_banned BOOLEAN;
     is_allowed BOOLEAN;
     is_extendable BOOLEAN;
+	is_active BOOLEAN;
 BEGIN
     --------------------------------------------------------------------
     -- 1. Kiểm tra sản phẩm còn trong thời gian đấu giá
     --------------------------------------------------------------------
-    SELECT p.end_time, p.current_price
-    INTO auction_end, current_price
+    SELECT p.end_time, p.current_price, p.starting_price, p.is_active
+    INTO auction_end, current_price, start_price, is_active
     FROM products p
     WHERE p.product_id = _product_id;
 
@@ -1246,6 +1264,17 @@ BEGIN
         RETURN 'Sản phẩm đã hết thời gian đấu giá.';
     END IF;
 
+	IF _new_max_bid < start_price THEN
+	    RETURN format(
+	        'Giá auto bid (%s) không được nhỏ hơn giá khởi điểm (%s).',
+	        _new_max_bid,
+	        start_price
+	    );
+	END IF;
+
+	IF NOT is_active THEN
+	    RETURN 'Sản phẩm đã bị ngừng đấu giá.';
+	END IF;
     --------------------------------------------------------------------
     -- 2. Kiểm tra người dùng có bị cấm đấu giá
     --------------------------------------------------------------------
@@ -1297,23 +1326,23 @@ BEGIN
     
 	remaining := auction_end - NOW();
 
-    IF is_extendable
-       AND _new_max_bid > current_price
-       AND remaining <= INTERVAL '10 minutes'
-    THEN
-        UPDATE products
-        SET end_time = end_time + INTERVAL '20 minutes'
-        WHERE product_id = _product_id;
-
-        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 20 phút.';
-    END IF;
-
     --------------------------------------------------------------------
     -- 6. INSERT hoặc UPDATE auto-bid
     --------------------------------------------------------------------
     IF old_max_bid IS NULL THEN
         INSERT INTO auto_bids(user_id, product_id, max_bid_amount, current_bid_amount)
         VALUES (_user_id, _product_id, _new_max_bid, 0);
+
+	    IF is_extendable
+	       AND _new_max_bid > current_price
+	       AND remaining <= INTERVAL '5 minutes'
+	    THEN
+	        UPDATE products
+	        SET end_time = end_time + INTERVAL '10 minutes'
+	        WHERE product_id = _product_id;
+	
+	        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 10 phút.';
+	    END IF;
 
         RETURN 'Đặt auto bid thành công.';
     ELSE
@@ -1326,13 +1355,22 @@ BEGIN
             updated_at = NOW()
         WHERE user_id = _user_id AND product_id = _product_id;
 
+	    IF is_extendable
+	       AND _new_max_bid > current_price
+	       AND remaining <= INTERVAL '5 minutes'
+	    THEN
+	        UPDATE products
+	        SET end_time = end_time + INTERVAL '10 minutes'
+	        WHERE product_id = _product_id;
+	
+	        RAISE NOTICE 'Thời gian đấu giá được gia hạn thêm 10 phút.';
+	    END IF;
+
         RETURN 'Cập nhật auto bid thành công.';
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-select *
-select * from fnc_judge_user()
-drop function judge_user
+
 CREATE OR REPLACE FUNCTION fnc_judge_user(
     p_transaction_id BIGINT,  -- giao dịch liên quan
     p_from_user_id   BIGINT,  -- người đánh giá
@@ -1399,7 +1437,6 @@ EXCEPTION
 END;
 $$;
 
-select * from bid_rejections
 CREATE OR REPLACE FUNCTION fnc_delete_rejection(
     p_product_id BIGINT,
     p_seller_id BIGINT,
@@ -1511,7 +1548,6 @@ BEGIN
 END;
 $$;
 
-drop function fnc_get_requests_by_seller_product
 CREATE OR REPLACE FUNCTION fnc_get_requests_by_seller_product(
     p_seller_id BIGINT,
     p_product_id BIGINT
@@ -1540,10 +1576,11 @@ BEGIN
     LEFT JOIN users_rating ur ON ur.user_id = r.bidder_id
     WHERE p.seller_id = p_seller_id
       AND r.product_id = p_product_id
+	  AND r.
     ORDER BY r.created_at DESC;
 END;
 $$;
-select * from products
+
 CREATE OR REPLACE FUNCTION fnc_enable_auction_extension(
     _seller_id BIGINT,
     _product_id BIGINT
@@ -1648,6 +1685,9 @@ BEGIN
         p_seller_id
     );
 
+	delete from bid_allow_requests 
+	where p_product_id = product_id 
+		AND p_bidder_id = bidder_id;
     RETURN 'Bidder is now allowed to bid on this product.';
 END;
 $function$;
@@ -1713,7 +1753,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-drop FUNCTION fnc_user_won_product
 CREATE OR REPLACE FUNCTION fnc_user_won_product(p_user_id BIGINT)
 RETURNS TABLE (
 	won_id BIGINT,
@@ -1725,7 +1764,8 @@ RETURNS TABLE (
     seller_name TEXT,
     seller_qr_url TEXT,
     status VARCHAR(20),
-	payment TEXT
+	payment TEXT,
+	seller_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1739,7 +1779,8 @@ BEGIN
         CONCAT(ui.first_name, ' ', ui.last_name) AS seller_name,
         ui.qr_url AS seller_qr_url,
         uwp.status,
-		uwp.payment
+		uwp.payment,
+		uwp.seller_url
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
@@ -1750,11 +1791,9 @@ BEGIN
     WHERE uwp.user_id = p_user_id;
 END;
 $$ LANGUAGE plpgsql;
-select * from fnc_user_won_product(43)
-select * from users
-drop function fnc_seller_deactive_product
+
 CREATE OR REPLACE FUNCTION fnc_seller_deactive_product(p_seller_id BIGINT)
-RETURNS TABLE (
+RETURNS TABLE (s
 	won_id BIGINT, 
     product_id INTEGER,
     product_name VARCHAR,
@@ -1769,7 +1808,8 @@ RETURNS TABLE (
     bidder_address TEXT,
     bidder_phone VARCHAR,
     status VARCHAR(20),
-	payment TEXT
+	payment TEXT,
+	seller_url TEXT
 ) AS $$
 BEGIN
     RETURN QUERY
@@ -1788,7 +1828,8 @@ BEGIN
         bi.address AS bidder_address,
         bi.phone_number AS bidder_phone,
         uwp.status,
-		uwp.payment
+		uwp.payment,
+		uwp.seller_url
     FROM user_won_products uwp
     JOIN products p
         ON uwp.product_id = p.product_id
@@ -1805,8 +1846,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select * from fnc_seller_deactive_product(13)
-
 CREATE OR REPLACE FUNCTION fnc_seller_change_status_won_product(
     p_won_id BIGINT,
     p_status VARCHAR
@@ -1814,7 +1853,7 @@ CREATE OR REPLACE FUNCTION fnc_seller_change_status_won_product(
 RETURNS VOID AS $$
 BEGIN
     -- Kiểm tra trạng thái hợp lệ
-    IF p_status NOT IN ('invalid', 'sent', 'paid', 'received') THEN
+    IF p_status NOT IN ('invalid', 'sent', 'paid', 'received', 'cancelled') THEN
         RAISE EXCEPTION 'Trạng thái không hợp lệ: %', p_status;
     END IF;
 
@@ -1825,10 +1864,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-select * from user_won_products
-select * from fnc_seller_change_status_won_product(1, 'invalid')
-select * from auto_bids
-drop function fnc_get_products_bidded
 CREATE OR REPLACE FUNCTION fnc_get_products_bidded(p_user_id BIGINT)
 RETURNS TABLE (
     product_id INTEGER,
@@ -1857,4 +1892,44 @@ BEGIN
     ORDER BY p.end_time DESC;
 END;
 $$;
-select * from fnc_get_products_bidded(42)
+
+CREATE OR REPLACE FUNCTION fnc_banned_in_product(
+    p_product_id INTEGER
+)
+RETURNS TABLE (
+    user_id INTEGER,
+    username VARCHAR,
+    email VARCHAR,
+    role VARCHAR,
+    user_status BOOLEAN,
+    first_name VARCHAR,
+    last_name VARCHAR,
+    phone_number VARCHAR,
+    reason VARCHAR,
+    banned_at TIMESTAMPTZ,
+    banned_by BIGINT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        u.user_id,
+        u.username,
+        u.email,
+        u.role,
+        u.status,
+        ui.first_name,
+        ui.last_name,
+        ui.phone_number,
+        br.reason,
+        br.created_at,
+        br.created_by
+    FROM bid_rejections br
+    JOIN users u
+        ON br.bidder_id = u.user_id
+    LEFT JOIN users_info ui
+        ON u.user_id = ui.user_id
+    WHERE br.product_id = p_product_id;
+END;
+$$;

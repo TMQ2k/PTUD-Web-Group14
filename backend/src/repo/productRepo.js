@@ -247,7 +247,7 @@ export const deactiveProduct = async () => {
   const result = await pool.query(
     `SELECT * FROM fnc_deactivate_expired_products()`
   );
-  return result.rows[0];
+  return result.rows;
 };
 export const postProduct = async (
   seller_id,
@@ -336,4 +336,19 @@ export const getProductBySellerIdRepo = async (sellerId) => {
     [sellerId]
   );
   return result.rows;
+};
+
+export const enableExtentionForProductRepo = async (sellerId, productId) => {
+  const result = await pool.query(
+    `select * from fnc_enable_auction_extension( $1, $2 )`,
+    [sellerId, productId]
+  );
+  return result.rows[0];
+};
+
+export const bannedListProductRepo = async (productId) => {
+  const result = await pool.query(`select * from fnc_banned_in_product($1)`, [
+    productId,
+  ]);
+  return result.rows[0];
 };

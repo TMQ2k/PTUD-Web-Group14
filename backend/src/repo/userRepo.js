@@ -1,6 +1,19 @@
 import pool from "../config/db.js";
 import { UserSimpleProfile } from "../model/userModel.js";
 
+export const updatePasswordUser = async (userId, newPasswordHashed) => {
+  try {
+    const result = await pool.query(
+      `UPDATE users SET password_hashed = $1 WHERE user_id = $2 RETURNING *`,
+      [newPasswordHashed, userId]
+    );
+    return result.rows[0]; // Trả về user đã được cập nhật
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật mật khẩu user:", err);
+    throw err;
+  }
+};
+
 export const registerUser = async (
   username,
   password_hashed,
@@ -242,4 +255,20 @@ export const uploadPaymentPictureRepo = async (wonId, payment_picture_url) => {
     [payment_picture_url, wonId]
   );
   return result.rows[0];
+};
+
+export const uploadSellerUrlRepo = async (wonId, seller_url) => {
+  const result = await pool.query(
+    "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
+    [seller_url, wonId]
+  );
+  return result.rows[0];
+};
+
+export const getUserByNameRepo = async (name) => {
+  const result = await pool.query(
+    `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
+    [`%${name}%`]
+  );
+  return result.rows;
 };
