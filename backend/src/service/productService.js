@@ -24,6 +24,8 @@ import {
   updateCurrentPrice,
   countProductsByQuery,
   countProductsList,
+  getProdudctsListByBidderId as getProdudctsListByBidderIdRepo,
+  countProductsByBidderId,
 } from "../repo/productRepo.js";
 
 import {
@@ -32,6 +34,7 @@ import {
   getTopBidderIdByProductId,
   countHistoryByProductId,
   upsertAutoBid,
+  isBidsOnProductRepo,
 } from "../repo/bidderRepo.js";
 
 import {
@@ -526,4 +529,91 @@ export const deactiveProductById = async (user, productId) => {
   );
 
   return result;
+};
+
+export const getProductsListofBidder = async (
+  bidderId,
+  limit,
+  page,
+  sortBy,
+  is_active
+) => {
+  try {
+    const bidderProducts = await getProdudctsListByBidderIdRepo(
+      bidderId,
+      limit,
+      page,
+      sortBy,
+      is_active
+    );
+    for (let product of bidderProducts) {
+      const topBidderId = await getTopBidderIdByProductId(product.product_id);
+      if (topBidderId) {
+        product.top_bidder = await getUserInfoById(topBidderId);
+      } else {
+        product.top_bidder = null;
+      }
+
+      if (String(topBidderId) === String(bidderId)) {
+        product.is_highest_bidder = true;
+      } else {
+        product.is_highest_bidder = false;
+      }
+
+      const historyCount = await countHistoryByProductId(product.product_id);
+      product.history_count = historyCount;
+    }
+    return bidderProducts;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy danh sách sản phẩm của bidder:",
+      err
+    );
+    throw err;
+  }
+};
+
+export const getMetaDataForBidderProductsList = async (
+  bidderId,
+  limit,
+  page,
+  is_active
+) => {
+  try {
+    const totalProducts = await countProductsByBidderId(bidderId, is_active);
+    let limitPerPage = limit;
+    if (!limitPerPage || limitPerPage <= 0) {
+      limitPerPage = totalProducts; // Default limit
+    }
+    const totalPages = Math.ceil(totalProducts / limitPerPage);
+    let previousPage, nextPage;
+    if (page > 1 && page <= totalPages) {
+      previousPage = true;
+    } else {
+      previousPage = false;
+    }
+    if (page < totalPages) {
+      nextPage = true;
+    } else {
+      nextPage = false;
+    }
+    const currentPage = page;
+    if (page > totalPages && totalProducts > 0) {
+      throw new Error("Page number exceeds total pages available");
+    }
+    return {
+      total_products: totalProducts,
+      total_pages: totalPages,
+      previous_page: previousPage,
+      next_page: nextPage,
+      current_page: currentPage,
+      limit: limitPerPage,
+    };
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy metadata cho danh sách sản phẩm của bidder:",
+      err
+    );
+    throw err;
+  }
 };

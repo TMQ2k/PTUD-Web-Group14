@@ -23,7 +23,7 @@ import {
   sendNotificationEmail
 } from "./emailService.js";
 
-import { getProductProfile } from "../repo/productRepo.js";
+import { getProductProfile} from "../repo/productRepo.js";
 
 export const addProductToWatchlist = async (userId, productId) => {
   try {
@@ -211,3 +211,4 @@ export const sendBidNotificationEmailForTopBidder = async (topBidderEmail, produ
     throw err;
   }
 };
+
