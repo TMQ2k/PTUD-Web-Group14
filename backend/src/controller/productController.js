@@ -12,6 +12,7 @@ import {
   getProductBySellerIdService,
   getWinningBidderByProductId,
   deactiveProductById,
+  getMetaDataForProductsList
 } from "../service/productService.js";
 
 import { uploadImageToCloudinary } from "../service/cloudinaryService.js";
@@ -33,10 +34,19 @@ router.get("/", async (req, res) => {
       sortBy,
       is_active
     );
+
+    const metaData = await getMetaDataForProductsList(
+      categoryId,
+      limit,
+      page,
+      is_active
+    );
+    
     res.json({
       code: 200,
       message: "Products retrieved successfully",
       data: products,
+      metadata: metaData,
     });
   } catch (error) {
     res.status(500).json({

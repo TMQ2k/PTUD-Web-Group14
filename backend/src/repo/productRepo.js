@@ -246,6 +246,29 @@ export const getProductsList = async (
   return result.rows;
 };
 
+export const countProductsList = async (categoryId, is_active) => {
+  let baseQuery = `SELECT COUNT(DISTINCT p.product_id) AS total
+    FROM products p
+    LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+    WHERE 1=1`;
+  const queryParams = [];
+  if (categoryId) {
+    queryParams.push(categoryId);
+    baseQuery += ` AND pc.category_id = $${queryParams.length}`;
+  }
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    }
+    else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  const result = await pool.query(baseQuery, queryParams);
+  return parseInt(result.rows[0].total, 10);
+}
+
 export const deactiveProduct = async () => {
   const productsBefore = await pool.query(
     `SELECT product_id FROM products WHERE is_active = false`
@@ -346,6 +369,28 @@ export const getProductListByQuery = async (query, limit = 5, page = 1, sortBy =
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 }
+
+export const countProductsByQuery = async (query, is_active) => {
+  let baseQuery = `SELECT COUNT(DISTINCT p.product_id) AS total
+    FROM products p
+    LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+    LEFT JOIN categories c ON pc.category_id = c.category_id
+    WHERE (p.name ILIKE $1 OR c.name ILIKE $1 OR c.parent_id IN (
+      SELECT category_id FROM categories WHERE name ILIKE $1
+    ))`; 
+  const queryParams = [`%${query}%`]; 
+  if (is_active !== undefined) {
+    if (is_active == "true") {
+      queryParams.push(true);
+    }
+    else {
+      queryParams.push(false);
+    }
+    baseQuery += ` AND p.is_active = $${queryParams.length}`;
+  }
+  const result = await pool.query(baseQuery, queryParams);
+  return parseInt(result.rows[0].total, 10);
+};
 
 export const updateDescription = async (productId, newDescription) => {
   const result = await pool.query(

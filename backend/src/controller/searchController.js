@@ -1,5 +1,8 @@
 import express, {json} from "express";
-import { getProductListByQuery } from "../service/productService.js";
+import { 
+    getProductListByQuery,
+    getMetaDataByQuery 
+} from "../service/productService.js";
 
 const router = express.Router();
 router.get("/products", async (req, res) => {
@@ -10,10 +13,13 @@ router.get("/products", async (req, res) => {
         const sortBy = req.query.sortBy || "endtime_desc";
         const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
         const products = await getProductListByQuery(search, limit, page, sortBy, is_active);
+        const metaData = await getMetaDataByQuery(search, limit, page, is_active);
+        products.meta = metaData;
         res.status(200).json({
             code: 200, 
             message: "Products retrieved successfully",
             data: products,
+            metadata: metaData
         });
     }
     catch (error) {

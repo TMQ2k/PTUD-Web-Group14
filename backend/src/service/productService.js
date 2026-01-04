@@ -19,7 +19,9 @@ import {
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
   getProductProfile,
   deactiveProductById as deactiveProductByIdRepo,
-  updateCurrentPrice
+  updateCurrentPrice,
+  countProductsByQuery,
+  countProductsList,
 } from "../repo/productRepo.js";
 
 import {
@@ -119,6 +121,40 @@ export const getProductsList = async (
       )
   );
 };
+
+export const getMetaDataForProductsList = async (categoryId, limit, page, is_active) => {
+  const totalProducts = await countProductsList(categoryId, is_active);
+  let limitPerPage = limit;
+  if (!limitPerPage || limitPerPage <= 0) {
+    limitPerPage = totalProducts; // Default limit
+  }
+  const totalPages = Math.ceil(totalProducts / limitPerPage);
+  let previousPage, nextPage;
+  if (page > 1 && page <= totalPages) {
+    previousPage = true;
+  }
+  else {
+    previousPage = false;
+  }
+  if (page < totalPages) {
+    nextPage = true;
+  } else {
+    nextPage = false;
+  }
+  const currentPage = page;
+  if (page > totalPages && totalProducts > 0) {
+    throw new Error("Page number exceeds total pages available");
+  }
+  return {
+    total_products: totalProducts,
+    total_pages: totalPages,
+    previous_page: previousPage,
+    next_page: nextPage,
+    current_page: currentPage,
+    limit: limitPerPage,
+  };
+}
+
 
 export const getProductDetailsById = async (productId, user, limit = 5) => {
   const productInfo = await getProductBaseInfoByIdRepo(productId);
@@ -346,6 +382,36 @@ export const getProductListByQuery = async(query, limit, page, sortBy, is_active
         prod.history_count
       )
   );
+}
+
+export const getMetaDataByQuery = async (query, limit, page, is_active) => {
+  const totalProducts = await countProductsByQuery(query, is_active);
+  const totalPages = Math.ceil(totalProducts / limit);
+  let previousPage, nextPage;
+  if (page > 1 && page <= totalPages) {
+    previousPage = true;
+  }
+  else {
+    previousPage = false;
+  }
+  if (page < totalPages) {
+    nextPage = true;
+  } else {
+    nextPage = false;
+  }
+  const currentPage = page;
+  if (page > totalPages && totalProducts > 0) {
+    throw new Error("Page number exceeds total pages available");
+  }
+
+  return {
+    total_products: totalProducts,
+    total_pages: totalPages,
+    previous_page: previousPage,
+    next_page: nextPage,
+    current_page: currentPage,
+    limit: limit,
+  };
 }
 
 export const updateDescription = async (productId, newDescription) => {
