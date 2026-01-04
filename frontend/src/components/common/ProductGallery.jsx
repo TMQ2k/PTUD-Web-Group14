@@ -15,8 +15,7 @@ const ChevronRight = ({ size = 24 }) => (
 const ProductGallery = () => {
   const user = useSelector((state) => state.user);
   const product = useProduct();
-  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);
-  console.log("Is top bidder: ", isTopBidder);
+  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);  
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // 1. Data Preparation
@@ -91,7 +90,7 @@ const ProductGallery = () => {
         </button>
 
         {/* D. Dot Indicators */}
-        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-30">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
           {slides.map((_, slideIndex) => (
             <div
               key={slideIndex}
