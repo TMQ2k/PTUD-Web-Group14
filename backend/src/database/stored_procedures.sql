@@ -1112,7 +1112,6 @@ BEGIN
         AND ur.updated_at <= NOW() - INTERVAL '7 days';
 END;
 $$ LANGUAGE plpgsql;
-select * from fnc_deactivate_expired_sellers()
 
 
 CREATE OR REPLACE FUNCTION fnc_get_seller_start_time(p_user_id BIGINT)
@@ -1793,7 +1792,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fnc_seller_deactive_product(p_seller_id BIGINT)
-RETURNS TABLE (s
+RETURNS TABLE (
 	won_id BIGINT, 
     product_id INTEGER,
     product_name VARCHAR,
@@ -1842,7 +1841,8 @@ BEGIN
     LEFT JOIN users_info si
         ON s.user_id = si.user_id
     WHERE p.is_active = FALSE
-      AND p.seller_id = p_seller_id;
+      AND p.seller_id = p_seller_id
+	  AND uwp.user_id IS NOT NULL;
 END;
 $$ LANGUAGE plpgsql;
 

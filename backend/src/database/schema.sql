@@ -1,3 +1,5 @@
+select * from users
+delete from users where user_id = 49
 
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
