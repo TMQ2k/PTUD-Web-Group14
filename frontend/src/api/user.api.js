@@ -1,0 +1,234 @@
+import { http } from "../libs/http";
+
+const userEndpoint = {
+  register: "/users/register",
+  login: "/users/login",
+  profile: "/users/profile",
+  updateAvatar: "/users/update-avatar",
+  updateQR: "/users/update-url",
+  verifyOtp: "/users/verify-otp",
+  updateProfile: "/users/update-info",
+  changePassword: "/users/change-password",
+  sendOtpResetPassword: "/users/send-otp",
+  verifyOtpResetPassword: "/users/verify-otp-reset-pass",
+  resetPassword: "/users/reset-password",
+  userRatings: "/users/user-ratings",
+  userWonProducts: "/users/user-won-products",
+  changeWonProductStatus: "/users/change-won-product-status",
+  sellerDeactivatedProducts: "/users/seller-deactivated-products",
+  uploadPaymentPicture: "/users/upload-payment-picture",
+  uploadBillPicture: "/users/upload-seller-url",
+  searchByName: "/users/search-by-name",      
+};
+
+export const userApi = {
+  register: async (userData) => {
+    const response = await http.post(userEndpoint.register, userData);
+    return response.data;
+  },
+
+  /**
+   * Đăng nhập người dùng
+   * @param {Object} credentials - { email, password }
+   * @returns {Promise<Object>} Thông tin người dùng sau khi đăng nhập
+   */
+  login: async (credentials) => {
+    const response = await http.post(userEndpoint.login, credentials);
+    return response.data;
+  },
+
+  /**
+   * Lấy thông tin người dùng
+   * @returns {Promise<Object>} Thông tin người dùng
+   */
+  getProfile: async () => {
+    const response = await http.get(userEndpoint.profile);
+    return response.data;
+  },
+
+  /**
+   * OTP Verification
+   * @param {Object} otpData - { email, otp }
+   * @returns {Promise<Object>} Kết quả xác thực OTP
+   */
+  verifyOtp: async (otpData) => {
+    const response = await http.post(userEndpoint.verifyOtp, otpData);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật thông tin người dùng
+   * @param {Object} userData - Dữ liệu thông tin người dùng cần cập nhật
+   * @returns {Promise<Object>} Thông tin người dùng sau khi cập nhật
+   */
+  updateProfile: async (userData) => {
+    const response = await http.put(userEndpoint.updateProfile, userData);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật avatar người dùng
+   * @param {FormData} formData - Dữ liệu FormData chứa file ảnh
+   * @returns {Promise<Object>} Thông tin người dùng sau khi cập nhật avatar
+   */
+  updateAvatar: async (formData) => {
+    const response = await http.patch(userEndpoint.updateAvatar, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Đổi mật khẩu người dùng
+   * @param {Object} passwordData - { currentPassword, newPassword }
+   * @returns {Promise<Object>} Kết quả đổi mật khẩu
+   */
+  changePassword: async (passwordData) => {
+    const response = await http.put(userEndpoint.changePassword, passwordData);
+    return response.data;
+  },
+
+  /**
+   * Gửi OTP để reset mật khẩu
+   * @param {string} identifier - Email hoặc username
+   * @returns {Promise<Object>} Kết quả gửi OTP
+   */
+  sendOtpResetPassword: async (identifier) => {
+    const response = await http.post(userEndpoint.sendOtpResetPassword, {
+      identifier,
+    });
+    return response.data;
+  },
+
+  /**
+   * Xác thực OTP reset mật khẩu
+   * @param {Object} otpData - { identifier, otp }
+   * @returns {Promise<Object>} Kết quả xác thực OTP
+   */
+  verifyOtpResetPassword: async (otpData) => {
+    const response = await http.post(
+      userEndpoint.verifyOtpResetPassword,
+      otpData
+    );
+    return response.data;
+  },
+
+  /**
+   * Đặt lại mật khẩu
+   * @param {Object} resetData - { identifier, newPassword, confirmPassword }
+   * @returns {Promise<Object>} Kết quả reset mật khẩu
+   */
+  resetPassword: async (resetData) => {
+    const response = await http.put(userEndpoint.resetPassword, resetData);
+    return response.data;
+  },
+
+  /**
+   * Cập nhật QR code cho seller
+   * @param {FormData} formData - Dữ liệu FormData chứa file ảnh QR
+   * @returns {Promise<Object>} Thông tin sau khi cập nhật QR
+   */
+  updateQR: async (formData) => {
+    const response = await http.patch(userEndpoint.updateQR, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách đánh giá của người dùng
+   * @returns {Promise<Object>} Danh sách đánh giá
+   */
+  getUserRatings: async () => {
+    const response = await http.get(userEndpoint.userRatings);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách sản phẩm đã thắng đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã thắng
+   */
+  getUserWonProducts: async () => {
+    const response = await http.get("/users/user-won-products");
+    return response.data;
+  },
+
+  /**
+   * Đánh giá người bán sau khi thắng đấu giá
+   * @param {Object} ratingData - { to_user_id, value, content }
+   * @returns {Promise<Object>} Kết quả đánh giá
+   */
+  judgeUser: async (ratingData) => {
+    const response = await http.post("/users/judge-user", ratingData);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách sản phẩm đã tham gia đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã đấu giá
+   */
+  getBiddedProducts: async () => {
+    const response = await http.get("/users/bidded-products");
+    return response.data;
+  },
+
+  updateWonProductStatus: async (wonId, status) => {
+    const repsone = await http.put(
+      `${userEndpoint.changeWonProductStatus}`,
+      {
+        wonId: wonId,
+        status: status,
+      },
+      {}
+    );
+    return repsone.data;
+  },
+  /**
+   * Lấy danh sách sản phẩm đã có người thắng đấu giá (seller)
+   * @returns {Promise<Object>} Danh sách sản phẩm đã hết hạn có người thắng
+   */
+  getSellerDeactivatedProducts: async () => {
+    const response = await http.get(userEndpoint.sellerDeactivatedProducts);
+    return response.data;
+  },
+
+  uploadPaymentPicture: async (formData) => {
+    const respone = await http.patch(
+      userEndpoint.uploadPaymentPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  },
+
+  uploadBillPicture: async (formData) => {
+    const respone = await http.patch(
+      userEndpoint.uploadBillPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  },
+
+  searchByName: async (target_name) => {
+    const respone = await http.get(`${userEndpoint.searchByName}?name=${target_name}`);
+    return respone.data;
+  },
+  
+};
