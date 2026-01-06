@@ -1,5 +1,4 @@
-select * from users
-delete from users where user_id = 49
+
 
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
@@ -7,9 +6,35 @@ CREATE TABLE users (
     password_hashed TEXT NOT NULL,
     email VARCHAR(100) UNIQUE,
     role VARCHAR(20) DEFAULT 'guest' CHECK (role IN ('guest', 'bidder', 'seller', 'admin')),
-    is_created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     status BOOLEAN DEFAULT TRUE
 );
+
+CREATE TABLE products (
+    product_id SERIAL PRIMARY KEY,
+    seller_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    starting_price NUMERIC(15,2) NOT NULL,
+    step_price NUMERIC(15,2) DEFAULT 0,
+    current_price NUMERIC(15,2) DEFAULT 0,
+    buy_now_price NUMERIC(15,2),
+    image_cover_url TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMPTZ NOT NULL
+);
+ALTER TABLE products
+ADD CONSTRAINT chk_is_active_end_time
+CHECK (
+    (is_active = TRUE AND end_time > NOW())
+    OR
+    (is_active = FALSE)
+);
+
+ALTER TABLE products
+ADD CONSTRAINT chk_min_duration
+CHECK (end_time >= created_at + INTERVAL '3 hours');
 
 CREATE TABLE users_info (
     user_info_id SERIAL PRIMARY KEY,
@@ -19,10 +44,9 @@ CREATE TABLE users_info (
     phone_number VARCHAR(15),
     birthdate DATE,
     gender VARCHAR(10),
-    address TEXT,
     avatar_url TEXT,
-    address, VARCHAR(250),
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    address VARCHAR(250),
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE users_rating (
@@ -58,33 +82,6 @@ CREATE TABLE auction_extensions (
         REFERENCES products(product_id) ON DELETE CASCADE
 );
 
-CREATE TABLE products (
-    product_id SERIAL PRIMARY KEY,
-    seller_id INTEGER REFERENCES users(user_id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    starting_price NUMERIC(15,2) NOT NULL,
-    step_price NUMERIC(15,2) DEFAULT 0,
-    current_price NUMERIC(15,2) DEFAULT 0,
-    buy_now_price NUMERIC(15,2),
-    image_cover_url TEXT,
-    is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    end_time TIMESTAMP NOT NULL,
-);
-
-ALTER TABLE products
-ADD CONSTRAINT chk_is_active_end_time
-CHECK (
-    (is_active = TRUE AND end_time > NOW())
-    OR
-    (is_active = FALSE)
-);
-
-ALTER TABLE products
-ADD CONSTRAINT chk_min_duration
-CHECK (end_time >= created_at + INTERVAL '3 hours');
-
 CREATE TABLE categories (
     category_id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -108,7 +105,7 @@ CREATE TABLE user_otp (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
     otp_code VARCHAR(6) NOT NULL,
-    expires_at TIMESTAMP NOT NULL
+    expires_at TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE auto_bids (
@@ -121,8 +118,8 @@ CREATE TABLE auto_bids (
     
     is_winner BOOLEAN DEFAULT FALSE,
 
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
 
     UNIQUE (user_id, product_id)
 );
@@ -134,7 +131,7 @@ CREATE TABLE bid_rejections (
     bidder_id BIGINT NOT NULL,
 
     reason VARCHAR(255) DEFAULT NULL,      -- lý do bị cấm ra giá
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_by BIGINT DEFAULT NULL,        -- admin hoặc seller ban
 
     CONSTRAINT fk_bid_rej_product 
@@ -179,11 +176,11 @@ CREATE TABLE product_questions (
     user_id BIGINT NOT NULL,           -- người hỏi (bidder)
     question TEXT NOT NULL,            -- nội dung câu hỏi
 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NULL,
 
     is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn câu hỏi (seller/admin)
-    hidden_at TIMESTAMP NULL,
+    hidden_at TIMESTAMPTZ NULL,
     hidden_by BIGINT NULL,
 
     CONSTRAINT fk_pq_product
@@ -205,11 +202,11 @@ CREATE TABLE product_answers (
     seller_id BIGINT NOT NULL,            -- người trả lời (seller)
     answer TEXT NOT NULL,                 -- nội dung trả lời
 
-    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NULL,
 
     is_hidden BOOLEAN NOT NULL DEFAULT FALSE, -- ẩn trả lời
-    hidden_at TIMESTAMP NULL,
+    hidden_at TIMESTAMPTZ NULL,
     hidden_by BIGINT NULL,
 
     CONSTRAINT fk_pa_question
@@ -326,5 +323,3 @@ CREATE TABLE user_won_products (
     -- mỗi sản phẩm chỉ có 1 người thắng
     CONSTRAINT uq_won_product UNIQUE (product_id)
 );
-
-

@@ -73,12 +73,12 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
     RETURN QUERY
-    SELECT user_id, username, email, role
-    FROM users
-    WHERE username = p_username
-      AND password_hashed = p_password_hashed
-      AND status = TRUE
-      AND verified = TRUE;  -- chỉ cho phép user active
+    SELECT u.user_id, u.username, u.email, u.role
+    FROM users u
+    WHERE u.username = p_username
+      AND u.password_hashed = p_password_hashed
+      AND u.status = TRUE
+      AND u.verified = TRUE;  -- chỉ cho phép user active
 END;
 $$ LANGUAGE plpgsql;
 
@@ -553,7 +553,7 @@ DECLARE
     v_highest_bid RECORD;
     v_second_bid NUMERIC(12,2);
     v_step_price NUMERIC(12,2);
-    v_auction_end TIMESTAMP;
+    v_auction_end TIMESTAMPTZ;
     v_start_price NUMERIC(12,2);
     v_new_price NUMERIC(12,2);
     v_bid_count INT;
@@ -700,32 +700,56 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION fnc_delete_category(
-    p_category_id integer
-)
-RETURNS TEXT
-AS $$
+CREATE OR REPLACE FUNCTION public.fnc_delete_category(p_category_id integer)
+ RETURNS text
+ LANGUAGE plpgsql
+AS $function$
+DECLARE
+    v_parent_id integer;
+    v_child_count integer;
+    v_product_count integer;
 BEGIN
-    -- Parent ID check: nếu truyền parent_id nhưng không tồn tại -> báo lỗi
-    IF p_parent_id IS NOT NULL THEN
-        IF NOT EXISTS (
-            SELECT 1 FROM categories c WHERE c.category_id = p_parent_id
-        ) THEN
-            RAISE EXCEPTION 'Parent category with id % does not exist', p_parent_id;
+    -- Kiểm tra tồn tại category
+    SELECT parent_id INTO v_parent_id
+    FROM categories
+    WHERE category_id = p_category_id;
+
+    IF NOT FOUND THEN
+        RETURN 'Category không tồn tại';
+    END IF;
+
+    ----------------------------------------------------------------------------
+    -- 1. Nếu category là root (parent_id IS NULL) => kiểm tra category con
+    ----------------------------------------------------------------------------
+    IF v_parent_id IS NULL THEN
+        SELECT COUNT(*) INTO v_child_count
+        FROM categories
+        WHERE parent_id = p_category_id;
+
+        IF v_child_count > 0 THEN
+            RETURN 'Không thể xoá category gốc vì vẫn còn category con.';
         END IF;
     END IF;
 
-    -- Insert category
-    INSERT INTO categories(name, parent_id)
-    VALUES (p_name, p_parent_id)
-    RETURNING categories.category_id,
-              categories.name,
-              categories.parent_id
-    INTO category_id, name, parent_id;
+    ----------------------------------------------------------------------------
+    -- 2. Kiểm tra category có sản phẩm không
+    ----------------------------------------------------------------------------
+    SELECT COUNT(*) INTO v_product_count
+    FROM product_categories
+    WHERE category_id = p_category_id;
 
-    RETURN NEXT;
-END; 
-$$ LANGUAGE plpgsql;
+    IF v_product_count > 0 THEN
+        RETURN 'Không thể xoá category vì vẫn còn sản phẩm thuộc category.';
+    END IF;
+
+    ----------------------------------------------------------------------------
+    -- Thực hiện xoá (xóa luôn quan hệ nếu có)
+    ----------------------------------------------------------------------------
+    DELETE FROM categories WHERE category_id = p_category_id;
+
+    RETURN 'Xóa category thành công.';
+END;
+$function$;
 
 CREATE OR REPLACE FUNCTION fnc_create_category(
     p_name VARCHAR,
@@ -1274,39 +1298,13 @@ BEGIN
 	IF NOT is_active THEN
 	    RETURN 'Sản phẩm đã bị ngừng đấu giá.';
 	END IF;
-    --------------------------------------------------------------------
-    -- 2. Kiểm tra người dùng có bị cấm đấu giá
-    --------------------------------------------------------------------
-    SELECT EXISTS (
-        SELECT 1
-        FROM bid_rejections br
-        WHERE br.product_id = _product_id
-          AND br.bidder_id = _user_id
-    ) INTO is_banned;
+	--------------------------------------------------------------------
+	-- 2. Kiểm tra quyền đấu giá bằng fnc_is_bids
+	--------------------------------------------------------------------
+	IF NOT fnc_is_bids(_product_id, _user_id) THEN
+	    RETURN 'Bạn không đủ điều kiện để tham gia đấu giá sản phẩm này.';
+	END IF;
 
-    -- Kiểm tra nếu có “allowance” thì bỏ qua cấm
-    SELECT EXISTS (
-        SELECT 1
-        FROM bid_allowances ba
-        WHERE ba.product_id = _product_id
-          AND ba.bidder_id = _user_id
-    ) INTO is_allowed;
-
-    IF is_banned AND NOT is_allowed THEN
-        RETURN 'Bạn đã bị cấm tham gia đấu giá sản phẩm này.';
-    END IF;
-
-    --------------------------------------------------------------------
-    -- 3. Kiểm tra điểm đánh giá (rating < 80% bị chặn)
-    --------------------------------------------------------------------
-    SELECT ur.rating_percent
-    INTO user_rating
-    FROM users_rating ur
-    WHERE ur.user_id = _user_id;
-
-    IF user_rating IS NOT NULL AND user_rating < 80 AND NOT is_allowed THEN
-        RETURN format('Bạn không đủ điểm đánh giá (%s%%) để đấu giá.', user_rating);
-    END IF;
 
     --------------------------------------------------------------------
     -- 4. Lấy max_bid hiện tại (nếu có)
@@ -1547,38 +1545,32 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION fnc_get_requests_by_seller_product(
-    p_seller_id BIGINT,
-    p_product_id BIGINT
-)
-RETURNS TABLE(
-    request_id BIGINT,
-    bidder_id BIGINT,
-    bidder_username VARCHAR,
-    bidder_rating NUMERIC(5,2),
-    reason TEXT,
-    created_at TIMESTAMPTZ
-)
-LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE FUNCTION public.fnc_get_requests_by_seller_product(p_seller_id bigint, p_product_id bigint)
+ RETURNS TABLE(request_id bigint, bidder_id bigint, bidder_username character varying, bidder_rating numeric, reason text, created_at timestamp with time zone)
+ LANGUAGE plpgsql
+AS $function$
 BEGIN
     RETURN QUERY
-    SELECT r.request_id,
-           r.bidder_id,
-           u.username AS bidder_username,
-           ur.rating_percent AS bidder_rating,
-           r.reason,
-           r.created_at
+    SELECT
+        r.request_id,
+        r.bidder_id,
+        u.username              AS bidder_username,
+        ur.rating_percent       AS bidder_rating,
+        r.reason,
+        r.created_at
     FROM bid_allow_requests r
-    JOIN products p ON r.product_id = p.product_id
-    JOIN users u ON r.bidder_id = u.user_id
-    LEFT JOIN users_rating ur ON ur.user_id = r.bidder_id
+    JOIN products p
+        ON r.product_id = p.product_id
+    JOIN users u
+        ON r.bidder_id = u.user_id
+    LEFT JOIN users_rating ur
+        ON ur.user_id = r.bidder_id
     WHERE p.seller_id = p_seller_id
       AND r.product_id = p_product_id
-	  AND r.
     ORDER BY r.created_at DESC;
 END;
-$$;
+$function$;
+
 
 CREATE OR REPLACE FUNCTION fnc_enable_auction_extension(
     _seller_id BIGINT,
@@ -1690,44 +1682,62 @@ BEGIN
     RETURN 'Bidder is now allowed to bid on this product.';
 END;
 $function$;
-
 CREATE OR REPLACE FUNCTION fnc_is_bids (
     p_product_id BIGINT,
     p_user_id    BIGINT
 )
 RETURNS BOOLEAN
 LANGUAGE plpgsql
-AS $function$
+AS $$
 DECLARE
-    v_has_allow_list BOOLEAN;
+    v_has_rejection BOOLEAN;
+    v_has_allowance BOOLEAN;
+    v_rating NUMERIC;
 BEGIN
-    --------------------------------------------------------------------
-    -- 1. Kiểm tra product có tồn tại không
-    --------------------------------------------------------------------
+    -- Product tồn tại & active
     IF NOT EXISTS (
-        SELECT 1
-        FROM products p
-        WHERE p.product_id = p_product_id
-          AND p.is_active = TRUE
+        SELECT 1 FROM products
+        WHERE product_id = p_product_id
+          AND is_active = TRUE
     ) THEN
         RETURN FALSE;
     END IF;
 
-    --------------------------------------------------------------------
-    -- 2. Nếu user bị cấm đấu giá product này → FALSE
-    --------------------------------------------------------------------
- 	IF EXISTS (
-		SELECT 1 
-		FROM bid_allowances ba
-		WHERE ba.product_id = p_product_id AND ba.bidder_id = p_user_id
-	) THEN
-		RETURN TRUE;
-	END IF;
+    -- Ban tuyệt đối
+    SELECT EXISTS (
+        SELECT 1 FROM bid_rejections
+        WHERE product_id = p_product_id
+          AND bidder_id  = p_user_id
+    ) INTO v_has_rejection;
 
-	RETURN FALSE;
+    IF v_has_rejection THEN
+        RETURN FALSE;
+    END IF;
+
+    -- Allowance
+    SELECT EXISTS (
+        SELECT 1 FROM bid_allowances
+        WHERE product_id = p_product_id
+          AND bidder_id  = p_user_id
+    ) INTO v_has_allowance;
+
+    -- Rating
+    SELECT rating_percent
+    INTO v_rating
+    FROM users_rating
+    WHERE user_id = p_user_id;
+
+    -- Rating thấp thì chỉ cho nếu có allowance
+    IF v_rating IS NULL OR v_rating < 80 THEN
+        IF NOT v_has_allowance THEN
+            RETURN FALSE;
+        END IF;
+    END IF;
+
+    RETURN TRUE;
 END;
-$function$;
-	
+$$;
+
 
 CREATE OR REPLACE FUNCTION fnc_user_reviewed(user_id BIGINT)
 RETURNS TABLE (
