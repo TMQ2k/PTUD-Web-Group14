@@ -9,6 +9,10 @@ import { Calendar } from "lucide-react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
+import { registerLocale } from "react-datepicker";
+
+registerLocale("vi", vi);
 
 // Custom DateTimeInput giữ nguyên UI như datetime-local
 const DateTimeInput = forwardRef(
@@ -345,6 +349,7 @@ const ProductFormContext = ({
           />
           <div className="relative w-full">
             <DatePicker
+              locale={vi}
               ref={datePickerRef}
               selected={selectedDate}
               onChange={(date) => {
