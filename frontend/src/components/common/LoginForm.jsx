@@ -81,11 +81,12 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
       // ✅ Lưu vào Redux
       dispatch(
         loginSuccess({
-          id: userData.id,
+          id: userData.user_id || userData.id,
           name: userData.username || userData.name,
           email: userData.email,
           role: userData.role || "buyer",
           avatar: userData.avatar || null,
+          qr_url: userData.qr_url || null,
         })
       );
 
@@ -193,11 +194,12 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
         dispatch(
           loginSuccess({
-            id: userData.id,
+            id: userData.user_id,
             name: displayName,
             email: userData.email,
             role: userData.role,
             avatar: userData.avatar_url || null,
+            qr_url: userData.qr_url || null,
           })
         );
 

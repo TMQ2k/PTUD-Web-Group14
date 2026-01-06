@@ -8,6 +8,7 @@ import categoryController from "./src/controller/catergoryController.js";
 import bidderController from "./src/controller/bidderController.js";
 import sellerController from "./src/controller/sellerController.js";
 import commentController from "./src/controller/commentController.js";
+import searchConroller from "./src/controller/searchController.js";
 
 dotenv.config();
 
@@ -27,6 +28,12 @@ app.use("/api/categories", categoryController);
 app.use("/api/bidder", bidderController);
 app.use("/api/seller", sellerController);
 app.use("/api/comments", commentController);
+app.use("/api/search", searchConroller);
 
 const PORT = process.env.BACKEND_PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+
+
+
+

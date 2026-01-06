@@ -1,7 +1,16 @@
 import { http } from "../libs/http";
+import { authStorage } from "../utils/auth";
 
 const productEndpoint = {
   getAll: "/products",
+  postProduct: "/products",
+  productBiddingHistory: "/products/bid-history",
+  winningBidder: "/winning-bidder",
+  enableExtension: "/products/enable-extension",
+  deactivateExpired: "/products/deactivate-expired",
+  sellerProducts: "/products/seller-products",
+  search: "search/products",
+  bannedList: "/products/banned-list",
 };
 
 export const productApi = {
@@ -36,7 +45,8 @@ export const productApi = {
    */
   getTop5HighestPrice: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=highest_price&is_active=true`
     );
     return response.data;
   },
@@ -47,7 +57,8 @@ export const productApi = {
    */
   getTop5EndingSoon: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=ending_soon&is_active=true`
     );
     return response.data;
   },
@@ -58,7 +69,8 @@ export const productApi = {
    */
   getTop5MostBidded: async () => {
     const response = await http.get(
-      `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded`
+      // `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded`
+      `${productEndpoint.getAll}?limit=5&page=1&sortBy=most_bidded&is_active=true`
     );
     return response.data;
   },
@@ -75,11 +87,104 @@ export const productApi = {
     return response.data;
   },
 
-  getProductById: async (productId, other_products_quantity) => {
+  getProductById: async (productId) => {
     const response = await http.get(
-      `${productEndpoint.getAll}/${productId}?limit=${other_products_quantity}`      
-    )
-    console.log(`${productEndpoint.getAll}?/${productId}?limit=${other_products_quantity}`);
+      `${productEndpoint.getAll}/${productId}`
+    );
     return response.data;
+  },
+
+  postProduct: async (productFormData) => {
+    const respone = await http.post(
+      `${productEndpoint.postProduct}`,
+      productFormData,
+      {
+        headers: {
+          Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  },
+
+  /**
+   * Hủy kích hoạt các sản phẩm đã hết hạn đấu giá
+   * @returns {Promise<Object>} Response từ server
+   */
+  deactivateExpiredProducts: async () => {
+    const response = await http.put(productEndpoint.deactivateExpired);
+    return response.data;
+  },
+
+  /**
+   * Tìm kiếm sản phẩm với full-text search
+   * @param {Object} params - Query parameters
+   * @param {string} params.q - Từ khóa tìm kiếm (tên sản phẩm)
+   * @param {number} params.limit - Số lượng sản phẩm mỗi trang (default: 8)
+   * @param {number} params.page - Trang hiện tại (default: 1)
+   * @param {string} params.sortBy - Sắp xếp: 'price_asc' | 'endtime_desc' (default)
+   * @param {boolean} params.is_active - true: active, false: hết hạn, undefined: cả hai
+   * @returns {Promise<Object>} Response chứa data
+   */
+  searchProducts: async (params = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.q) queryParams.append("q", params.q);
+    if (params.limit) queryParams.append("limit", params.limit);
+    if (params.page) queryParams.append("page", params.page);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.is_active !== undefined)
+      queryParams.append("is_active", params.is_active);
+
+    const url = `${productEndpoint.search}?${queryParams.toString()}`;
+    const response = await http.get(url);
+    return response.data;
+  },
+
+  getProductBiddingHistory: async (productId) => {
+    const respone = await http.get(
+      `${productEndpoint.productBiddingHistory}/${productId}`
+    );
+    return respone.data;
+  },
+
+  updateDescription: async (productId, updatedDescription) => {
+    // console.log(updatedDescription);
+    // console.log(JSON.stringify(updatedDescription))
+    const respone = await http.put(
+      `products/${productId}/description`,
+      { newDescription: updatedDescription },
+      {
+        headers: {
+          Authorization: `Bearer ${authStorage.getToken()}`,
+        },
+      }
+    );
+    return respone.data;
+  },
+
+  getWinningBidder: async (productId) => {
+    const respone = await http.get(`/products/${productId}${productEndpoint.winningBidder}`);
+    return respone.data;
+  },
+
+  enableProductExtension: async (productId) => {
+    const respone = await http.post(productEndpoint.enableExtension, {
+      productId: productId,
+    }, {});
+
+    return respone.data;
+  },
+
+  getSellerProducts: async () => {
+    const respone = await http.get(productEndpoint.sellerProducts);
+    return respone.data;
+  },
+
+  getBannedList: async (productId) => {
+    const respone = await http.get(`${productEndpoint.bannedList}/${productId}`);
+    return respone.data;
   }
 };

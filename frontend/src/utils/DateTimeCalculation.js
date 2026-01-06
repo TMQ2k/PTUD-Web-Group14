@@ -127,10 +127,17 @@ function formatCustomDate(dateString) {
   const year = date.getFullYear();
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
+  const seconds = pad(date.getSeconds());  
 
   // 4. Return the constructed string using Template Literals
   return `${dayName}, ${day}/${month}/${year}, ${hours}:${minutes}:${seconds}`;
+}
+
+function dateDistance(dateIsoString1, dateIsoString2) {
+  const date1 = new Date(dateIsoString1);
+  const date2 = new Date(dateIsoString2);
+
+  return date2 - date1;
 }
 
 export {

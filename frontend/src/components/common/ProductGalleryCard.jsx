@@ -13,7 +13,7 @@ const ProductGalleryCard = () => {
 
   useEffect(() => {
     const interval_id = setInterval(() => {
-      if (isEndingSoon(created_at, end_time)) {
+      if (isEndingSoon(new Date(created_at), new Date(end_time))) {
         setEngdingSoon(true);
       }
     }, 1000);
@@ -27,7 +27,7 @@ const ProductGalleryCard = () => {
     <article className="w-full h-full">
       <header className="mb-5">
         {endingSoon && (
-          <h3 className="text-blue-400 flex flex-row gap-1 font-semibold text-md underline">
+          <h3 className="text-red-600 flex flex-row gap-1 font-semibold text-lg underline">
             <FaRegClock className="w-5 h-7" />
             <p>Sắp kết thúc</p>
           </h3>

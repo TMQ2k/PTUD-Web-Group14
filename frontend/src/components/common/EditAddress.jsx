@@ -259,10 +259,10 @@ const EditAddress = () => {
           <button
             type="submit"
             disabled={loading}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-8 py-3 bg-linear-to-r from-blue-400  to-purple-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
           >
             <FaSave className="w-4 h-4" />
-            {loading ? "Đang lưu..." : "Save settings"}
+            {loading ? "Đang lưu..." : "Lưu địa chỉ"}
           </button>
         </div>
       </form>

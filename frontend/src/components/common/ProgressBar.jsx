@@ -1,8 +1,9 @@
+import { twMerge } from "tailwind-merge";
 import { useEffect, useState } from "react";
 import { useProduct } from "../../context/ProductDetailsContext";
 import { getProgress } from "../../utils/DateTimeCalculation";
 
-const ProgressBar = ({ className = "" }) => {
+const ProgressBar = ({ isTopBidder, className = "" }) => {
   const product = useProduct();
   const [proportion, setProportion] = useState(0);
 
@@ -26,7 +27,9 @@ const ProgressBar = ({ className = "" }) => {
       <div className={`h-1 w-full bg-gray-300 rounded-2xl ` + className}>
         <div
           style={{ width: `${proportion}%` }}
-          className={`h-full rounded-2xl max-w-full bg-linear-to-r from-blue-400 to-purple-600 `}
+          className={twMerge(`h-full rounded-2xl max-w-full bg-linear-to-br `, 
+            isTopBidder ? "from-orange-400 to-red-600" : "from-blue-400 to-purple-600"
+          )}
         ></div>
       </div>
     </>

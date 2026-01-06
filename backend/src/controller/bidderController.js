@@ -2,6 +2,7 @@ import express from "express";
 import {
   addProductToWatchlist,
   getUserWatchlistService,
+  getAllBidderInfosByProductId,
   removeProductFromWatchlist,
   updateAutoBidCurrentAmountService,
   upsertAutoBidService,
@@ -9,9 +10,11 @@ import {
   getUpgradeRequestsService,
   handleUpgradeRequestService,
   requestBidderOnProductService,
-  isBidsOnProductService,
+  isBidsOnProductService
 } from "../service/bidderService.js";
+import { getProductsListofBidder, getMetaDataForBidderProductsList} from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
+import { deactiveProductById } from "../service/productService.js";
 
 const router = express.Router();
 router.post("/add-to-watchlist", authenticate, async (req, res) => {
@@ -225,6 +228,25 @@ router.post(
   }
 );
 
+router.get("/bidders/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const bidders = await getAllBidderInfosByProductId(productId);
+    res.status(200).json({
+      code: 200,
+      message: "Bidders retrieved successfully",
+      data: bidders,
+    });
+  } catch (err) {
+    console.error("Error in /bidders/:productId route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to retrieve bidders",
+      data: null,
+    });
+  }
+});
+
 router.get(
   "/is-bids-on-product/:productId",
   authenticate,
@@ -249,4 +271,57 @@ router.get(
     }
   }
 );
+
+router.put(
+  "/buy-now/:productId",
+  authenticate,
+  authorize("bidder", "seller"),
+  async (req, res) => {
+    try {
+      const productId = req.params.productId;
+      const user = req.user;
+      const result = await deactiveProductById(user,productId);
+      return res.status(200).json({
+        code: 200,
+        message: "Product deactivated successfully",
+        data: result,
+      });
+    }
+    catch (err) {
+      console.error("❌ Error in /:productId/deactivate route:", err);
+      return res.status(400).json({
+        code: 400,
+        message: err.message || "Failed to deactivate product",
+        data: null,
+      });
+    }
+  }
+);
+
+router.get("/bidder-products", authenticate, authorize("bidder"), async (req, res) => {
+  try {
+    const bidderId = req.user.id;
+    const limit = parseInt(req.query.limit);
+    const page = parseInt(req.query.page)||1;
+    const sortBy = "ending_soon";
+    const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
+    const products = await getProductsListofBidder(bidderId, limit, page, sortBy, is_active);
+    const metaData = await getMetaDataForBidderProductsList(bidderId, limit, page, is_active);
+    res.status(200).json({
+      code: 200,
+      message: "Bidder's products retrieved successfully",
+      data: products,
+      metadata: metaData,
+    });
+  }
+  catch (err) {
+    console.error("❌ Error in /bidder-products route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to retrieve bidder's products",
+      data: null,
+    });
+  }
+});
+
 export default router;

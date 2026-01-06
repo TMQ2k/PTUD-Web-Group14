@@ -50,10 +50,10 @@ const TimeCountDown = () => {
             Phiên đấu giá còn
           </p>
           <div className="flex flex-row justify-center items-center gap-2 px-2">
-            <TimeCard value={time.days} name="days" />
-            <TimeCard value={time.hours} name="hours" />
-            <TimeCard value={time.minutes} name="minutes" />
-            <TimeCard value={time.seconds} name="seconds" />
+            <TimeCard value={time.days} name="ngày" />
+            <TimeCard value={time.hours} name="giờ" />
+            <TimeCard value={time.minutes} name="phút" />
+            <TimeCard value={time.seconds} name="giây" />
           </div>
         </>
       )}

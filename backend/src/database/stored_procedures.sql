@@ -1802,7 +1802,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION fnc_seller_deactive_product(p_seller_id BIGINT)
-RETURNS TABLE (
+RETURNS TABLE (s
 	won_id BIGINT, 
     product_id INTEGER,
     product_name VARCHAR,

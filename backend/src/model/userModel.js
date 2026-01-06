@@ -8,7 +8,8 @@ export class User {
 }
 
 export class UserSimpleProfile {
-  constructor(username, avatar_url, points) {
+  constructor(id, username, avatar_url, points) {
+    this.id = id;
     this.username = username;
     this.avatar_url = avatar_url;
     this.points = points;

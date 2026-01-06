@@ -5,24 +5,43 @@ import UserManagement from "../components/admin/UserManagement";
 import CategoryManagement from "../components/admin/CategoryManagement";
 import ProductManagement from "../components/admin/ProductManagement";
 import RequestManagement from "../components/admin/RequestManagement";
+import { adminApi } from "../api/admin.api";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
 
-  // TODO: Fetch pending requests count when RequestManagement API is ready
+  // Fetch pending requests count để hiển thị badge
   useEffect(() => {
-    // Placeholder for future implementation
-    // const fetchPendingRequests = async () => {
-    //   try {
-    //     const response = await adminApi.getPendingRequestsCount();
-    //     setPendingRequestsCount(response.data.count);
-    //   } catch (error) {
-    //     console.error("Error fetching pending requests:", error);
-    //   }
-    // };
-    // fetchPendingRequests();
+    const fetchPendingRequests = async () => {
+      try {
+        const response = await adminApi.getUpgradeRequests();
+        const pendingCount = response.data.filter(
+          (req) => req.status === "pending"
+        ).length;
+        setPendingRequestsCount(pendingCount);
+      } catch (error) {
+        console.error("Error fetching pending requests:", error);
+      }
+    };
+    fetchPendingRequests();
+
+    // Refresh count mỗi 30 giây
+    const interval = setInterval(fetchPendingRequests, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  const refreshPendingCount = async () => {
+    try {
+      const response = await adminApi.getUpgradeRequests();
+      const pendingCount = response.data.filter(
+        (req) => req.status === "pending"
+      ).length;
+      setPendingRequestsCount(pendingCount);
+    } catch (error) {
+      console.error("Error refreshing pending requests:", error);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -33,7 +52,7 @@ const AdminDashboard = () => {
       case "products":
         return <ProductManagement />;
       case "requests":
-        return <RequestManagement />;
+        return <RequestManagement onRequestUpdated={refreshPendingCount} />;
       default:
         return <UserManagement />;
     }
