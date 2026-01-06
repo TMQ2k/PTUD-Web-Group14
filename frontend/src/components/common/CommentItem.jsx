@@ -19,7 +19,9 @@ const CommentItem = ({ comment, comments, addReply, userRole, isTopBidder, isSho
       {/* Avatar */}
       <div className="shrink-0">
         <img
-          className="w-10 h-10 rounded-full object-cover outline-2 outline-offset-2 outline-blue-400"
+          className={twMerge("w-10 h-10 rounded-full object-cover outline-2 outline-offset-2 ",
+            isTopBidder ? "outline-orange-400" : "outline-blue-400"
+          )}
           src={comment?.user_avatar_url || default_avatar_image}
           alt={comment?.username}
         />
@@ -70,21 +72,36 @@ const CommentItem = ({ comment, comments, addReply, userRole, isTopBidder, isSho
               submitLabel="Reply"
               handleSubmit={handleReply}
               onCancel={() => setIsReplying(false)}
+              isTopBidder={isTopBidder}
             />
           </div>
         )}
     
         {showReplying && comment?.replies && comment?.replies?.length > 0 && (
           <div className="pl-6 border-l-2 border-gray-100 space-y-6">
-            {comment?.replies?.map((_, i, arr) => (
+            {/* {comment?.replies?.map((_, i, arr) => (
               <CommentItem
                 key={arr[arr.length - 1 - i]}
                 comment={comments?.find((c) => c?.comment_id === arr[arr.length - 1 - i])}
                 addReply={addReply}
                 comments={comments}
                 userRole={userRole}
+                isTopBidder={isTopBidder}
               />
-            ))}
+            ))} */}
+            {comment?.replies?.reverse().map((c) => {
+              // console.log(c?.comment_id);
+              // console.log(comment.replies.reverse())
+              return (
+              <CommentItem
+                key={c}
+                comment={comments?.find((rc) => c === rc?.comment_id)}
+                addReply={addReply}
+                comments={comments}
+                userRole={userRole}
+                isTopBidder={isTopBidder}
+              />)
+            })}
           </div>
         )}
 
