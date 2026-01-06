@@ -565,7 +565,7 @@ const ProductFormContext = ({
 
         {error && 
           <div className="text-red-500 bg-red-100 rounded-lg w-full px-2 py-1 mx-auto text-center text-base">
-            {error?.message ? `Error: ${error.message}` : "Hệ thống không thể gửi xác nhận mua ngay cho bạn!"}
+            {error?.message ? `Error: ${error.message}` : "Hệ thống không thể đăng sản phẩm cho bạn, hãy kiểm tra kết nối mạng!"}
           </div>
         }
 
