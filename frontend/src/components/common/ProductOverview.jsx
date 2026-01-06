@@ -29,7 +29,7 @@ const ProductOverview = () => {
   const user = useSelector((state) => state.user);
   const isTopBidder =
     user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
-
+  const [newQuillContents, setNewQuillContents] = useState(null);
   const { quill: viewQuill, quillRef: viewRef } = useQuill({
     readOnly: true,
     modules: { toolbar: false },
@@ -74,6 +74,19 @@ const ProductOverview = () => {
       ],
     },
   });
+
+  useEffect(() => {
+    if (appendQuill) {
+      appendQuill.on("text-change", () => {
+        const oldContent = viewQuill.getContents(); // Get current Delta
+        const newContent = appendQuill.getContents(); // Get new Delta
+
+        const combinedContent = oldContent.concat(newContent);
+        setNewQuillContents(JSON.stringify(combinedContent));
+      });
+    }
+  }, [appendQuill, viewQuill]);
+
   const handleConfirmAppend = async (e) => {
     e.preventDefault();
     if (viewQuill && appendQuill) {
@@ -87,7 +100,8 @@ const ProductOverview = () => {
       try {
         const respone = await productApi.updateDescription(
           product?.product_id,
-          JSON.stringify(combinedContent)
+          //JSON.stringify(combinedContent)
+          newQuillContents
         );
         if (respone.code === 200) viewQuill.setContents(combinedContent);
       } catch (err) {

@@ -162,8 +162,8 @@ const ProductFormContext = ({
       // 2. Listen for changes
       quill.on("text-change", () => {
         // 3. Update parent state immediately
-        setQuillContents(quill.getContents());
-        setValue("description", quill.getContents());
+        setQuillContents(JSON.stringify(quill.getContents()));
+        //setValue("description", JSON.stringify(quill.getContents()));
 
         // OR if you decided to switch to HTML string later:
         // setQuillContents(quill.root.innerHTML);
