@@ -13,7 +13,7 @@ const MainLayouts = () => {
       <Header />
       <Outlet />
       <MiniBar />
-      <Footer />      
+      <Footer />
       <ToastContainer />
     </AdminRedirectGuard>
   );

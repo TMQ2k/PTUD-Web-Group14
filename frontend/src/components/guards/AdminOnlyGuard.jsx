@@ -22,7 +22,9 @@ const AdminOnlyGuard = ({ children }) => {
 
     // Đã login nhưng không phải admin → redirect về home
     if (userData?.role !== "admin") {
-      console.log("🔒 Không có quyền truy cập trang admin. Redirecting to /...");
+      console.log(
+        "🔒 Không có quyền truy cập trang admin. Redirecting to /..."
+      );
       navigate("/", { replace: true });
       return;
     }

@@ -75,7 +75,7 @@ const App = () => {
         // Gọi API /profile với token
         const response = await userApi.getProfile();
         const userData = response.data;
-    
+
         console.log("✅ Khôi phục thành công:", userData);
 
         const fullName = `${userData.first_name || ""} ${
@@ -102,8 +102,13 @@ const App = () => {
         );
 
         // ⚠️ Nếu là admin và đang ở trang khác → redirect về /admin
-        if (userData.role === "admin" && !window.location.pathname.startsWith("/admin")) {
-          console.log("🔒 Admin detected on non-admin page, redirecting to /admin...");
+        if (
+          userData.role === "admin" &&
+          !window.location.pathname.startsWith("/admin")
+        ) {
+          console.log(
+            "🔒 Admin detected on non-admin page, redirecting to /admin..."
+          );
           window.location.replace("/admin");
         }
       } catch (error) {
@@ -155,8 +160,14 @@ const App = () => {
           <Route path="/watchlist" element={<WatchList />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
-          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    
-          <Route path="/auctionmanagement/:id" element={<AuctionManegementPage />} />
+          <Route
+            path="/productupdating/:id"
+            element={<ProductUpdatingPage />}
+          />
+          <Route
+            path="/auctionmanagement/:id"
+            element={<AuctionManegementPage />}
+          />
           <Route path="/productcheckout" element={<ProductCheckoutPage />} />
         </Route>
 
