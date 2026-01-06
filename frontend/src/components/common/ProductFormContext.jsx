@@ -47,6 +47,7 @@ const ProductFormContext = ({
     getValues,
     formState: { errors },
     trigger,
+    handleSubmit,
     formState: { isSubmitting },
   } = useFormContext();
 
@@ -175,6 +176,16 @@ const ProductFormContext = ({
     }
   }, [quill, setQuillContents, setValue]);
 
+  const [error, setError] = useState(null);
+  const handleLocalSubmit = async (data) => {
+    try {
+      setError(null);
+      const respone = await onSubmit(data); 
+    } catch (err) {
+      setError(err);
+    }
+  }
+
   // Common Tailwind classes for all inputs
   const inputClasses =
     "w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all shadow-sm placeholder-gray-400";
@@ -187,7 +198,7 @@ const ProductFormContext = ({
         <p className="text-sm text-gray-500 mt-1">Điền đầy đủ thông tin</p>
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit(handleLocalSubmit)} className="flex flex-col gap-6">
         {/* Row 1: Product Name */}
         <InputField
           label="Tên sản phẩm"
@@ -551,6 +562,12 @@ const ProductFormContext = ({
             }}
           ></div>
         </InputField>
+
+        {error && 
+          <div className="text-red-500 bg-red-100 rounded-lg w-full px-2 py-1 mx-auto text-center text-base">
+            {error?.message ? `Error: ${error.message}` : "Hệ thống không thể đăng sản phẩm cho bạn, hãy kiểm tra kết nối mạng!"}
+          </div>
+        }
 
         {/* Submit Button */}
         <div className="mt-4 flex justify-end">

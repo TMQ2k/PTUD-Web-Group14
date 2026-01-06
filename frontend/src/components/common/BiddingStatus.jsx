@@ -96,19 +96,16 @@ const BiddingStatus = ({ className = "" }) => {
   // };
 
   const onAutoBid = async (productId, formattedPrice) => {
-   
     const respone = await bidderApi.autobid(productId, formattedPrice);
-      if (respone.code === 200) {
-        const updateRespone = await bidderApi.autobidUpdate(
-          product?.product_id
-        );
-        dispatch({
-          type: "autobid-update",
-          payload: updateRespone.data,
-        });
-      }
+    if (respone.code === 200) {
+      const updateRespone = await bidderApi.autobidUpdate(product?.product_id);
+      dispatch({
+        type: "autobid-update",
+        payload: updateRespone.data,
+      });
+    }
 
-      return respone;
+    return respone;
   };
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -123,7 +120,7 @@ const BiddingStatus = ({ className = "" }) => {
 
   const handleAutoBidConfirm = async (productId, price) => {
     const respone = await onAutoBid(productId, price);
-    // if (respone.code !== 200) {      
+    // if (respone.code !== 200) {
     // }
     if (respone?.code === 200) {
       closeAutoBidDialog();
@@ -137,12 +134,12 @@ const BiddingStatus = ({ className = "" }) => {
     //console.log(`Processing purchase for Product ID: ${productId}...`);
 
     const respone = await bidderApi.buyNow(productId);
-    if (respone?.code === 200) {      
+    if (respone?.code === 200) {
       closeBuyDialog();
       alert("Purchase confirmed!");
       navigate("/productcheckout");
     }
-    
+
     return respone;
   };
 
@@ -218,7 +215,7 @@ const BiddingStatus = ({ className = "" }) => {
                       userData?.id &&
                       userData.id !== product.seller.id)) && (
                     <>
-                      {(rating_percent < 80.0 && !isBidOnProduct) ? (
+                      {rating_percent < 80.0 && !isBidOnProduct ? (
                         <BiddingRequestForm
                           productId={product?.product_id || ""}
                           state={false}
@@ -262,7 +259,13 @@ const BiddingStatus = ({ className = "" }) => {
                             openAutoBidDialog={openAutoBidDialog}
                             onAutoBid={onAutoBid}
                           />
-
+                          <AutoBidDialog
+                            isOpen={isAutoBidDialogOpen}
+                            onClose={closeAutoBidDialog}
+                            onConfirm={handleAutoBidConfirm}
+                            price={bidPrice}
+                            productId={product.product_id}
+                          />
                           {buy_now && (
                             <>
                               <button
@@ -294,13 +297,6 @@ const BiddingStatus = ({ className = "" }) => {
                                 onClose={closeBuyDialog}
                                 onConfirm={handlePurchaseConfirm}
                                 buyNowPrice={product.buy_now_price}
-                                productId={product.product_id}
-                              />
-                              <AutoBidDialog
-                                isOpen={isAutoBidDialogOpen}
-                                onClose={closeAutoBidDialog}
-                                onConfirm={handleAutoBidConfirm}
-                                price={bidPrice}
                                 productId={product.product_id}
                               />
                             </>

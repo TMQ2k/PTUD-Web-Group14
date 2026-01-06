@@ -128,6 +128,7 @@ const ProductPosting = () => {
     setPostedProductId(respone.data);
 
     setPosted(true);
+    return respone;
   };
 
   return (

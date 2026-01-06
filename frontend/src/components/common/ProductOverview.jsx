@@ -113,7 +113,7 @@ const ProductOverview = () => {
   return (
     <article className="flex flex-col gap-5 bg-slate-100 hover:shadow-lg transition-all duration-300 rounded-md py-5 px-6 text-balance">
       <OverviewSection title="Mô tả từ người bán" isTopBidder={isTopBidder}>
-        <div className="bg-white rounded-lg border border-gray-200">
+        <div className="bg-white rounded-lg border border-gray-200 overflow-y-auto max-h-120">
           <div
             ref={viewRef}
             style={{ minHeight: "150px", border: "none", width: "100%" }}
