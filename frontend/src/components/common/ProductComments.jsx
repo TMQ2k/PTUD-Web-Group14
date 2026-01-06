@@ -5,7 +5,9 @@ import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { commentApi } from "../../api/comment.api";
 import Spinner from "./Spinner";
-
+import { AlertCircle } from "lucide-react";
+import { handleReload } from "../../utils/WindowsHandler";
+import ErrorModal from "./ErrorModal";
 
 const ProductComments = React.memo(({ productId, isTopBidder }) => {
   const user = useSelector((state) => state.user);
@@ -78,12 +80,8 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
         <div className="h-fit w-full mt-10 flex items-center justify-center">
           <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
-      )}
-      {error && (
-        <div className="text-2xl font-bold text-red-500 text-center w-full">
-          Can not get comments
-        </div>
       )} */}
+      {error && <ErrorModal defaultMessage="Hệ thống không thể tải bình luận" error={error} />}
       {/*{!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">

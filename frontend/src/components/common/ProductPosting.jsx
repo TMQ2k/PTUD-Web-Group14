@@ -11,6 +11,7 @@ import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import EnableProductExtension from "./EnableProductExtension";
 import Spinner from "./Spinner";
+import ErrorModal from "./ErrorModal";
 
 const ProductPosting = () => {
   const [systemCategories, setSystemCategories] = useState([]);
@@ -127,9 +128,7 @@ const ProductPosting = () => {
           <Spinner />
         </div>
       )}
-      {error && (
-        <div className="text-4xl font-semibold text-red-500">{error}</div>
-      )}
+      {error && <ErrorModal defaultMessage={"Hệ thống không thể tải trang này"} error={error} />}
       {!loading &&
         !error &&
         (posted ? (
@@ -166,8 +165,8 @@ const ProductPosting = () => {
                   </span>{" "}
                   của bạn đã được niêm yết và hiển thị với người mua.
                 </p>
-                
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">                  
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
                     onClick={() => {
                       setPosted(false);
@@ -186,7 +185,7 @@ const ProductPosting = () => {
                   >
                     View Product
                   </Link>
-                </div>                
+                </div>
                 <div className="mt-6">
                   <Link
                     to="/"
