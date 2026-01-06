@@ -30,7 +30,7 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
 
       try {
         const respone = await commentApi.getAllComments(productId);
-        console.log(respone.data);
+        //console.log(respone.data);
         if (isMounted) {
           setComments(respone.data);
         }
@@ -62,7 +62,7 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
       };
 
       const respone = await commentApi.postComment(productId, payload);
-      console.log(respone);
+      //console.log(respone);
       setComments((prev) => {
         //console.log(respone.data);
         if (respone?.data) {
