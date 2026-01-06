@@ -3,6 +3,7 @@ import { useState } from "react";
 import CommentForm from "./CommentForm";
 import { formatCustomDate } from "../../utils/DateTimeCalculation";
 import { IoChevronDownOutline, IoChevronUp } from "react-icons/io5";
+import default_avatar_image from "../../../public/images/default/default_avatar.jfif";
 
 const CommentItem = ({ comment, comments, addReply, userRole, isTopBidder, isShowReplying=true }) => {
   const [isReplying, setIsReplying] = useState(false);
@@ -18,8 +19,8 @@ const CommentItem = ({ comment, comments, addReply, userRole, isTopBidder, isSho
       {/* Avatar */}
       <div className="shrink-0">
         <img
-          className="w-10 h-10 rounded-full object-cover"
-          src={comment?.user_avatar_url}
+          className="w-10 h-10 rounded-full object-cover outline-2 outline-offset-2 outline-blue-400"
+          src={comment?.user_avatar_url || default_avatar_image}
           alt={comment?.username}
         />
       </div>

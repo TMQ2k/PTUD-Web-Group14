@@ -32,12 +32,12 @@ function toProgressFractionString(start, end) {
 function isEndingSoon(start, end) {
   const milliseconds_ending_zone = dateSubtraction(start, end) / 10;
   const current_milliseconds = Date.now();
-  const end_milliseconds = Date.parse(end);
-  const remaining_milliseconds = end_milliseconds - current_milliseconds;
+  const end_milliseconds = end;
+  const remaining_milliseconds = end_milliseconds - current_milliseconds;  
 
   if (milliseconds_ending_zone === null || remaining_milliseconds === null)
     return false;
-  if (remaining_milliseconds <= milliseconds_ending_zone) {
+  if (remaining_milliseconds > 0 && remaining_milliseconds <= milliseconds_ending_zone) {
     return true;
   }
 

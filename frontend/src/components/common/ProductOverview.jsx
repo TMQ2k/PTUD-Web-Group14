@@ -29,7 +29,7 @@ const ProductOverview = () => {
   const user = useSelector((state) => state.user);
   const isTopBidder =
     user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
-
+  const [newQuillContents, setNewQuillContents] = useState(null);
   const { quill: viewQuill, quillRef: viewRef } = useQuill({
     readOnly: true,
     modules: { toolbar: false },
@@ -74,6 +74,19 @@ const ProductOverview = () => {
       ],
     },
   });
+
+  useEffect(() => {
+    if (appendQuill) {
+      appendQuill.on("text-change", () => {
+        const oldContent = viewQuill.getContents(); // Get current Delta
+        const newContent = appendQuill.getContents(); // Get new Delta
+
+        const combinedContent = oldContent.concat(newContent);
+        setNewQuillContents(JSON.stringify(combinedContent));
+      });
+    }
+  }, [appendQuill, viewQuill]);
+
   const handleConfirmAppend = async (e) => {
     e.preventDefault();
     if (viewQuill && appendQuill) {
@@ -87,7 +100,8 @@ const ProductOverview = () => {
       try {
         const respone = await productApi.updateDescription(
           product?.product_id,
-          JSON.stringify(combinedContent)
+          //JSON.stringify(combinedContent)
+          newQuillContents
         );
         if (respone.code === 200) viewQuill.setContents(combinedContent);
       } catch (err) {
@@ -107,60 +121,62 @@ const ProductOverview = () => {
         </div>
       </OverviewSection>
 
-      {user.isLoggedIn && user.userData.id === product.seller.id && (
-        <>
-          <Activity mode={isAppending ? "hidden" : "visible"}>
-            <button
-              onClick={() => setIsAppending(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+      {user.isLoggedIn &&
+        user.userData.role === "seller" &&
+        user.userData.id === product.seller.id && (
+          <>
+            <Activity mode={isAppending ? "hidden" : "visible"}>
+              <button
+                onClick={() => setIsAppending(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm flex items-center gap-2"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              Thêm thông tin mô tả
-            </button>
-          </Activity>
-          <Activity mode={isAppending ? "visible" : "hidden"}>
-            <form className="w-full bg-white p-4 rounded-lg border-2 border-blue-100 animate-fade-in-down">
-              <h4 className="text-sm font-semibold text-gray-500 mb-2">
-                Nội dung bổ sung:
-              </h4>
-
-              <div style={{ minHeight: 200, marginBottom: "50px" }}>
-                <div ref={appendRef} />
-              </div>
-
-              <div className="flex gap-3 mt-4 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsAppending(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  Hủy bỏ
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleConfirmAppend}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium shadow-sm"
-                >
-                  Xác nhận & Gộp
-                </button>
-              </div>
-            </form>
-          </Activity>
-        </>
-      )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Thêm thông tin mô tả
+              </button>
+            </Activity>
+            <Activity mode={isAppending ? "visible" : "hidden"}>
+              <form className="w-full bg-white p-4 rounded-lg border-2 border-blue-100 animate-fade-in-down">
+                <h4 className="text-sm font-semibold text-gray-500 mb-2">
+                  Nội dung bổ sung:
+                </h4>
+
+                <div style={{ minHeight: 200, marginBottom: "50px" }}>
+                  <div ref={appendRef} />
+                </div>
+
+                <div className="flex gap-3 mt-4 justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setIsAppending(false)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    onClick={handleConfirmAppend}
+                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm font-medium shadow-sm"
+                  >
+                    Xác nhận & Gộp
+                  </button>
+                </div>
+              </form>
+            </Activity>
+          </>
+        )}
 
       <OverviewSection title="Thông tin chung" isTopBidder={isTopBidder}>
         <ProductBaseInformation />

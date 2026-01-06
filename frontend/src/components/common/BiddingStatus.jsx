@@ -21,6 +21,8 @@ import BiddingRequestForm from "./BiddingRequestForm";
 import BuyNowDialog from "./BuyNowDialog";
 import AutoBidDialog from "./AutoBidDialog";
 import { Zap } from "lucide-react";
+import { Lock } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
@@ -30,7 +32,8 @@ const BiddingStatus = ({ className = "" }) => {
   const { userData } = user.isLoggedIn ? user : {};
   const role = user.isLoggedIn ? user.userData.role : "guest";
   const rating_percent = userData?.rating_percent || 0.0;
-  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);
+  const isTopBidder =
+    user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
   // Create the formatter and format the number
   const formattedCurrentBid = formatNumberToCurrency(
     product.current_price || product.starting_price
@@ -71,7 +74,8 @@ const BiddingStatus = ({ className = "" }) => {
       }
     };
 
-    if (user.isLoggedIn &&  userData?.id !== product.seller.id) loadIsBidOnProduct();
+    if (user.isLoggedIn && userData?.id !== product.seller.id)
+      loadIsBidOnProduct();
 
     return () => {
       isMounted = false;
@@ -91,10 +95,12 @@ const BiddingStatus = ({ className = "" }) => {
   // };
 
   const onAutoBid = async (productId, formattedPrice) => {
-    try {
-      const respone = await bidderApi.autobid(productId, formattedPrice);
+   
+    const respone = await bidderApi.autobid(productId, formattedPrice);
       if (respone.code === 200) {
-        const updateRespone = await bidderApi.autobidUpdate(product?.product_id);
+        const updateRespone = await bidderApi.autobidUpdate(
+          product?.product_id
+        );
         dispatch({
           type: "autobid-update",
           payload: updateRespone.data,
@@ -102,9 +108,6 @@ const BiddingStatus = ({ className = "" }) => {
       }
 
       return respone;
-    } catch (err) {
-      console.log(err.message);
-    }
   };
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -118,27 +121,28 @@ const BiddingStatus = ({ className = "" }) => {
   const closeAutoBidDialog = () => setIsAutoBidDialogOpen(false);
 
   const handleAutoBidConfirm = async (productId, price) => {
-    try {
-      console.log(price);
-      await onAutoBid(productId, price);
-      
-    } catch (err) {
-      console.log(err.message);
+    const respone = await onAutoBid(productId, price);
+    // if (respone.code !== 200) {      
+    // }
+    if (respone?.code === 200) {
+      closeAutoBidDialog();
+      alert("Autobid confirmed!");
     }
-    closeAutoBidDialog();
-    alert("Autobid confirmed!");
-  }
+    return respone;
+  };
 
   // The actual action to take when they click "Buy Now" in the dialog
   const handlePurchaseConfirm = async (productId) => {
-    console.log(`Processing purchase for Product ID: ${productId}...`);
+    //console.log(`Processing purchase for Product ID: ${productId}...`);
 
     const respone = await bidderApi.buyNow(productId);
-    if (respone?.code === 200) {
+    if (respone?.code === 200) {      
+      closeBuyDialog();
+      alert("Purchase confirmed!");
       navigate("/productcheckout");
     }
-    closeBuyDialog();
-    alert("Purchase confirmed!");
+    
+    return respone;
   };
 
   const suggest_price =
@@ -184,8 +188,12 @@ const BiddingStatus = ({ className = "" }) => {
               </div>
             </>
           ) : (
-            <div className="font-bold text-red-500 text-center w-full">
-              Sản phẩm chưa có người đấu giá
+            <div className="w-full bg-indigo-50 border border-indigo-100 rounded-lg p-3 flex items-center justify-center gap-2.5">
+              <Sparkles className="w-4 h-4 text-indigo-500 fill-indigo-100" />
+
+              <span className="text-sm font-semibold text-indigo-700">
+                Chưa có ai đặt giá.{" "}
+              </span>
             </div>
           )}
         </section>
@@ -195,8 +203,11 @@ const BiddingStatus = ({ className = "" }) => {
           <div className="flex flex-col gap-2">
             <div className="flex flex-col w-full gap-4 mx-auto my-3 justify-center align-center">
               {expired ? (
-                <div className="bg-none text-red-500 text-xl text-center rounded-lg w-full py-1">
-                  Sản phẩm đã đấu giá xong
+                <div className="w-full bg-slate-100 border border-slate-200 rounded-lg py-3 px-4 flex items-center justify-center gap-2">
+                  <Lock className="w-5 h-5 text-slate-500" />
+                  <span className="font-semibold text-slate-600">
+                    Phiên đấu giá đã kết thúc
+                  </span>
                 </div>
               ) : (
                 <>
@@ -243,12 +254,12 @@ const BiddingStatus = ({ className = "" }) => {
                             price={product?.bidder?.maximum_price || 0}
                             steps={parseInt(product?.step_price) || 0}
                             productId={product?.product_id || ""}
-                            endTime={product.end_time}                            
+                            endTime={product.end_time}
                             buyNowPrice={product?.buy_now_price || null}
                             setAutoBidPrice={setBidPrice}
                             openBuyDialog={openBuyDialog}
                             openAutoBidDialog={openAutoBidDialog}
-                            onAutoBid={onAutoBid}                            
+                            onAutoBid={onAutoBid}
                           />
 
                           {buy_now && (
@@ -300,8 +311,11 @@ const BiddingStatus = ({ className = "" }) => {
                 </>
               )}
               <button
-                className={twMerge("bg-linear-to-br px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200",
-                  isTopBidder ? "from-red-600 to-orange-400" : "from-[#8711c1] to-[#2472fc]"
+                className={twMerge(
+                  "bg-linear-to-br px-4 py-2 rounded-xl text-center text-white relative group hover:scale-102 cursor-pointer transition-all duration-200",
+                  isTopBidder
+                    ? "from-red-600 to-orange-400"
+                    : "from-[#8711c1] to-[#2472fc]"
                 )}
                 onClick={() => {
                   navigate(`/auctionmanagement/${product?.product_id}`, {

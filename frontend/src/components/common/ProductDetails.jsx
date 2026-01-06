@@ -18,6 +18,7 @@ import { formatNumberToCurrency } from "../../utils/NumberHandler";
 import Spinner from "./Spinner";
 import { Flame } from "lucide-react";
 import { useSelector } from "react-redux";
+import ErrorModal from "./ErrorModal";
 
 const ProductDetails = () => {
   const params = useParams();
@@ -25,8 +26,9 @@ const ProductDetails = () => {
   const [error, setError] = useState(null);
 
   const [product, dispatch] = useReducer(productReducer, {});
-  const user = useSelector((state) => state.user);  
-  const isTopBidder = (user.isLoggedIn && user.userData.id == product?.top_bidder?.id);
+  const user = useSelector((state) => state.user);
+  const isTopBidder =
+    user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
 
   useEffect(() => {
     let isMounted = true;
@@ -37,16 +39,16 @@ const ProductDetails = () => {
         setError(null);
 
         const respone = await productApi.getProductById(params.id);
-        console.log(respone.data);
+        //console.log(respone.data);
         if (isMounted) {
           dispatch({
             type: "load",
             payload: respone.data,
           });
         }
-      } catch (error) {
-        if (isMounted) setError(error.message);
-        console.error("Error loading product ", error);
+      } catch (err) {
+        if (isMounted) setError(err);
+        //console.error("Error loading product ", err);
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -66,7 +68,12 @@ const ProductDetails = () => {
           <Spinner />
         </div>
       )}
-      {error && <div>{error}</div>}
+      {error && (
+        <ErrorModal
+          defaultMessage="Hệ thống đang gặp sự cố gián đoạn. Vui lòng kiểm tra kết nối mạng của bạn."
+          error={error}
+        />
+      )}
       {!isLoading && !error && (
         <>
           {isTopBidder && (
@@ -82,19 +89,22 @@ const ProductDetails = () => {
               </span>
             </div>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 my-4 px-5 justify-center justify-items-center h-full w-full">
             <ProductContext.Provider value={product}>
               <ProductDispatchContext.Provider value={dispatch}>
                 <ProductInfomation />
-                <AuctionBidCard isTopBidder={isTopBidder}/>
+                <AuctionBidCard isTopBidder={isTopBidder} />
               </ProductDispatchContext.Provider>
             </ProductContext.Provider>
           </div>
           <div className="px-6">
-            <h2 className={twMerge("flex flex-row gap-2 items-center  text-2xl font-bold mb-3",
-              isTopBidder ? "text-orange-500" : "text-blue-500"
-            )}>
+            <h2
+              className={twMerge(
+                "flex flex-row gap-2 items-center  text-2xl font-bold mb-3",
+                isTopBidder ? "text-orange-500" : "text-blue-500"
+              )}
+            >
               <AiFillProduct />
               Sản phẩm liên quan
             </h2>

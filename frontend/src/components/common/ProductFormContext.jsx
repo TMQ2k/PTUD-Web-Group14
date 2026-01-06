@@ -166,8 +166,8 @@ const ProductFormContext = ({
       // 2. Listen for changes
       quill.on("text-change", () => {
         // 3. Update parent state immediately
-        setQuillContents(quill.getContents());
-        setValue("description", quill.getContents());
+        setQuillContents(JSON.stringify(quill.getContents()));
+        //setValue("description", JSON.stringify(quill.getContents()));
 
         // OR if you decided to switch to HTML string later:
         // setQuillContents(quill.root.innerHTML);
@@ -210,7 +210,7 @@ const ProductFormContext = ({
           <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
             Chọn danh mục{" "}
             <span className="text-red-500 font-normal text-sm">
-              (Pick at least 1)
+              (Chọn tối thiểu 1)
             </span>
           </label>
 

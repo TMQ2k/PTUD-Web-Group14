@@ -11,6 +11,7 @@ import { Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import EnableProductExtension from "./EnableProductExtension";
 import Spinner from "./Spinner";
+import ErrorModal from "./ErrorModal";
 
 const ProductPosting = () => {
   const [systemCategories, setSystemCategories] = useState([]);
@@ -24,7 +25,17 @@ const ProductPosting = () => {
   const { userData } = useSelector((state) => state.user);
   const [postedProductId, setPostedProductId] = useState(null);
 
-  const onClick = () => setExtended(true);
+  const onClick = async () => {
+    try {
+      const respone = await productApi.enableProductExtension(postedProductId);
+      if (respone.code === 200) {
+        setExtended(true);
+      }
+      return respone;
+    } catch (error) {
+      console.log(error.message);
+    }    
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -87,7 +98,7 @@ const ProductPosting = () => {
     const formData = new FormData();
     const productPayload = {
       name: data.product_name,
-      description: JSON.stringify(quillContents),
+      description: quillContents,
       starting_price: parseIntFromCurrency(data.starting_price),
       step_price: parseIntFromCurrency(data.step_price),
       buy_now_price: data.buy_now_price
@@ -108,10 +119,10 @@ const ProductPosting = () => {
 
     //console.log(formData.get("images"));
     //Array.from(formData.getAll("images")).forEach((image) => console.log(image));
-    console.log(formData.getAll("images"));
+    //console.log(formData.getAll("images"));
 
     formData.append("product_payload", JSON.stringify(productPayload));
-    console.log(formData.get("product_payload"));
+    //console.log(formData.get("product_payload"));
 
     const respone = await productApi.postProduct(formData);
     setPostedProductId(respone.data);
@@ -127,9 +138,7 @@ const ProductPosting = () => {
           <Spinner />
         </div>
       )}
-      {error && (
-        <div className="text-4xl font-semibold text-red-500">{error}</div>
-      )}
+      {error && <ErrorModal defaultMessage={"Hệ thống không thể tải trang này"} error={error} />}
       {!loading &&
         !error &&
         (posted ? (
@@ -166,8 +175,8 @@ const ProductPosting = () => {
                   </span>{" "}
                   của bạn đã được niêm yết và hiển thị với người mua.
                 </p>
-                
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">                  
+
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <button
                     onClick={() => {
                       setPosted(false);
@@ -186,7 +195,7 @@ const ProductPosting = () => {
                   >
                     View Product
                   </Link>
-                </div>                
+                </div>
                 <div className="mt-6">
                   <Link
                     to="/"

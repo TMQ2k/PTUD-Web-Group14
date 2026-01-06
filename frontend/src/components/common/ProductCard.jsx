@@ -196,7 +196,7 @@ const ProductCard = ({
             </div>
             <p className="text-sm font-bold text-gray-900 truncate">
               {highestBidder !== null
-                ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
+                ? `***${highestBidder.trim().slice(highestBidder.length * 3/4, highestBidder.length)}`
                 : "Chưa có"}
             </p>
           </div>

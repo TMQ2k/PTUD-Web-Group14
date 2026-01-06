@@ -211,7 +211,7 @@
 //   const handleUnban = async (bidder_id) => {
 //     return await handleAuctionManagement(bidder_id, sellerApi.deleteBannedBidder);
 //   }
-  
+
 //   const handleSearch = async (target_name) => {
 //     const respone = await userApi.searchByName(target_name);
 //     if (respone?.code === 200 && respone?.data) setBannedList(respone.data);
@@ -239,16 +239,16 @@
 //             //   productName={productName}
 //             // />
 //             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-//               <BidderRequests 
+//               <BidderRequests
 //                 requests={pendingList}
 //                 handleAcceptRequest={handleAccept}
 //               />
-//               <BidderSearching 
+//               <BidderSearching
 //                 searchList={searchList}
 //                 handleBan={handleReject}
 //                 handleSearch={handleSearch}
 //               />
-//               <BidderBannedList 
+//               <BidderBannedList
 //                 bannedList={bannedList}
 //                 handleUnban={handleUnban}
 //               />
@@ -275,6 +275,7 @@ import BidderBannedList from "./BidderBannedList";
 import BidderRequests from "./BidderRequests";
 import BidderSearching from "./BidderSearching";
 import Spinner from "./Spinner";
+import ErrorModal from "./ErrorModal";
 
 const AuctionManagement = () => {
   const params = useParams();
@@ -282,12 +283,12 @@ const AuctionManagement = () => {
   const sellerId = state?.sellerId;
   const productName = state?.productName;
   const { userData } = useSelector((state) => state.user);
-  
+
   const [history, setHistory] = useState([]);
   const [pendingList, setPendingList] = useState([]);
   const [bannedList, setBannedList] = useState([]);
   const [searchList, setSearchList] = useState([]); // This stores results from the search component
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -300,19 +301,26 @@ const AuctionManagement = () => {
       try {
         setLoading(true);
         setError(null);
-        const [pendingResponse, historyResponse, bannedResponse] = await Promise.all([
-          isSeller ? sellerApi.getBiddersPendingList(params.id) : Promise.resolve(null),
-          productApi.getProductBiddingHistory(params.id),
-          productApi.getBannedList(params.id),
-        ]);
-        
+        const [pendingResponse, historyResponse, bannedResponse] =
+          await Promise.all([
+            isSeller
+              ? sellerApi.getBiddersPendingList(params.id)
+              : Promise.resolve(null),
+            productApi.getProductBiddingHistory(params.id),
+            productApi.getBannedList(params.id),
+          ]);
+
         if (isMounted) {
           if (pendingResponse?.data?.requests && bannedResponse?.data) {
             const pending = pendingResponse.data.requests;
-            const banned = bannedResponse.data;            
+            const banned = bannedResponse.data;
             console.log(pending);
             console.log(banned);
-            setPendingList(pending.filter((p) => !banned.some((b) => b.user_id == p.bidder_id)));            
+            setPendingList(
+              pending.filter(
+                (p) => !banned.some((b) => b.user_id == p.bidder_id)
+              )
+            );
             setBannedList(bannedResponse.data);
           }
           //if (pendingResponse?.data?.requests) setPendingList(pendingResponse.data.requests);
@@ -326,13 +334,15 @@ const AuctionManagement = () => {
       }
     };
     loadData();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [params.id, isSeller]);
 
   // --- Handlers ---
   const refreshData = async () => {
-     // Optional: Helper to re-fetch data after an action without full reload
-     // For now, we update local state optimistically or re-fetch logic could go here
+    // Optional: Helper to re-fetch data after an action without full reload
+    // For now, we update local state optimistically or re-fetch logic could go here
   };
 
   const handleAuctionAction = async (bidder_id, apiCall) => {
@@ -345,19 +355,21 @@ const AuctionManagement = () => {
     } catch (e) {
       console.error("Action failed", e);
     }
-  }
+  };
 
   const handleAccept = (bidder_id) => {
-    handleAuctionAction(bidder_id, sellerApi.acceptBidder)
-    setPendingList(prev => prev.filter(item => item.bidder_id !== bidder_id))
+    handleAuctionAction(bidder_id, sellerApi.acceptBidder);
+    setPendingList((prev) =>
+      prev.filter((item) => item.bidder_id !== bidder_id)
+    );
   };
   const handleReject = (bidder_id) => {
-    handleAuctionAction(bidder_id, sellerApi.rejectBidder)
-    setSearchList(prev => prev.filter(item => item.user_id !== bidder_id));
+    handleAuctionAction(bidder_id, sellerApi.rejectBidder);
+    setSearchList((prev) => prev.filter((item) => item.user_id !== bidder_id));
   };
   const handleUnban = (bidder_id) => {
-    handleAuctionAction(bidder_id, sellerApi.deleteBannedBidder)
-    setBannedList(prev => prev.filter(item => item.user_id !== bidder_id));
+    handleAuctionAction(bidder_id, sellerApi.deleteBannedBidder);
+    setBannedList((prev) => prev.filter((item) => item.user_id !== bidder_id));
   };
 
   const handleSearch = async (target_name) => {
@@ -368,9 +380,9 @@ const AuctionManagement = () => {
         setSearchList(response.data);
       }
     } catch (e) {
-        console.error("Search failed", e);
+      console.error("Search failed", e);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -380,23 +392,30 @@ const AuctionManagement = () => {
     );
   }
 
-  if (error) return <div className="p-4 text-red-500">Error: {error.message}</div>;
+  if (error)
+    return (
+      <ErrorModal
+        defaultMessage={"Hệ thống không thể tải trang này"}
+        error={error}
+      />
+    );
 
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-6">
       {/* Header Section */}
       <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-         <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-            <Gavel className="text-blue-600" />
-            Quản lý đấu giá: <span className="text-blue-600 font-normal">{productName}</span>
-         </h1>
+        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+          <Gavel className="text-blue-600" />
+          Quản lý đấu giá:{" "}
+          <span className="text-blue-600 font-normal">{productName}</span>
+        </h1>
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: History (Assuming it takes full height or prominent space) */}
         <div className="lg:col-span-3">
-             <ProductHistory auctionHistory={history} productName={productName} />
+          <ProductHistory auctionHistory={history} productName={productName} />
         </div>
 
         {/* Management Panels - Only for Owner Seller */}
@@ -404,51 +423,53 @@ const AuctionManagement = () => {
           <>
             {/* 1. Requests Panel */}
             <div className="bg-white rounded-xl shadow-sm border border-blue-100 overflow-hidden flex flex-col h-[500px]">
-                <div className="p-4 border-b border-gray-100 bg-blue-50/50 flex items-center gap-2">
-                    <UserPlus className="size-5 text-blue-600" />
-                    <h2 className="font-semibold text-gray-800">Yêu cầu tham gia</h2>
-                    <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">
-                        {pendingList.length}
-                    </span>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                    <BidderRequests 
-                        requests={pendingList} 
-                        handleAcceptRequest={handleAccept} 
-                    />
-                </div>
+              <div className="p-4 border-b border-gray-100 bg-blue-50/50 flex items-center gap-2">
+                <UserPlus className="size-5 text-blue-600" />
+                <h2 className="font-semibold text-gray-800">
+                  Yêu cầu tham gia
+                </h2>
+                <span className="ml-auto bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-full">
+                  {pendingList.length}
+                </span>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <BidderRequests
+                  requests={pendingList}
+                  handleAcceptRequest={handleAccept}
+                />
+              </div>
             </div>
 
             {/* 2. Search & Ban Panel */}
             <div className="bg-white rounded-xl shadow-sm border border-purple-100 overflow-hidden flex flex-col h-[500px]">
-                <div className="p-4 border-b border-gray-100 bg-purple-50/50 flex items-center gap-2">
-                    <Search className="size-5 text-purple-600" />
-                    <h2 className="font-semibold text-gray-800">Tìm kiếm & Cấm</h2>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                     <BidderSearching 
-                        searchList={searchList} 
-                        handleBan={handleReject} 
-                        handleSearch={handleSearch} 
-                    />
-                </div>
+              <div className="p-4 border-b border-gray-100 bg-purple-50/50 flex items-center gap-2">
+                <Search className="size-5 text-purple-600" />
+                <h2 className="font-semibold text-gray-800">Tìm kiếm & Cấm</h2>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <BidderSearching
+                  searchList={searchList}
+                  handleBan={handleReject}
+                  handleSearch={handleSearch}
+                />
+              </div>
             </div>
 
             {/* 3. Banned List Panel */}
             <div className="bg-white rounded-xl shadow-sm border border-red-100 overflow-hidden flex flex-col h-[500px]">
-                <div className="p-4 border-b border-gray-100 bg-red-50/50 flex items-center gap-2">
-                    <ShieldAlert className="size-5 text-red-600" />
-                    <h2 className="font-semibold text-gray-800">Danh sách chặn</h2>
-                    <span className="ml-auto bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
-                        {bannedList.length}
-                    </span>
-                </div>
-                <div className="flex-1 overflow-hidden">
-                    <BidderBannedList 
-                        bannedList={bannedList} 
-                        handleUnban={handleUnban} 
-                    />
-                </div>
+              <div className="p-4 border-b border-gray-100 bg-red-50/50 flex items-center gap-2">
+                <ShieldAlert className="size-5 text-red-600" />
+                <h2 className="font-semibold text-gray-800">Danh sách chặn</h2>
+                <span className="ml-auto bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">
+                  {bannedList.length}
+                </span>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <BidderBannedList
+                  bannedList={bannedList}
+                  handleUnban={handleUnban}
+                />
+              </div>
             </div>
           </>
         )}
