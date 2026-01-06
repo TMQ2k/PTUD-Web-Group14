@@ -295,7 +295,7 @@ export default function Header() {
                           {userData?.email || "user@example.com"}
                         </p>
                         {userData?.role && (
-                          <p className="text-xs text-indigo-600 font-bold mt-1 capitalize">
+                          <div className="text-xs text-indigo-600 font-bold mt-1 capitalize">
                             {userData.role === "seller" ? (
                               <div className="flex flex-row gap-1">
                                 <HandCoins className="inline-block w-4 h-4 mb-0.5" />
@@ -307,7 +307,7 @@ export default function Header() {
                                 Bidder
                               </div>
                             )}
-                          </p>
+                          </div>
                         )}
                       </div>
 

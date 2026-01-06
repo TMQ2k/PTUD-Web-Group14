@@ -31,7 +31,7 @@ const BiddingStatus = ({ className = "" }) => {
   const user = useSelector((state) => state.user);
   const { userData } = user.isLoggedIn ? user : {};
   const role = user.isLoggedIn ? user.userData.role : "guest";
-  const rating_percent = userData?.rating_percent || 0.0;
+  const rating_percent = parseInt(userData?.rating_percent) || 0.0;
   const isTopBidder =
     user.isLoggedIn && user.userData.id == product?.top_bidder?.id;
   // Create the formatter and format the number
@@ -69,6 +69,7 @@ const BiddingStatus = ({ className = "" }) => {
       try {
         const respone = await bidderApi.isBidOnProduct(product.product_id);
         if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);
+        console.log(respone);
       } catch (err) {
         console.log(err.message);
       }
@@ -217,7 +218,7 @@ const BiddingStatus = ({ className = "" }) => {
                       userData?.id &&
                       userData.id !== product.seller.id)) && (
                     <>
-                      {rating_percent < 80.0 || !isBidOnProduct ? (
+                      {(rating_percent < 80.0 && !isBidOnProduct) ? (
                         <BiddingRequestForm
                           productId={product?.product_id || ""}
                           state={false}
