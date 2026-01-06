@@ -1,0 +1,95 @@
+{
+  "products": [
+    {
+      "product_id": 1,
+      "name": "Điện thoại iPhone 14 Pro 128GB",
+      "description": "Chiếc cup này là dành cho Chovy",      
+      "start_price": 2000000.00,
+      "current_price": 22000000.00,
+      "buy_now_price": 200000.00,
+      "is_active": true,
+      "created_at": "2025-11-22T15:30:00.065Z",
+      "end_time": "2025-12-30T05:55:00.065Z",                  
+      "steps": 200000.00,                  
+      "image_cover_url": "/public/images/product_details/Cup4.webp",
+      "extra_image_urls": [        
+        "/public/images/product_details/Cup.jpeg",
+        "/public/images/product_details/Cup2.jpeg",
+        "/public/images/product_details/Cup3.jpeg"
+      ],
+      "bidder" : {
+        "maximum_price": 500000.00        
+      },
+      "top_bidder": {
+        "avatar_url": "/public/images/product_details/Chovy.jpg",
+        "name": "***Chovy",        
+        "points": 7
+      },      
+      "seller": {
+        "avatar_url": "",
+        "name": "***Faker",
+        "points": 8
+      },
+      "history": [
+        {
+          "bidded_at": "2025-11-12T18:46:18.065Z",
+          "bidder": "***Kha",
+          "avatar_url": "",
+          "price": 6000000.00
+        },
+        {
+          "bidded_at": "2025-11-12T18:46:18.065Z",
+          "bidder": "***Kha",
+          "avatar_url": "",
+          "price": 5000000.00
+        },
+        {
+          "bidded_at": "2025-11-12T18:46:18.065Z",
+          "bidder": "***Tuấn",
+          "avatar_url": "",
+          "price": 3600000.00
+        },
+        {
+          "bidded_at": "2025-11-12T18:46:18.065Z",
+          "bidder": "***Vinh",
+          "avatar_url": "",
+          "price": 3000000.00
+        }
+      ],
+      "comments": [
+        {
+          "bidder": "***Chovy",
+          "content": "How to win LOL worlds 6 times?",
+          "respone": ""
+        },
+        {
+          "bidder": "***Chovy",
+          "content": "How to win LOL worlds 6 times?",
+          "respone": ""
+        },
+        {
+          "bidder": "***Chovy",
+          "content": "How to win LOL worlds 6 times?",
+          "respone": ""
+        }
+      ],
+      "other_products": [
+        {
+          "product_id": 2,
+          "name": "Điện thoại iPhone 14 Pro 128GB",          
+          "current_price": 22000000.00,
+          "buy_now_price": 200000.00,
+          "is_active": true,
+          "created_at": "2025-11-22T15:30:00.065Z",
+          "end_time": "2025-11-30T15:50:00.065Z",                  
+          "steps": 200000.00,                  
+          "image_cover_url": "/public/images/product_details/Cup4.webp",
+          "top_bidder": {            
+            "name": "***Chovy"
+          },
+          "history_count": 7
+        }
+      ]
+    }    
+  ]
+}

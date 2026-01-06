@@ -1,0 +1,106 @@
+import React, { useState } from "react";
+import Sidebar from "../components/common/SideBar";
+import EditInformation from "../components/common/EditInformation";
+import EditAddress from "../components/common/EditAddress";
+import MyBiddingProducts from "../components/common/MyBiddingProducts";
+import WonAuction from "../components/common/WonAuction";
+import RatingHistory from "../components/common/RatingHistory";
+import UpgradeToSeller from "../components/common/UpgradeToSeller";
+import SellerWonProducts from "../components/common/SellerWonProducts";
+import PostedProducts from "../components/common/PostedProducts";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+
+const UserInformation = () => {
+  const [activeTab, setActiveTab] = useState("account");
+  const navigate = useNavigate();
+
+  // Định nghĩa các tab
+  const sidebarItems = [
+    { key: "account", label: "Tài khoản" },
+    { key: "addresses", label: "Địa chỉ" },
+    { key: "ratingHistory", label: "Điểm đánh giá" },
+    { key: "upgrade", label: "Nâng cấp" },
+    { key: "joinedAuctions", label: "Sản phẩm đã tham gia đấu giá" },
+    { key: "wonAuctions", label: "Sản phẩm đã thắng đấu giá" },
+    {
+      key: "sellerActive",
+      label: "Sản phẩm đã đăng & còn hạn",
+      requiresSeller: true,
+    },
+    {
+      key: "sellerWon",
+      label: "Sản phẩm đã có người thắng đấu giá",
+    },
+  ];
+
+  // Render nội dung theo tab
+  const renderContent = () => {
+    switch (activeTab) {
+      case "account":
+        return <EditInformation />;
+
+      case "addresses":
+        return <EditAddress />;
+
+      case "ratingHistory":
+        return <RatingHistory />;
+
+      case "upgrade":
+        return <UpgradeToSeller />;
+
+      case "joinedAuctions":
+        return <MyBiddingProducts />;
+
+      case "wonAuctions":
+        return <WonAuction />;
+
+      case "sellerActive":
+        return (
+          <PostedProducts />
+        );
+
+      case "sellerWon":
+        return <SellerWonProducts />;
+
+      default:
+        return (
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <p className="text-gray-500">Vui lòng chọn một mục từ menu</p>
+          </div>
+        );
+    }
+  };
+
+  const { userData } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (!userData) {
+      navigate("/");
+    }
+  }, [userData, navigate]);
+
+  const userRole = userData?.role;
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <h1 className="text-[64px] font-serif font-black tracking-tight text-black mx-auto max-w-6xl px-8 pt-16 pb-6 border-b border-black bg-white">
+        TRANG CÁ NHÂN CỦA BẠN
+      </h1>
+      <div className="mx-auto max-w-6xl grid grid-cols-1 md:grid-cols-[240px_1fr] gap-8 px-8 pt-10 pb-20">
+        <Sidebar
+          role={userRole}
+          items={sidebarItems}
+          current={activeTab}
+          onSelect={setActiveTab}
+        />
+
+        {/* Content Area */}
+        <main>{renderContent()}</main>
+      </div>
+    </div>
+  );
+};
+
+export default UserInformation;
