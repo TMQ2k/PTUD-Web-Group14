@@ -95,8 +95,8 @@ const BiddingStatus = ({ className = "" }) => {
   // };
 
   const onAutoBid = async (productId, formattedPrice) => {
-    try {
-      const respone = await bidderApi.autobid(productId, formattedPrice);
+   
+    const respone = await bidderApi.autobid(productId, formattedPrice);
       if (respone.code === 200) {
         const updateRespone = await bidderApi.autobidUpdate(
           product?.product_id
@@ -108,9 +108,6 @@ const BiddingStatus = ({ className = "" }) => {
       }
 
       return respone;
-    } catch (err) {
-      console.log(err.message);
-    }
   };
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -124,26 +121,28 @@ const BiddingStatus = ({ className = "" }) => {
   const closeAutoBidDialog = () => setIsAutoBidDialogOpen(false);
 
   const handleAutoBidConfirm = async (productId, price) => {
-    try {
-      console.log(price);
-      await onAutoBid(productId, price);
-    } catch (err) {
-      console.log(err.message);
+    const respone = await onAutoBid(productId, price);
+    // if (respone.code !== 200) {      
+    // }
+    if (respone?.code === 200) {
+      closeAutoBidDialog();
+      alert("Autobid confirmed!");
     }
-    closeAutoBidDialog();
-    alert("Autobid confirmed!");
+    return respone;
   };
 
   // The actual action to take when they click "Buy Now" in the dialog
   const handlePurchaseConfirm = async (productId) => {
-    console.log(`Processing purchase for Product ID: ${productId}...`);
+    //console.log(`Processing purchase for Product ID: ${productId}...`);
 
     const respone = await bidderApi.buyNow(productId);
-    if (respone?.code === 200) {
+    if (respone?.code === 200) {      
+      closeBuyDialog();
+      alert("Purchase confirmed!");
       navigate("/productcheckout");
     }
-    closeBuyDialog();
-    alert("Purchase confirmed!");
+    
+    return respone;
   };
 
   const suggest_price =
@@ -193,7 +192,7 @@ const BiddingStatus = ({ className = "" }) => {
               <Sparkles className="w-4 h-4 text-indigo-500 fill-indigo-100" />
 
               <span className="text-sm font-semibold text-indigo-700">
-                Chưa có ai đặt giá.{" "}                
+                Chưa có ai đặt giá.{" "}
               </span>
             </div>
           )}
@@ -205,11 +204,11 @@ const BiddingStatus = ({ className = "" }) => {
             <div className="flex flex-col w-full gap-4 mx-auto my-3 justify-center align-center">
               {expired ? (
                 <div className="w-full bg-slate-100 border border-slate-200 rounded-lg py-3 px-4 flex items-center justify-center gap-2">
-      <Lock className="w-5 h-5 text-slate-500" />
-      <span className="font-semibold text-slate-600">
-        Phiên đấu giá đã kết thúc
-      </span>
-    </div>
+                  <Lock className="w-5 h-5 text-slate-500" />
+                  <span className="font-semibold text-slate-600">
+                    Phiên đấu giá đã kết thúc
+                  </span>
+                </div>
               ) : (
                 <>
                   {(role === "bidder" ||
