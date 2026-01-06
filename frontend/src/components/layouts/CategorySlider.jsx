@@ -12,26 +12,89 @@ import {
 } from "../../store/categoriesSlice";
 
 const DEFAULT_COLORS = [
-  "bg-gradient-to-r from-slate-100 to-gray-200",
-  "bg-gradient-to-r from-gray-100 to-gray-300",
-  "bg-gradient-to-r from-stone-100 to-stone-300",
-  "bg-gradient-to-r from-zinc-100 to-neutral-200",
+  // Amber
+  "bg-gradient-to-r from-amber-50 to-amber-100",
   "bg-gradient-to-r from-amber-100 to-amber-200",
-  "bg-gradient-to-r from-rose-100 to-rose-200",
-  "bg-gradient-to-r from-orange-100 to-orange-200",
+  "bg-gradient-to-r from-amber-200 to-amber-300",
+  "bg-gradient-to-r from-amber-50 to-amber-200",
+  "bg-gradient-to-r from-amber-100 to-amber-300",
+
+  // Yellow
+  "bg-gradient-to-r from-yellow-50 to-yellow-100",
   "bg-gradient-to-r from-yellow-100 to-yellow-200",
+  "bg-gradient-to-r from-yellow-200 to-yellow-300",
+  "bg-gradient-to-r from-yellow-50 to-yellow-200",
+  "bg-gradient-to-r from-yellow-100 to-yellow-300",
+
+  // Orange
+  "bg-gradient-to-r from-orange-50 to-orange-100",
+  "bg-gradient-to-r from-orange-100 to-orange-200",
+  "bg-gradient-to-r from-orange-200 to-orange-300",
+  "bg-gradient-to-r from-orange-50 to-orange-200",
+  "bg-gradient-to-r from-orange-100 to-orange-300",
+
+  // Lime
+  "bg-gradient-to-r from-lime-50 to-lime-100",
   "bg-gradient-to-r from-lime-100 to-lime-200",
-  "bg-gradient-to-r from-green-100 to-emerald-200",
-  "bg-gradient-to-r from-cyan-100 to-sky-200",
-  "bg-gradient-to-r from-blue-100 to-indigo-200",
-  "bg-gradient-to-r from-indigo-100 to-violet-200",
-  "bg-gradient-to-r from-purple-100 to-fuchsia-200",
-  "bg-gradient-to-r from-pink-100 to-rose-200",
-  "bg-gradient-to-r from-teal-100 to-emerald-200",
-  "bg-gradient-to-r from-neutral-100 to-neutral-300",
-  "bg-gradient-to-r from-slate-200 to-gray-300",
-  "bg-gradient-to-r from-stone-200 to-gray-300",
-  "bg-gradient-to-r from-zinc-200 to-neutral-300",
+  "bg-gradient-to-r from-lime-200 to-lime-300",
+  "bg-gradient-to-r from-lime-50 to-lime-200",
+  "bg-gradient-to-r from-lime-100 to-lime-300",
+
+  // Green
+  "bg-gradient-to-r from-green-50 to-green-100",
+  "bg-gradient-to-r from-green-100 to-green-200",
+  "bg-gradient-to-r from-green-200 to-green-300",
+  "bg-gradient-to-r from-green-50 to-green-200",
+  "bg-gradient-to-r from-green-100 to-green-300",
+
+  // Emerald
+  "bg-gradient-to-r from-emerald-50 to-emerald-100",
+  "bg-gradient-to-r from-emerald-100 to-emerald-200",
+  "bg-gradient-to-r from-emerald-200 to-emerald-300",
+  "bg-gradient-to-r from-emerald-50 to-emerald-200",
+  "bg-gradient-to-r from-emerald-100 to-emerald-300",
+
+  // Teal
+  "bg-gradient-to-r from-teal-50 to-teal-100",
+  "bg-gradient-to-r from-teal-100 to-teal-200",
+  "bg-gradient-to-r from-teal-200 to-teal-300",
+  "bg-gradient-to-r from-teal-50 to-teal-200",
+  "bg-gradient-to-r from-teal-100 to-teal-300",
+
+  // Cyan
+  "bg-gradient-to-r from-cyan-50 to-cyan-100",
+  "bg-gradient-to-r from-cyan-100 to-cyan-200",
+  "bg-gradient-to-r from-cyan-200 to-cyan-300",
+  "bg-gradient-to-r from-cyan-50 to-cyan-200",
+  "bg-gradient-to-r from-cyan-100 to-cyan-300",
+
+  // Sky
+  "bg-gradient-to-r from-sky-50 to-sky-100",
+  "bg-gradient-to-r from-sky-100 to-sky-200",
+  "bg-gradient-to-r from-sky-200 to-sky-300",
+  "bg-gradient-to-r from-sky-50 to-sky-200",
+  "bg-gradient-to-r from-sky-100 to-sky-300",
+
+  // Blue
+  "bg-gradient-to-r from-blue-50 to-blue-100",
+  "bg-gradient-to-r from-blue-100 to-blue-200",
+  "bg-gradient-to-r from-blue-200 to-blue-300",
+  "bg-gradient-to-r from-blue-50 to-blue-200",
+  "bg-gradient-to-r from-blue-100 to-blue-300",
+
+  // Pink
+  "bg-gradient-to-r from-pink-50 to-pink-100",
+  "bg-gradient-to-r from-pink-100 to-pink-200",
+  "bg-gradient-to-r from-pink-200 to-pink-300",
+  "bg-gradient-to-r from-pink-50 to-pink-200",
+  "bg-gradient-to-r from-pink-100 to-pink-300",
+
+  // Rose
+  "bg-gradient-to-r from-rose-50 to-rose-100",
+  "bg-gradient-to-r from-rose-100 to-rose-200",
+  "bg-gradient-to-r from-rose-200 to-rose-300",
+  "bg-gradient-to-r from-rose-50 to-rose-200",
+  "bg-gradient-to-r from-rose-100 to-rose-300",
 ];
 
 const CategorySlider = ({
@@ -83,11 +146,6 @@ const CategorySlider = ({
             id: child.category_id,
             name: child.name,
           })),
-          image:
-            cat.image_url ||
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              cat.name
-            )}&size=120&background=random`,
         }));
 
         console.log("✅ Categories đã map:", mappedCategories);
@@ -204,14 +262,10 @@ const CategorySlider = ({
                         setPageIndex(1);
                         onSelectCategory?.(category);
                       }}
-                      className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
+                      className={`relative flex items-center justify-center w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
                     >
-                      {" "}
-                      <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
+                      <span className="text-center text-2xl font-bold text-gray-900 mix-blend-multiply">
                         {category.name}
-                      </span>
-                      <span className="relative w-20 h-20 rounded-full overflow-hidden shrink-0">
-                        <div className="absolute inset-0 bg-white/70" />
                       </span>
                     </button>
                   ))}
@@ -248,13 +302,10 @@ const CategorySlider = ({
                             setActiveParent(null);
                             onClose?.(); // Đóng CategorySlider sau khi chọn
                           }}
-                          className={`relative flex items-center justify-between w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
+                          className={`relative flex items-center justify-center w-full h-28 rounded-xl ${randomColor()} shadow-sm hover:shadow-md transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/60 focus:ring-offset-transparent px-5`}
                         >
-                          <span className="text-left text-lg font-semibold text-gray-900 mix-blend-multiply">
+                          <span className="text-center text-2xl font-bold text-gray-900 mix-blend-multiply">
                             {child.name}
-                          </span>
-                          <span className="relative w-20 h-20 rounded-full overflow-hidden shrink-0">
-                            <div className="absolute inset-0 bg-white/70" />
                           </span>
                         </button>
                       ))}

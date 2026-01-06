@@ -548,7 +548,7 @@ router.get("/seller-deactivated-products", authenticate, async (req, res) => {
     const products = await getSellerDeactivatedProductsService(sellerId);
     res.status(200).json({
       code: 200,
-      message: "Lấy sản phẩm hết hạn thành công",
+      message: "Lấy sản phẩm đã hết hạn thành công",
       data: products,
     });
   } catch (err) {

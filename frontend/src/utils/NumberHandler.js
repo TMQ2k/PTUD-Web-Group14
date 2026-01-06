@@ -54,7 +54,7 @@ function convert(currency_str) {
     return formatted_currency;
   }
 
-  return "0";
+  return null;
 }
 
 // steps: 3

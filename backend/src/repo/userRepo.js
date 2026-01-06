@@ -141,26 +141,18 @@ export const changePassword = async (userId, newPasswordHashed) => {
 };
 
 export const getUserInfoById = async (user_id) => {
-  const userResult = await pool.query(
-    `SELECT username FROM users WHERE user_id = $1`,
-    [user_id]
-  );
-  if (userResult.rows.length === 0) {
-    return null;
-  }
-  const userRow = userResult.rows[0];
-  const userInfoResult = await pool.query(
-    `SELECT avatar_url FROM users_info WHERE user_id = $1`,
-    [user_id]
-  );
-  const userRatingResult = await pool.query(
-    `SELECT rating_percent FROM users_rating WHERE user_id = $1`,
+  const userRow = await pool.query(
+    `SELECT username, avatar_url, rating_percent FROM users
+    JOIN users_info ui ON users.user_id = ui.user_id
+    JOIN users_rating ur ON users.user_id = ur.user_id
+    WHERE users.user_id = $1`,
     [user_id]
   );
   return new UserSimpleProfile(
-    userRow.username,
-    userInfoResult.rows[0].avatar_url,
-    userRatingResult.rows[0].rating_percent
+    user_id,
+    userRow.rows[0]?.username || null,
+    userRow.rows[0]?.avatar_url || null,
+    userRow.rows[0]?.rating_percent || null
   );
 };
 
@@ -281,3 +273,31 @@ export const getUserByNameRepo = async (name) => {
   );
   return result.rows;
 };
+//Update user_won_products with user_id when bidder wins the product
+export const addUserWonProductRepo = async (productId, userId, winning_bid) => {
+  try {
+    const result = await pool.query(
+      "INSERT INTO user_won_products (product_id, user_id, winning_bid) VALUES ($1, $2, $3) RETURNING *",
+      [productId, userId, winning_bid]
+    );
+    return result.rows[0];
+  } catch (err) {
+    console.error("❌ [Repo] Lỗi khi cập nhật người thắng sản phẩm:", err);
+    throw err;
+  }
+};
+// export const uploadSellerUrlRepo = async (wonId, seller_url) => {
+//   const result = await pool.query(
+//     "UPDATE user_won_products SET seller_url = $1 WHERE id = $2 RETURNING *",
+//     [seller_url, wonId]
+//   );
+//   return result.rows[0];
+// };
+
+// export const getUserByNameRepo = async (name) => {
+//   const result = await pool.query(
+//     `SELECT user_id, username FROM users WHERE username ILIKE $1 LIMIT 10`,
+//     [`%${name}%`]
+//   );
+//   return result.rows;
+// };

@@ -5,7 +5,7 @@ import { authStorage } from "../utils/auth";
 // Tạo axios instance
 export const http = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api",
-  timeout: 10000,
+  timeout: 20000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -40,6 +40,9 @@ http.interceptors.response.use(
 
       // Xóa token
       authStorage.removeToken();
+
+      // Dispatch custom event để thông báo cho App.jsx logout Redux state
+      window.dispatchEvent(new CustomEvent("auth:logout"));
 
       // Redirect về trang chủ (hoặc login)
       if (window.location.pathname !== "/") {

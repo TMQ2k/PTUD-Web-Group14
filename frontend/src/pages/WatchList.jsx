@@ -35,7 +35,7 @@ const WatchList = () => {
       // Transform data từ backend sang format của ProductCard
       const transformedProducts = response.data.map((item) => {
         // Calculate remaining time
-        const remainingTime = calculateRemainingTime(item.end_time);
+        const remainingTime = calculateRemainingTime(item.product_end_time);
 
         // Format posted date (backend trả về product_created_at)
         const createdAt = new Date(item.product_created_at);
@@ -63,6 +63,7 @@ const WatchList = () => {
           remainingTime: remainingTime,
           bidCount: item.bid_count || 0,
           isInWatchlist: true, // Đã biết chắc là trong watchlist
+          is_active: item.is_active,
         };
       });
 

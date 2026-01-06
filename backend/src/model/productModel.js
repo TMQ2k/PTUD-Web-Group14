@@ -43,6 +43,7 @@ export class ProductProfile {
     product_id,
     name,
     image_cover_url,
+    starting_price,
     current_price,
     buy_now_price,
     is_active,
@@ -54,6 +55,7 @@ export class ProductProfile {
     this.product_id = product_id;
     this.name = name;
     this.image_cover_url = image_cover_url;
+    this.starting_price = starting_price;
     this.current_price = current_price;
     this.buy_now_price = buy_now_price;
     this.is_active = is_active;

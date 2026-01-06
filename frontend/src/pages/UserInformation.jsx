@@ -6,6 +6,8 @@ import MyBiddingProducts from "../components/common/MyBiddingProducts";
 import WonAuction from "../components/common/WonAuction";
 import RatingHistory from "../components/common/RatingHistory";
 import UpgradeToSeller from "../components/common/UpgradeToSeller";
+import SellerWonProducts from "../components/common/SellerWonProducts";
+import PostedProducts from "../components/common/PostedProducts";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -30,20 +32,8 @@ const UserInformation = () => {
     {
       key: "sellerWon",
       label: "Sản phẩm đã có người thắng đấu giá",
-      requiresSeller: true,
     },
-    // {
-    //   key: "uploadProduct",
-    //   label: "Đăng sản phẩm mới",
-    //   requiresSeller: true,
-    // },
   ];
-
-  // Badges (chấm đỏ thông báo) - có thể thay đổi động
-  const badges = {
-    account: false, // true để hiện chấm đỏ
-    sellerWon: true,
-  };
 
   // Render nội dung theo tab
   const renderContent = () => {
@@ -68,39 +58,11 @@ const UserInformation = () => {
 
       case "sellerActive":
         return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Sản phẩm đã đăng & còn hạn
-            </h2>
-            <p className="text-gray-600">
-              Danh sách sản phẩm đang trong thời gian đấu giá...
-            </p>
-            {/* TODO: Thêm danh sách sản phẩm */}
-          </div>
+          <PostedProducts />
         );
 
       case "sellerWon":
-        return (
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              Sản phẩm đã có người thắng đấu giá
-            </h2>
-            <p className="text-gray-600">
-              Danh sách sản phẩm đã kết thúc đấu giá...
-            </p>
-            {/* TODO: Thêm danh sách sản phẩm */}
-          </div>
-        );
-
-      // case "uploadProduct":
-      //   return (
-      //     <div className="bg-white rounded-lg border border-gray-200 p-6">
-      //       <h2 className="text-2xl font-bold mb-4">Đăng sản phẩm mới</h2>
-      //       <p className="text-gray-600 mb-4">
-      //         Mẫu để đăng sản phẩm mới lên đấu giá...
-      //       </p>
-      //     </div>
-      //   );
+        return <SellerWonProducts />;
 
       default:
         return (
@@ -132,7 +94,6 @@ const UserInformation = () => {
           items={sidebarItems}
           current={activeTab}
           onSelect={setActiveTab}
-          badges={badges}
         />
 
         {/* Content Area */}

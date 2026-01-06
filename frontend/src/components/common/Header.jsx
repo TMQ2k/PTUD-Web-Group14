@@ -8,7 +8,6 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { MdPersonOutline } from "react-icons/md";
-import { Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import CategorySlider from "../layouts/CategorySlider";
@@ -18,7 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout, loginSuccess } from "../../store/userSlice";
 import { authStorage } from "../../utils/auth";
 import { userApi } from "../../api/user.api";
-import { HandCoins } from "lucide-react";
+import { HandCoins, Package } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 import AddProductButton from "./AddProductButton";
 
@@ -28,6 +27,7 @@ export default function Header() {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
   const { isLoggedIn, userData } = useSelector((state) => state.user);
@@ -60,6 +60,7 @@ export default function Header() {
             email: userProfile.email,
             role: userProfile.role || "bidder",
             avatar: userProfile.avatar_url,
+            qr_url: userProfile.qr_url,
           })
         );
       } catch (error) {
@@ -119,13 +120,23 @@ export default function Header() {
     setShowLoginModal(true);
   };
 
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (query) {
+      navigate(`/search?q=${encodeURIComponent(query)}`);
+      setSearchQuery("");
+    }
+  };
+
   return (
     <header className="bg-white shadow sticky top-0 z-50">
       <div className="container mx-auto flex items-center gap-5 py-3 px-4 md:px-6">
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-2 shrink-0"
+          className="flex items-center gap-2 shrink-0 focus:outline-none"
           aria-label="AuctionHub home"
         >
           <div className="flex items-center justify-center bg-linear-to-r from-blue-400 to-purple-600 text-white p-2.5 rounded-lg shadow-md">
@@ -154,26 +165,39 @@ export default function Header() {
 
         {/* Search */}
         <div className="flex-1 md:flex-2 lg:flex-3 max-w-[820px]">
-          <div className="relative w-full bg-gray-100 rounded-md md:rounded-lg">
+          <form
+            onSubmit={handleSearch}
+            className="relative w-full bg-gray-100 rounded-md md:rounded-lg"
+          >
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600/75 pointer-events-none w-5 h-5" />
             <input
               type="text"
-              placeholder="Search for brand, model, artist..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Tìm kiếm sản phẩm đấu giá..."
               className="w-full pl-10 pr-4 h-12 md:h-[52px] bg-transparent placeholder-gray-400 text-gray-800 focus:outline-blue-500 rounded-md md:rounded-lg"
             />
-          </div>
+          </form>
         </div>
 
         {/* Login + Heart + Register (guest) hoặc Avatar (logged in) */}
         <div className="hidden md:flex items-center gap-4 ml-auto">
-          <Link
+          {/* <Link
             to="/watchlist"
-            className="p-2 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all relative group"
+            className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all relative group"
             aria-label="Danh sách yêu thích"
             title="Danh sách yêu thích"
           >
-            <FaRegHeart className="w-5 h-5 text-blue-600 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+            <FaRegHeart className="size-6 text-blue-600 group-focus:fill-red-500 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
           </Link>
+          <Link
+            to="/productcheckout"
+            className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:text-green-600 focus:ring-2 focus:ring-green-500 transition-all relative group"
+            aria-label="Danh sách yêu thích"
+            title="Danh sách yêu thích"
+          >
+            <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600" />
+          </Link> */}
 
           {!isLoggedIn ? (
             // Hiển thị nút đăng nhập/đăng ký khi chưa login
@@ -196,17 +220,33 @@ export default function Header() {
           ) : (
             // Hiển thị giỏ hàng, avatar và dropdown khi đã login
             <>
-              {userData.role === "seller" ? 
-                (<AddProductButton />) :
-                (<Link
-                    to="/guide"
-                    className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent 
-                               hover:opacity-80 transition-all text-[16px]"
-                  >
-                    Cách thao tác trên website
-                  </Link>)
+              <Link
+                to="/watchlist"
+                className="p-2 rounded-lg hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all relative group"
+                aria-label="Danh sách yêu thích"
+                title="Danh sách yêu thích"
+              >
+                <FaRegHeart className="size-6 text-blue-600 group-focus:fill-red-500 group-hover:fill-red-500 group-hover:text-red-500 transition-all" />
+              </Link>
+              <Link
+                to="/productcheckout"
+                className="p-2 rounded-lg hover:bg-green-100 focus:outline-none focus:text-green-600 focus:ring-2 focus:ring-green-500 transition-all relative group"
+                aria-label="Danh sách yêu thích"
+                title="Danh sách yêu thích"
+              >
+                <Package className="size-6 text-blue-600 group-hover:text-green-600 group-focus:text-green-600 group-active:text-green-600" />
+              </Link>
+              {
+                userData.role === "seller" && <AddProductButton />
+                //: (<Link
+                //     to="/guide"
+                //     className="font-medium bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent
+                //                hover:opacity-80 transition-all text-[16px]"
+                //   >
+                //     Cách thao tác trên website
+                //   </Link>)
               }
-              
+
               <div className="relative user-menu-container">
                 <button
                   type="button"
@@ -257,15 +297,15 @@ export default function Header() {
                         {userData?.role && (
                           <p className="text-xs text-indigo-600 font-bold mt-1 capitalize">
                             {userData.role === "seller" ? (
-                              <>
+                              <div className="flex flex-row gap-1">
                                 <HandCoins className="inline-block w-4 h-4 mb-0.5" />
                                 Seller
-                              </>
+                              </div>
                             ) : (
-                              <>
+                              <div className="flex flex-row gap-1">
                                 <ShoppingCart className="inline-block w-4 h-4 mb-0.5" />
                                 Bidder
-                              </>
+                              </div>
                             )}
                           </p>
                         )}
@@ -276,7 +316,7 @@ export default function Header() {
                         <Link
                           to="/profile"
                           onClick={() => setShowUserMenu(false)}
-                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-blue-50 transition-colors"
                         >
                           <FaUser className="w-4 h-4 text-blue-600" />
                           <span>Trang cá nhân</span>

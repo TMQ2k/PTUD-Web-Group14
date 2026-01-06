@@ -5,12 +5,20 @@ const userEndpoint = {
   login: "/users/login",
   profile: "/users/profile",
   updateAvatar: "/users/update-avatar",
+  updateQR: "/users/update-url",
   verifyOtp: "/users/verify-otp",
   updateProfile: "/users/update-info",
   changePassword: "/users/change-password",
   sendOtpResetPassword: "/users/send-otp",
   verifyOtpResetPassword: "/users/verify-otp-reset-pass",
   resetPassword: "/users/reset-password",
+  userRatings: "/users/user-ratings",
+  userWonProducts: "/users/user-won-products",
+  changeWonProductStatus: "/users/change-won-product-status",
+  sellerDeactivatedProducts: "/users/seller-deactivated-products",
+  uploadPaymentPicture: "/users/upload-payment-picture",
+  uploadBillPicture: "/users/upload-seller-url",
+  searchByName: "/users/search-by-name",      
 };
 
 export const userApi = {
@@ -116,4 +124,111 @@ export const userApi = {
     const response = await http.put(userEndpoint.resetPassword, resetData);
     return response.data;
   },
+
+  /**
+   * Cập nhật QR code cho seller
+   * @param {FormData} formData - Dữ liệu FormData chứa file ảnh QR
+   * @returns {Promise<Object>} Thông tin sau khi cập nhật QR
+   */
+  updateQR: async (formData) => {
+    const response = await http.patch(userEndpoint.updateQR, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách đánh giá của người dùng
+   * @returns {Promise<Object>} Danh sách đánh giá
+   */
+  getUserRatings: async () => {
+    const response = await http.get(userEndpoint.userRatings);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách sản phẩm đã thắng đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã thắng
+   */
+  getUserWonProducts: async () => {
+    const response = await http.get("/users/user-won-products");
+    return response.data;
+  },
+
+  /**
+   * Đánh giá người bán sau khi thắng đấu giá
+   * @param {Object} ratingData - { to_user_id, value, content }
+   * @returns {Promise<Object>} Kết quả đánh giá
+   */
+  judgeUser: async (ratingData) => {
+    const response = await http.post("/users/judge-user", ratingData);
+    return response.data;
+  },
+
+  /**
+   * Lấy danh sách sản phẩm đã tham gia đấu giá
+   * @returns {Promise<Object>} Danh sách sản phẩm đã đấu giá
+   */
+  getBiddedProducts: async () => {
+    const response = await http.get("/users/bidded-products");
+    return response.data;
+  },
+
+  updateWonProductStatus: async (wonId, status) => {
+    const repsone = await http.put(
+      `${userEndpoint.changeWonProductStatus}`,
+      {
+        wonId: wonId,
+        status: status,
+      },
+      {}
+    );
+    return repsone.data;
+  },
+  /**
+   * Lấy danh sách sản phẩm đã có người thắng đấu giá (seller)
+   * @returns {Promise<Object>} Danh sách sản phẩm đã hết hạn có người thắng
+   */
+  getSellerDeactivatedProducts: async () => {
+    const response = await http.get(userEndpoint.sellerDeactivatedProducts);
+    return response.data;
+  },
+
+  uploadPaymentPicture: async (formData) => {
+    const respone = await http.patch(
+      userEndpoint.uploadPaymentPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  },
+
+  uploadBillPicture: async (formData) => {
+    const respone = await http.patch(
+      userEndpoint.uploadBillPicture,
+      formData,
+      {
+        headers: {
+          //Authorization: `Bearer ${authStorage.getToken()}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return respone.data;
+  },
+
+  searchByName: async (target_name) => {
+    const respone = await http.get(`${userEndpoint.searchByName}?name=${target_name}`);
+    return respone.data;
+  },
+  
 };

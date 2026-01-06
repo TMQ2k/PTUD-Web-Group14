@@ -76,7 +76,7 @@ export default function AccountSidebar({
               ].join(" ")}
             >
               <span className="flex-1 leading-6">{item.label}</span>
-
+              
               {badges[item.key] && (
                 <span
                   className="inline-block h-2.5 w-2.5 rounded-full bg-red-500"

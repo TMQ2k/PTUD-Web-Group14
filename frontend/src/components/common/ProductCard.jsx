@@ -16,16 +16,18 @@ const ProductCard = ({
   postedDate,
   remainingTime,
   bidCount,
-  onBuyNow,
+  onBuyNow,  
   isInWatchlist = false,
   onRemoveFromWatchlist,
+  is_active = true,
+  isNew = false, // Sản phẩm mới đăng (trong vòng 60 phút)
+  isLeadingBidder = false, // Bidder đang dẫn đầu
 }) => {
   const [timeLeft, setTimeLeft] = useState(remainingTime);
   const [isFavorite, setIsFavorite] = useState(isInWatchlist);
   const [isToggling, setIsToggling] = useState(false);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-
   useEffect(() => {
     setIsFavorite(isInWatchlist);
   }, [isInWatchlist]);
@@ -98,17 +100,31 @@ const ProductCard = ({
   };
 
   return (
-    <div onClick={() => navigate(`products/${id}`)} className="cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-100 hover:border-purple-200 flex flex-col">
+    <div
+      onClick={() => navigate(`/products/${id}`)}
+      className={`cursor-pointer group bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 border flex flex-col ${
+        isLeadingBidder
+          ? "border-2 border-red-500 ring-4 ring-red-100 shadow-red-200/50"
+          : isNew
+          ? "border-2 border-green-500 ring-4 ring-green-100 shadow-green-200/50"
+          : "border-gray-100 hover:border-purple-200"
+      }`}
+    >
       {/* Ảnh sản phẩm với overlay gradient */}
       <div className="relative w-full h-45 overflow-hidden bg-linear-to-br from-gray-100 to-gray-50">
         <img
           src={image}
           alt={name}
-          className="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
+          className="object-cover object-top w-full h-full transform group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
         {/* Gradient overlay khi hover */}
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Overlay khi hết hạn */}
+        {!is_active && (
+          <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-[1px]" />
+        )}
 
         {/* Nút yêu thích */}
         <button
@@ -131,13 +147,15 @@ const ProductCard = ({
         {/* Thời gian còn lại */}
         <div
           className={`absolute top-3 right-3 flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg backdrop-blur-md ${
-            timeLeft < "00:10:00"
+            !is_active
+              ? "bg-gray-500/95 text-white"
+              : timeLeft < "00:10:00"
               ? "bg-red-500/95 text-white animate-pulse"
               : "bg-white/95 text-gray-800"
           }`}
         >
           <Clock className="w-4 h-4" />
-          <span>{timeLeft}</span>
+          <span>{!is_active ? "Đã hết hạn" : timeLeft}</span>
         </div>
 
         {/* Badge "Mua ngay" nếu có */}
@@ -167,7 +185,7 @@ const ProductCard = ({
         </div>
 
         {/* Info grid - 2 cột rõ ràng */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
           {/* Người đấu cao nhất */}
           <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
             <div className="flex items-center gap-2 mb-1.5">
@@ -177,7 +195,7 @@ const ProductCard = ({
               </span>
             </div>
             <p className="text-sm font-bold text-gray-900 truncate">
-              {highestBidder
+              {highestBidder !== null
                 ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
                 : "Chưa có"}
             </p>
@@ -207,15 +225,22 @@ const ProductCard = ({
 
         {/* Action buttons */}
         <div className="flex gap-2 pt-2">
-          {buyNowPrice ? (
+          {!is_active ? (
+            <button
+              disabled
+              className="w-full py-3 bg-gray-400 text-white font-bold rounded-lg cursor-not-allowed opacity-60 text-base"
+            >
+              Đã hết hạn
+            </button>
+          ) : buyNowPrice ? (
             <>
               <button
                 onClick={onBuyNow}
-                className="flex-1 py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
+                className="w-full py-3 bg-linear-to-r from-blue-400 to-purple-600 text-white font-bold rounded-lg shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 text-base"
               >
                 Đấu giá
               </button>
-              <button className="px-5 py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
+              <button className="w-full py-3 border-2 border-purple-400 text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-colors duration-200 text-base">
                 Mua ngay
               </button>
             </>

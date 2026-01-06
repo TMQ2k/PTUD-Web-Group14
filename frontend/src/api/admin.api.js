@@ -9,6 +9,7 @@ const adminEndpoint = {
   // User endpoints
   getAllUsers: "/users",
   deleteUser: "/users/delete-user",
+  resetUserPassword: "/users/admin/change-password",
 
   // Product endpoints
   deleteProduct: "/products/delete",
@@ -80,6 +81,18 @@ export const adminApi = {
   deleteUser: async (userId) => {
     const response = await http.delete(adminEndpoint.deleteUser, {
       data: { userId },
+    });
+    return response.data;
+  },
+
+  /**
+   * Đặt lại mật khẩu user (admin only)
+   * @param {number} userId - ID của user cần đổi mật khẩu
+   * @returns {Promise<Object>} Thông tin mật khẩu mới
+   */
+  resetUserPassword: async (userId) => {
+    const response = await http.post(adminEndpoint.resetUserPassword, {
+      userId,
     });
     return response.data;
   },
