@@ -100,6 +100,12 @@ const App = () => {
             rating_percent: userData.rating_percent,
           })
         );
+
+        // ⚠️ Nếu là admin và đang ở trang khác → redirect về /admin
+        if (userData.role === "admin" && !window.location.pathname.startsWith("/admin")) {
+          console.log("🔒 Admin detected on non-admin page, redirecting to /admin...");
+          window.location.replace("/admin");
+        }
       } catch (error) {
         console.error("❌ Token không hợp lệ:", error);
 
@@ -159,6 +165,7 @@ const App = () => {
       </>
     )
   );
+
   return (
     <>
       {/* Render nội dung chính NGAY LẬP TỨC để khi overlay fade thì UI đã sẵn sàng */}

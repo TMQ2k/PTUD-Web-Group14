@@ -331,12 +331,9 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
                   <div className="flex items-center justify-between">
                     <label className="inline-flex items-center gap-2 text-sm text-gray-700">
-                      <input
-                        type="checkbox"
-                        name="remember"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                      />
-                      Nhớ tôi
+                      <p className="text-xs text-gray-500">
+                        * Chỉ tài khoản đã xác thực email mới có thể đặt giá.
+                      </p>
                     </label>
                     <button
                       type="button"
@@ -349,10 +346,6 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
                       Quên mật khẩu?
                     </button>
                   </div>
-
-                  <p className="text-xs text-gray-500">
-                    * Chỉ tài khoản đã xác thực email mới có thể đặt giá.
-                  </p>
 
                   {error && (
                     <div className="text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
