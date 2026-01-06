@@ -6,7 +6,7 @@ const Label = ({ value=0, isTopBidder, className="" }) => {
                     py-2 px-4 text-sm w-full`,
                     isTopBidder ? "bg-amber-100" : "bg-sky-100",
                     className)}>
-      <p className="font-normal text-slate-800">
+      <p className="font-semibold text-slate-800">
         Bước nhảy: 
       </p>
       <p className={twMerge("font-bold", isTopBidder ? "text-orange-500" : "text-blue-500")}>
