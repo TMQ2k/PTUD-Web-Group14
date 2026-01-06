@@ -206,7 +206,7 @@ const ProductFormContext = ({
           <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
             Chọn danh mục{" "}
             <span className="text-red-500 font-normal text-sm">
-              (Pick at least 1)
+              (Chọn tối thiểu 1)
             </span>
           </label>
 
