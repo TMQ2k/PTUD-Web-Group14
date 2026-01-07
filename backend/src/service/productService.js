@@ -510,8 +510,30 @@ export const sendProductDescriptionUpdateEmail = async (
 };
 
 export const getProductBySellerIdService = async (sellerId) => {
-  const result = await getProductBySellerIdRepo(sellerId);
-  return result;
+  try {
+    const products = await getProductBySellerIdRepo(sellerId);
+
+    // Thêm thông tin top_bidder và history_count cho mỗi sản phẩm
+    for (let product of products) {
+      const topBidderId = await getTopBidderIdByProductId(product.product_id);
+      if (topBidderId) {
+        product.top_bidder = await getUserInfoById(topBidderId);
+      } else {
+        product.top_bidder = null;
+      }
+
+      const historyCount = await countHistoryByProductId(product.product_id);
+      product.history_count = historyCount;
+    }
+
+    return products;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy danh sách sản phẩm của seller:",
+      err
+    );
+    throw err;
+  }
 };
 
 export const enableExtentionForProductService = async (sellerId, productId) => {
