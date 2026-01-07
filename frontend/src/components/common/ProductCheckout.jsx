@@ -158,6 +158,7 @@ import { BlinkBlur } from "react-loading-indicators";
 import CheckoutFilterBar from "./CheckoutFilterBar";
 import { filterWonProductStatus } from "../../utils/arrayhandler";
 import Spinner from "./Spinner";
+import ErrorModal from "./ErrorModal";
 
 const ProductCheckout = () => {
   const { userData } = useSelector((state) => state.user);
@@ -252,7 +253,8 @@ const ProductCheckout = () => {
         setError(null);
         const respone = await userApi.getUserWonProducts();
         if (isMounted) {
-          setUserWonProducts(respone.data); 
+          console.log(respone.data);
+          setUserWonProducts(respone.data);
           setFilteredProducts(respone.data);
         }
       } catch (err) {
@@ -275,9 +277,12 @@ const ProductCheckout = () => {
   };
 
   const onFilter = (target_status) => {
-    if (target_status === null) setFilteredProducts(userWonProducts)
-    else setFilteredProducts(filterWonProductStatus(userWonProducts, target_status));
-  }
+    if (target_status === null) setFilteredProducts(userWonProducts);
+    else
+      setFilteredProducts(
+        filterWonProductStatus(userWonProducts, target_status)
+      );
+  };
 
   return (
     <>
@@ -286,7 +291,12 @@ const ProductCheckout = () => {
           <Spinner />
         </div>
       )}
-      {error && <div>{error}</div>}
+      {error && (
+        <ErrorModal
+          defaultMessage={"Hệ thống không thể tải trang này"}
+          error={error}
+        />
+      )}
       {!loading && !error && (
         <>
           {role === "guest" && <Navigate to="/" />}
@@ -333,7 +343,7 @@ const ProductCheckout = () => {
                   qrCodeUrl={p.seller_qr_url}
                   productId={p.productId}
                   status={p.status}
-                  wonId={p.won_id}                
+                  wonId={p.won_id}
                   billImage={p.seller_url}
                   onChangeStatus={onChangeStatus}
                 />

@@ -9,6 +9,10 @@ import { Calendar } from "lucide-react";
 import { useQuill } from "react-quilljs";
 import "quill/dist/quill.snow.css";
 import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
+import { registerLocale } from "react-datepicker";
+
+registerLocale("vi", vi);
 
 // Custom DateTimeInput giữ nguyên UI như datetime-local
 const DateTimeInput = forwardRef(
@@ -43,6 +47,7 @@ const ProductFormContext = ({
     getValues,
     formState: { errors },
     trigger,
+    handleSubmit,
     formState: { isSubmitting },
   } = useFormContext();
 
@@ -162,14 +167,24 @@ const ProductFormContext = ({
       // 2. Listen for changes
       quill.on("text-change", () => {
         // 3. Update parent state immediately
-        setQuillContents(quill.getContents());
-        setValue("description", quill.getContents());
+        setQuillContents(JSON.stringify(quill.getContents()));
+        //setValue("description", JSON.stringify(quill.getContents()));
 
         // OR if you decided to switch to HTML string later:
         // setQuillContents(quill.root.innerHTML);
       });
     }
   }, [quill, setQuillContents, setValue]);
+
+  const [error, setError] = useState(null);
+  const handleLocalSubmit = async (data) => {
+    try {
+      setError(null);
+      const respone = await onSubmit(data); 
+    } catch (err) {
+      setError(err);
+    }
+  }
 
   // Common Tailwind classes for all inputs
   const inputClasses =
@@ -183,7 +198,7 @@ const ProductFormContext = ({
         <p className="text-sm text-gray-500 mt-1">Điền đầy đủ thông tin</p>
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit(handleLocalSubmit)} className="flex flex-col gap-6">
         {/* Row 1: Product Name */}
         <InputField
           label="Tên sản phẩm"
@@ -206,7 +221,7 @@ const ProductFormContext = ({
           <label className="text-base font-semibold bg-linear-to-r from-blue-400 to-purple-600 text-transparent bg-clip-text">
             Chọn danh mục{" "}
             <span className="text-red-500 font-normal text-sm">
-              (Pick at least 1)
+              (Chọn tối thiểu 1)
             </span>
           </label>
 
@@ -345,6 +360,7 @@ const ProductFormContext = ({
           />
           <div className="relative w-full">
             <DatePicker
+              locale={vi}
               ref={datePickerRef}
               selected={selectedDate}
               onChange={(date) => {
@@ -546,6 +562,12 @@ const ProductFormContext = ({
             }}
           ></div>
         </InputField>
+
+        {error && 
+          <div className="text-red-500 bg-red-100 rounded-lg w-full px-2 py-1 mx-auto text-center text-base">
+            {error?.message ? `Error: ${error.message}` : "Hệ thống không thể đăng sản phẩm cho bạn, hãy kiểm tra kết nối mạng!"}
+          </div>
+        }
 
         {/* Submit Button */}
         <div className="mt-4 flex justify-end">

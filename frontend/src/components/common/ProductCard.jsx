@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Clock, Tag, User, Heart } from "lucide-react";
@@ -194,9 +195,11 @@ const ProductCard = ({
                 Cao nhất
               </span>
             </div>
-            <p className="text-sm font-bold text-gray-900 truncate">
+            <p className={twMerge("text-sm font-bold truncate", 
+              highestBidder ? "text-gray-900 " : "text-red-500"
+            )}>
               {highestBidder !== null
-                ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
+                ? `***${highestBidder.trim().slice(highestBidder.length * 3/4, highestBidder.length)}`
                 : "Chưa có"}
             </p>
           </div>

@@ -55,7 +55,7 @@ const ProductGallery = () => {
               <img
                 src={url}
                 alt={`Product slide ${index}`}
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-contain object-center"
               />
             </div>
           ))}

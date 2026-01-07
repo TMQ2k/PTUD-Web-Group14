@@ -11,6 +11,7 @@ const BuyNowDialog = ({
 }) => {
   // 2. Local state to track loading status
   const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(null);
 
   // 1. Don't render anything if the dialog isn't open
   if (!isOpen) return null;
@@ -21,11 +22,13 @@ const BuyNowDialog = ({
 
     try {
       setIsProcessing(true); // Start loading
+      setError(null);
       // Trigger the purchase action with the ID
       await onConfirm(productId);
       onClose();
     } catch (error) {
-      console.error("Error during buy now:", error);
+      setError(error);
+      //console.error("Error during buy now:", error);
     } finally {
       setIsProcessing(false); // Reset state
     }
@@ -84,6 +87,12 @@ const BuyNowDialog = ({
           </div>
         </div>
 
+        {error && 
+          <div className="text-red-500 bg-red-100 rounded-lg w-[80%] px-2 py-1 mx-auto text-center text-base">
+            {error?.message ? `Error: ${error.message}` : "Hệ thống không thể gửi xác nhận mua ngay cho bạn!"}
+          </div>
+        }
+
         {/* FOOTER ACTIONS */}
         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
           <button
@@ -95,7 +104,7 @@ const BuyNowDialog = ({
                         sm:ml-3 sm:w-auto sm:text-sm transition-all duration-200
                         ${isProcessing 
                             ? 'bg-gray-400 cursor-not-allowed' 
-                            : 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
+                            : 'bg-linear-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700'
                         }`}
             onClick={handleConfirmClick}
           >

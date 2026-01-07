@@ -5,11 +5,13 @@ import CommentForm from "./CommentForm";
 import CommentItem from "./CommentItem";
 import { commentApi } from "../../api/comment.api";
 import Spinner from "./Spinner";
-
+import { AlertCircle } from "lucide-react";
+import { handleReload } from "../../utils/WindowsHandler";
+import ErrorModal from "./ErrorModal";
 
 const ProductComments = React.memo(({ productId, isTopBidder }) => {
   const user = useSelector((state) => state.user);
-  const { userData } = user.isLoggedIn ? user : {};  
+  const { userData } = user.isLoggedIn ? user : {};
   const website_link =
     import.meta.env.WEBSITE_BASE_URL || "http://localhost:3000/products";
 
@@ -60,7 +62,7 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
       };
 
       const respone = await commentApi.postComment(productId, payload);
-      console.log(respone);
+      //console.log(respone);
       setComments((prev) => {
         //console.log(respone.data);
         if (respone?.data) {
@@ -78,12 +80,13 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
         <div className="h-fit w-full mt-10 flex items-center justify-center">
           <FourSquare color={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]} />
         </div>
-      )}
-      {error && (
-        <div className="text-2xl font-bold text-red-500 text-center w-full">
-          Can not get comments
-        </div>
       )} */}
+      {error && (
+        <ErrorModal
+          defaultMessage="Hệ thống không thể tải bình luận"
+          error={error}
+        />
+      )}
       {/*{!loading && !error && (
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
           <h3 className="text-xl font-bold text-blue-600 mb-6">
@@ -134,11 +137,14 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
         }
       >
         <div className="max-w-screen mx-auto p-6 bg-white rounded-xl shadow-sm">
-          <h3 className={twMerge("text-xl font-bold mb-6", 
-            isTopBidder ? "text-orange-600" : "text-blue-600"
-          )}>
+          <h3
+            className={twMerge(
+              "text-xl font-bold mb-6",
+              isTopBidder ? "text-orange-600" : "text-blue-600"
+            )}
+          >
             Bình luận ({comments.length})
-          </h3>          
+          </h3>
           <div className="mb-8">
             {role !== "guest" && (
               <CommentForm
@@ -148,23 +154,40 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
               />
             )}
           </div>
-          
+
           <div
-            className="space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
-                bg-white rounded-xl border border-blue-100
+            className={twMerge(
+              `space-y-6 py-6 px-6 max-h-[500px] overflow-y-auto overscroll-contain
+                bg-white rounded-xl border 
                 shadow-[0_8px_30px_rgb(0,0,0,0.04)]                
                 [&::-webkit-scrollbar]:w-2
-                [&::-webkit-scrollbar-track]:bg-blue-50
-                [&::-webkit-scrollbar-thumb]:bg-blue-200
-                [&::-webkit-scrollbar-thumb]:rounded-full
-                hover:[&::-webkit-scrollbar-thumb]:bg-blue-400"
+                [&::-webkit-scrollbar-thumb]:rounded-full`,
+              isTopBidder
+                ? `border-orange-100 [&::-webkit-scrollbar-track]:bg-orange-50
+                [&::-webkit-scrollbar-thumb]:bg-orange-200 hover:[&::-webkit-scrollbar-thumb]:bg-orange-400`
+                : `border-blue-100 [&::-webkit-scrollbar-track]:bg-blue-50
+                [&::-webkit-scrollbar-thumb]:bg-blue-200 hover:[&::-webkit-scrollbar-thumb]:bg-blue-400`
+            )}
           >
-            {comments.map(
+            {/* {comments.map(
               (_, i, arr) =>
                 arr[arr.length - 1 - i].parent_id === null && (
-                  <CommentItem                    
+                  <CommentItem
                     key={arr[arr.length - 1 - i].comment_id}
                     comment={arr[arr.length - 1 - i]}
+                    comments={comments}
+                    addReply={handleAddComment}
+                    userRole={role}
+                    isTopBidder={isTopBidder}
+                  />
+                )
+            )} */}
+            {comments.reverse().map(
+              (c) =>
+                c?.parent_id === null && (
+                  <CommentItem
+                    key={c?.comment_id}
+                    comment={c}
                     comments={comments}
                     addReply={handleAddComment}
                     userRole={role}
