@@ -3,7 +3,7 @@
                            Auction Web Application
 ================================================================================
 
-📋 MỤC LỤC
+MỤC LỤC
 --------------------------------------------------------------------------------
 1. Yêu cầu hệ thống
 2. Cài đặt dependencies
@@ -276,7 +276,7 @@ Search:
                            Auction Web Application
 ================================================================================
 
-📋 MỤC LỤC
+MỤC LỤC
 --------------------------------------------------------------------------------
 1. Yêu cầu hệ thống
 2. Cài đặt dependencies
@@ -732,57 +732,349 @@ Fix:
 12. GHI CHÚ QUAN TRỌNG
 ================================================================================
 
-1. ⚠️ Đảm bảo backend chạy TRƯỚC khi start frontend
+1. Đảm bảo backend chạy TRƯỚC khi start frontend
    - Backend phải online tại http://localhost:5000
    - Test: curl http://localhost:5000/api/categories
 
-2. 🔄 Redux Persist lưu user data vào localStorage
+2. Redux Persist lưu user data vào localStorage
    - Data vẫn còn sau khi reload page
    - Logout nếu cần reset state
    - Debug: Xem trong DevTools → Application → Local Storage
 
-3. 🚪 Port 3000 phải available
+3. Port 3000 phải available
    - Nếu bị chiếm, Vite sẽ tự động chọn port khác (3001, 3002...)
    - Hoặc đổi trong vite.config.js: server: { port: 3001 }
 
-4. 📸 Images upload lên Cloudinary
+4. Images upload lên Cloudinary
    - Không lưu local trong frontend
    - Backend xử lý upload và trả về URL
    - ProductCard nhận URL từ API
 
-5. 🔐 JWT Token trong Redux + localStorage
+5. JWT Token trong Redux + localStorage
    - Token tự động gửi trong mọi request (axios interceptor)
    - Token expire: 1 day (cấu hình backend)
    - Auto-logout khi token expired
 
-6. 🎨 Tailwind CSS v4
+6. Tailwind CSS v4
    - Sử dụng @tailwindcss/vite plugin
    - Config trong tailwind.config.js
    - Custom colors, fonts trong config
 
-7. 🔍 SEO & Meta Tags
+7. SEO & Meta Tags
     - Cập nhật trong index.html và React Helmet (nếu có)
     - Quan trọng khi deploy production
 
 
 ================================================================================
-                            KẾT THÚC HƯỚNG DẪN
+13. HƯỚNG DẪN TƯƠNG TÁC VỚI HỆ THỐNG
 ================================================================================
 
-Nếu gặp vấn đề:
----------------
-1. Kiểm tra Console (F12) xem có lỗi gì
-2. Kiểm tra Network tab để xem request/response
-3. Kiểm tra Redux DevTools (nếu có extension)
-4. Restart cả backend và frontend
-5. Xóa node_modules và npm install lại
-6. Xóa localStorage
-7. Check GitHub Issues của project
+ĐĂNG NHẬP HỆ THỐNG
+--------------------------------------------------------------------------------
+Tất cả người dùng (Bidder, Seller, Admin) đều đăng nhập tại:
+    → Header → Nút "Đăng nhập" (góc trên bên phải)
 
-Contact Support:
-----------------
-- GitHub: [Link repository]
-- Email: [Team email]
-- Documentation: [Link docs]
+Sau khi đăng nhập:
+    - Bidder/Seller: Điều hướng đến trang chủ hoặc trang cá nhân
+    - Admin: Tự động điều hướng đến /admin (trang quản trị)
 
-Happy Coding! 🚀
+================================================================================
+HƯỚNG DẪN SỬ DỤNG CHO BIDDER (NGƯỜI ĐẤU GIÁ)
+================================================================================
+
+1. ĐĂNG KÝ TÀI KHOẢN
+--------------------------------------------------------------------------------
+Bước 1: Click "Đăng ký" tại Header
+Bước 2: Nhập thông tin:
+    - Username (tên đăng nhập)
+    - Email
+    - Địa chỉ
+    - Mật khẩu (tối thiểu 6 ký tự)
+    - Xác nhận mật khẩu
+Bước 3: Xác thực OTP qua email
+Bước 4: Đăng nhập với tài khoản vừa tạo
+
+2. ĐĂNG NHẬP
+--------------------------------------------------------------------------------
+Bước 1: Click "Đăng nhập" tại Header
+Bước 2: Nhập Username/Email và Mật khẩu
+Bước 3: Hệ thống tự động điều hướng về trang chủ
+
+3. XEM VÀ TÌM KIẾM SẢN PHẨM
+--------------------------------------------------------------------------------
+- Xem sản phẩm trên trang chủ (Home):
+    • Sản phẩm sắp kết thúc
+    • Sản phẩm giá cao nhất
+    • Sản phẩm nhiều lượt đấu
+    
+- Tìm kiếm sản phẩm:
+    • Thanh search ở Header
+    • Sắp xếp theo giá, thời gian
+
+4. THAM GIA ĐẤU GIÁ (HỆ THỐNG ĐẤU GIÁ TỰ ĐỘNG)
+--------------------------------------------------------------------------------
+Lưu ý quan trọng: Hệ thống sử dụng CƠ CHẾ ĐẤU GIÁ TỰ ĐỘNG (AUTO BID)
+
+Bước 1: Click vào sản phẩm muốn đấu giá
+Bước 2: Xem thông tin chi tiết:
+    - Giá hiện tại (hoặc giá khởi điểm nếu chưa có ai đấu)
+    - Bước giá (step price)
+    - Thời gian còn lại (đếm ngược realtime)
+    - Người đấu giá cao nhất hiện tại (nếu có)
+    - Thanh tiến trình giá (Progress bar)
+    
+Bước 3: Chọn 1 trong 2 cách đấu giá:
+
+    CÁCH 1: ĐẤU GIÁ NHANH (Khuyến nghị cho người mới)
+    --------------------------------------------------------
+    - Nhấn nút "Đấu giá nhanh" (màu cam, với icon ⚡)
+    - Hệ thống tự động đề xuất: Giá hiện tại + Bước giá
+    - Ví dụ: Giá hiện tại 5.000.000đ, Bước giá 100.000đ
+             → Đấu giá nhanh = 5.100.000đ
+    - Xác nhận trong popup để hoàn tất
+    
+    CÁCH 2: TỰ NHẬP GIÁ TỐI ĐA (Linh hoạt hơn)
+    --------------------------------------------------------
+    - Nhập giá tối đa bạn sẵn sàng trả vào ô input màu xanh
+    - Sử dụng nút [+] [-] để tăng/giảm theo bước giá
+    - Click nút "Đấu giá" màu xanh
+    - Xác nhận giá đấu tự động trong popup
+
+CƠ CHẾ ĐẤU GIÁ TỰ ĐỘNG HOẠT ĐỘNG NHƯ SAU:
+================================================================================
+ Bạn đặt MỨC GIÁ TỐI ĐA bạn sẵn sàng trả (ví dụ: 10.000.000đ)
+ Hệ thống sẽ TỰ ĐỘNG đấu giá thay bạn khi có người khác tham gia
+ Hệ thống chỉ tăng giá theo từng BƯỚC GIÁ nhỏ nhất cần thiết
+ Bạn luôn là người dẫn đầu CHO ĐẾN KHI:
+    - Có người đặt giá cao hơn mức tối đa của bạn
+    - Sản phẩm hết hạn đấu giá
+ Hệ thống gửi EMAIL thông báo khi:
+    - Bạn trở thành người dẫn đầu
+    - Có người vượt mức giá tối đa của bạn
+    - Seller thay đổi mô tả sản phẩm
+    - Có người comment vào sản phẩm
+
+5. MUA NGAY (BUY NOW) - Không cần đấu giá
+--------------------------------------------------------------------------------
+Một số sản phẩm có GIÁ MUA NGAY (Buy Now Price):
+    
+Bước 1: Xem giá mua ngay trên ProductCard hoặc trang chi tiết
+Bước 2: Click nút "Mua ngay" màu tím
+Bước 3: Xác nhận mua trong popup
+Bước 4: Thanh toán và chờ người bán gửi hàng
+
+Lợi ích:
+     Mua NGAY LẬP TỨC không cần chờ đấu giá kết thúc
+     GIÁ CỐ ĐỊNH không thay đổi
+     NHANH CHÓNG hơn đấu giá
+
+⚠️ Lưu ý: Khi ai đó mua ngay, sản phẩm sẽ KẾT THÚC đấu giá ngay lập tức
+
+6. THÊM SẢN PHẨM VÀO WATCHLIST (YÊU THÍCH)
+--------------------------------------------------------------------------------
+Bước 1: Click icon trái tim ❤️ trên ProductCard
+Bước 2: Xem danh sách yêu thích tại: Header → icon trái tim ❤️ thể hiện "Danh sách yêu thích"
+
+7. THEO DÕI SẢN PHẨM ĐÃ THAM GIA ĐẤU GIÁ
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Sản phẩm đã tham gia đấu giá"
+
+Xem:
+    - Tab "Còn hạn": Sản phẩm đang đấu giá
+    - Tab "Đã hết hạn": Sản phẩm đã kết thúc
+    
+Đặc biệt:
+    🔴 Sản phẩm bạn đang dẫn đầu có ring đỏ nổi bật
+
+8. THEO DÕI SẢN PHẨM ĐÃ THẮNG ĐẤU GIÁ
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Sản phẩm đã thắng đấu giá"
+
+Xem:
+    - Thông tin người bán
+    - Giá thắng
+
+Hành động:
+    - Đánh giá người bán
+
+9. ĐÁNH GIÁ NGƯỜI BÁN
+--------------------------------------------------------------------------------
+Sau khi nhận hàng:
+Bước 1: Vào "Sản phẩm đã thắng đấu giá"
+Bước 2: Chọn +1 (hài lòng) hoặc -1 (không hài lòng)
+Bước 3: Nhập nhận xét (tùy chọn)
+Bước 4: Gửi đánh giá
+
+10. CẬP NHẬT THÔNG TIN CÁ NHÂN
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Tài khoản"
+Cập nhật:
+    - Tên, họ
+    - Số điện thoại
+    - Địa chỉ
+    - Avatar
+
+================================================================================
+HƯỚNG DẪN SỬ DỤNG CHO SELLER (NGƯỜI BÁN)
+================================================================================
+
+1. ĐĂNG KÝ VÀ NÂNG CẤP LÊN SELLER
+--------------------------------------------------------------------------------
+Bước 1: Đăng ký tài khoản Bidder (như hướng dẫn trên)
+Bước 2: Đăng nhập và vào Trang cá nhân
+Bước 3: Click tab "Nâng cấp" → "Nâng cấp lên Seller"
+Bước 4: Chờ admin duyệt và trở thành seller trong vòng 7 ngày
+
+2. ĐĂNG SẢN PHẨM ĐẤU GIÁ
+--------------------------------------------------------------------------------
+Bước 1: Click "Đăng sản phẩm" ở Header (nút màu xanh)
+Bước 2: Điền thông tin sản phẩm:
+    Tên sản phẩm (bắt buộc)
+    Mô tả chi tiết (bắt buộc, tối đa 400 ký tự)
+    Giá khởi điểm (bắt buộc)
+    Bước giá (bắt buộc)
+    Giá mua ngay (tùy chọn)
+    4 ảnh mô tả (bắt buộc)
+    Danh mục (chọn ít nhất 1)
+    Thời gian kết thúc (tối đa 1 tháng từ ngày đăng)
+
+Bước 3: Click "Đăng sản phẩm"
+
+Lưu ý:
+    Một khi đăng, không thể chỉnh sửa giá
+    Có thể thêm mô tả
+
+3. QUẢN LÝ SẢN PHẨM ĐÃ ĐĂNG
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Sản phẩm đã đăng & còn hạn"
+
+Xem:
+    - Danh sách sản phẩm đang đấu giá
+    - Giá hiện tại
+    - Người đấu giá cao nhất
+    - Số lượt đấu
+    - Thời gian còn lại
+
+4. QUẢN LÝ SẢN PHẨM ĐÃ CÓ NGƯỜI THẮNG
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Sản phẩm đã có người thắng đấu giá"
+
+Xem:
+    - Thông tin người thắng:
+        • Tên (hoặc username nếu chưa cập nhật)
+        • Email
+        • Số điện thoại
+        • Địa chỉ
+    - Giá thắng
+    - Ảnh chứng từ thanh toán (nếu có)
+
+Hành động:
+    Xác nhận thanh toán
+    Cập nhật trạng thái đơn hàng:
+        - Invalid (không hợp lệ)
+        - Paid (đã thanh toán)
+        - Sent (đã gửi hàng)
+        - Received (đã nhận hàng)
+        - Cancelled (hủy)
+    Đánh giá người mua (+1/-1)
+
+5. THEO DÕI ĐIỂM ĐÁNH GIÁ
+--------------------------------------------------------------------------------
+Vào: Trang cá nhân → "Điểm đánh giá"
+
+Xem:
+    - Tổng số đánh giá
+    - Tỷ lệ đánh giá tích cực
+    - Lịch sử đánh giá từ người mua
+
+================================================================================
+HƯỚNG DẪN SỬ DỤNG CHO ADMIN (QUẢN TRỊ VIÊN)
+================================================================================
+
+1. ĐĂNG NHẬP ADMIN
+--------------------------------------------------------------------------------
+Đăng nhập tại: Header → "Đăng nhập"
+Sử dụng tài khoản admin được cấp (role: admin)
+
+Sau khi đăng nhập:
+    → Tự động điều hướng đến /admin (Dashboard quản trị)
+
+Lưu ý:
+    Admin không thể truy cập các trang của Bidder/Seller
+    Bidder/Seller không thể truy cập trang Admin
+
+2. QUẢN LÝ NGƯỜI DÙNG
+--------------------------------------------------------------------------------
+Vào: Admin Dashboard → "Quản lý người dùng"
+
+Xem:
+    - Danh sách tất cả người dùng
+    - Thông tin: Username, Email, Role, Status
+
+Hành động:
+    Tìm kiếm người dùng
+    Xóa người đùng
+    Reset mật khẩu người dùng
+
+3. QUẢN LÝ DANH MỤC
+--------------------------------------------------------------------------------
+Vào: Admin Dashboard → "Quản lý danh mục"
+
+Hành động:
+    Thêm danh mục mới
+    Sửa tên danh mục
+    Xóa danh mục (nếu không có sản phẩm)
+    Quản lý danh mục cha - con
+
+4. QUẢN LÝ SẢN PHẨM
+--------------------------------------------------------------------------------
+Vào: Admin Dashboard → "Quản lý sản phẩm"
+
+Xem:
+    - Danh sách tất cả sản phẩm
+
+Hành động:
+    Xóa sản phẩm vi phạm
+
+5. QUẢN LÝ YÊU CẦU NÂNG CẤP SELLER
+--------------------------------------------------------------------------------
+Vào: Admin Dashboard → "Yêu cầu nâng cấp"
+
+Xem:
+    - Danh sách yêu cầu nâng cấp lên Seller
+
+Hành động:
+    ✅ Chấp nhận yêu cầu
+    ❌ Từ chối yêu cầu
+
+================================================================================
+BẢO MẬT VÀ PHÂN QUYỀN
+================================================================================
+
+Phân quyền hệ thống:
+    👤 Bidder (Người đấu giá):
+        Xem sản phẩm
+        Đấu giá
+        Theo dõi sản phẩm
+        Nâng cấp lên Seller
+        Đánh giá người bán
+        
+    💼 Seller (Người bán):
+        Tất cả quyền của Bidder
+        Đăng sản phẩm
+        Quản lý sản phẩm
+        Xem thông tin người thắng
+        Đánh giá người mua
+        
+    ⚙️ Admin (Quản trị viên):
+        Quản lý người dùng
+        Quản lý danh mục
+        Quản lý sản phẩm
+        Duyệt yêu cầu nâng cấp
+        KHÔNG thể đấu giá/bán hàng
+
+Bảo mật:
+    Mật khẩu được mã hóa bằng bcrypt
+    JWT token expire sau 1 ngày
+    Xác thực OTP qua email
+    Auto-logout khi token hết hạn
