@@ -202,34 +202,29 @@ router.post(
   }
 );
 
-router.post(
-  "/request-bidder-on-product",
-  authenticate,
-  authorize("bidder"),
-  async (req, res) => {
-    try {
-      const bidderId = req.user.id;
-      const { productId, reason } = req.body;
-      const result = await requestBidderOnProductService(
-        productId,
-        bidderId,
-        reason
-      );
-      res.status(200).json({
-        code: 200,
-        message: "Bidder request on product submitted successfully",
-        data: result,
-      });
-    } catch (err) {
-      console.error("Error in /request-bidder-on-product route:", err);
-      res.status(400).json({
-        code: 400,
-        message: err.message || "Failed to submit bidder request on product",
-        data: null,
-      });
-    }
+router.post("/request-bidder-on-product", authenticate, async (req, res) => {
+  try {
+    const bidderId = req.user.id;
+    const { productId, reason } = req.body;
+    const result = await requestBidderOnProductService(
+      productId,
+      bidderId,
+      reason
+    );
+    res.status(200).json({
+      code: 200,
+      message: "Bidder request on product submitted successfully",
+      data: result,
+    });
+  } catch (err) {
+    console.error("Error in /request-bidder-on-product route:", err);
+    res.status(400).json({
+      code: 400,
+      message: err.message || "Failed to submit bidder request on product",
+      data: null,
+    });
   }
-);
+});
 
 router.get("/bidders/:productId", async (req, res) => {
   try {
