@@ -10,9 +10,12 @@ import {
   getUpgradeRequestsService,
   handleUpgradeRequestService,
   requestBidderOnProductService,
-  isBidsOnProductService
+  isBidsOnProductService,
 } from "../service/bidderService.js";
-import { getProductsListofBidder, getMetaDataForBidderProductsList} from "../service/productService.js";
+import {
+  getProductsListofBidder,
+  getMetaDataForBidderProductsList,
+} from "../service/productService.js";
 import { authenticate, authorize } from "../middleware/auth.js";
 import { deactiveProductById } from "../service/productService.js";
 
@@ -280,14 +283,13 @@ router.put(
     try {
       const productId = req.params.productId;
       const user = req.user;
-      const result = await deactiveProductById(user,productId);
+      const result = await deactiveProductById(user, productId);
       return res.status(200).json({
         code: 200,
         message: "Product deactivated successfully",
         data: result,
       });
-    }
-    catch (err) {
+    } catch (err) {
       console.error("❌ Error in /:productId/deactivate route:", err);
       return res.status(400).json({
         code: 400,
@@ -298,22 +300,32 @@ router.put(
   }
 );
 
-router.get("/bidder-products", authenticate, authorize("bidder"), async (req, res) => {
+router.get("/bidder-products", authenticate, async (req, res) => {
   try {
     const bidderId = req.user.id;
     const limit = parseInt(req.query.limit);
-    const page = parseInt(req.query.page)||1;
-    const is_active = req.query.is_active !== undefined ? req.query.is_active : undefined;
-    const products = await getProductsListofBidder(bidderId, limit, page, is_active);
-    const metaData = await getMetaDataForBidderProductsList(bidderId, limit, page, is_active);
+    const page = parseInt(req.query.page) || 1;
+    const is_active =
+      req.query.is_active !== undefined ? req.query.is_active : undefined;
+    const products = await getProductsListofBidder(
+      bidderId,
+      limit,
+      page,
+      is_active
+    );
+    const metaData = await getMetaDataForBidderProductsList(
+      bidderId,
+      limit,
+      page,
+      is_active
+    );
     res.status(200).json({
       code: 200,
       message: "Bidder's products retrieved successfully",
       data: products,
       metadata: metaData,
     });
-  }
-  catch (err) {
+  } catch (err) {
     console.error("❌ Error in /bidder-products route:", err);
     res.status(400).json({
       code: 400,
