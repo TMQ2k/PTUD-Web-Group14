@@ -72,7 +72,7 @@ const PostedProducts = () => {
                   name={p.name}
                   image={p.image_cover_url}
                   currentPrice={formatNumberToCurrency(p.current_price) || -1}
-                  highestBidder={p?.top_bidder?.name || null}
+                  highestBidder={p?.top_bidder?.username || null}
                   buyNowPrice={
                     p.buy_now_price
                       ? formatNumberToCurrency(p.buy_now_price)

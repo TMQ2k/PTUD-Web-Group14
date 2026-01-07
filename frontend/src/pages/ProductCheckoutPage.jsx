@@ -54,11 +54,7 @@ const ProductCheckoutPage = () => {
       </div> */}
 
       <Activity mode={showSellerCheckout ? "hidden" : "visible"}>
-<<<<<<< HEAD
-        <ProductCheckout out />
-=======
         <ProductCheckout />
->>>>>>> 8b920f36a272c8daf223178066a79aa7f26891c2
       </Activity>
       <Activity mode={showSellerCheckout ? "visible" : "hidden"}>
         <SellerProductCheckout />

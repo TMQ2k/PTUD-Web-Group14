@@ -233,7 +233,7 @@ export const getProductsList = async (
     }
     baseQuery += ` GROUP BY p.product_id ORDER BY bid_count DESC`;
   } else if (sortBy === "ending_soon") {
-    baseQuery += ` ORDER BY p.end_time DESC`;
+    baseQuery += ` ORDER BY p.end_time ASC`;
   }
   if (limit) {
     queryParams.push(limit, offset);
