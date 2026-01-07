@@ -240,7 +240,6 @@ const EditInformation = () => {
         address: formData.address || null,
       };
 
-
       // ✅ Gọi API cập nhật
       const response = await userApi.updateProfile(updateData);
 

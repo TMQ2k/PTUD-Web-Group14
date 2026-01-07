@@ -34,7 +34,7 @@ const ProductPosting = () => {
       return respone;
     } catch (error) {
       // Error handled silently
-    }    
+    }
   };
 
   useEffect(() => {
@@ -139,7 +139,12 @@ const ProductPosting = () => {
           <Spinner />
         </div>
       )}
-      {error && <ErrorModal defaultMessage={"Hệ thống không thể tải trang này"} error={error} />}
+      {error && (
+        <ErrorModal
+          defaultMessage={"Hệ thống không thể tải trang này"}
+          error={error}
+        />
+      )}
       {!loading &&
         !error &&
         (posted ? (

@@ -180,19 +180,21 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
                   />
                 )
             )} */}
-            {comments.reverse().map(
-              (c) =>
-                c?.parent_id === null && (
-                  <CommentItem
-                    key={c?.comment_id}
-                    comment={c}
-                    comments={comments}
-                    addReply={handleAddComment}
-                    userRole={role}
-                    isTopBidder={isTopBidder}
-                  />
-                )
-            )}
+            {comments
+              .reverse()
+              .map(
+                (c) =>
+                  c?.parent_id === null && (
+                    <CommentItem
+                      key={c?.comment_id}
+                      comment={c}
+                      comments={comments}
+                      addReply={handleAddComment}
+                      userRole={role}
+                      isTopBidder={isTopBidder}
+                    />
+                  )
+              )}
           </div>
         </div>
       </Suspense>

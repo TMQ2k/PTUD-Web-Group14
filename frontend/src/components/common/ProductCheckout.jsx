@@ -253,7 +253,6 @@ const ProductCheckout = () => {
         setError(null);
         const respone = await userApi.getUserWonProducts();
         if (isMounted) {
-
           setUserWonProducts(respone.data);
           setFilteredProducts(respone.data);
         }

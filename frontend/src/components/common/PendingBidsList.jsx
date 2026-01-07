@@ -11,12 +11,17 @@ import {
 } from "lucide-react";
 import { useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { Mosaic } from "react-loading-indicators"
+import { Mosaic } from "react-loading-indicators";
 
-const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => {
+const PendingBidsList = ({
+  requests,
+  bidderList,
+  bannedBidders,
+  productName,
+}) => {
   const params = useParams();
   const { register, getValues } = useForm();
-  
+
   // const mockData1 = [
   //   {
   //     request_id: 1,
@@ -121,7 +126,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
   // ];
 
   const [pendingList, setPendingList] = useState(requests);
-//  const [itemName, setItemName] = useState(productName);  
+  //  const [itemName, setItemName] = useState(productName);
   const [participants, setParticipants] = useState(bidderList);
   const [bannedList, setBannedList] = useState(bannedBidders);
 
@@ -240,7 +245,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
   //       if (isMounted) {
   //         console.log(respone.data);
   //         setPendingList(respone?.data?.requests || mockData);
-  //         setProductName(respone?.data?.productName);          
+  //         setProductName(respone?.data?.productName);
   //       }
   //     } catch (err) {
   //       setError(err);
@@ -286,12 +291,14 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
       const bidder = participants.find((b) => bidder_id === b.bidder_id);
       if (bidder) {
         setBannedList((prev) => [...prev, bidder]);
-        setParticipants((prev) => prev.filter((b) => b.bidder_id !== bidder_id));
+        setParticipants((prev) =>
+          prev.filter((b) => b.bidder_id !== bidder_id)
+        );
       }
     } catch (err) {
       // Error handled silently
     }
-  }
+  };
 
   const handleDeletingBanned = async (bidder_id) => {
     try {
@@ -303,7 +310,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
   };
 
   return (
-    <>      
+    <>
       <div className="w-full mx-auto my-2 p-4 h-full">
         {/* --- UPDATED HEADER WITH NAVIGATION --- */}
         <div className="bg-linear-to-r from-blue-500  to-purple-600 rounded-xl shadow-sm border border-b-0 border-gray-200 p-6 flex flex-col sm:flex-row sm:items-center md:items-center justify-between gap-4">
@@ -328,7 +335,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-purple-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors whitespace-nowrap"
           >
             <ExternalLink size={16} />
-            Quay về trang chi tiết            
+            Quay về trang chi tiết
           </Link>
         </div>
 
@@ -339,7 +346,8 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
               Pending List
             </h2>
             <div className="max-h-[80vh] overflow-auto">
-              {pendingList && pendingList.length > 0 && 
+              {pendingList &&
+                pendingList.length > 0 &&
                 pendingList.map((b) => (
                   <div
                     key={b.bidder_id}
@@ -366,7 +374,10 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
                           </span>
                         </div>
                         <p className="text-base text-amber-400 font-bold ">
-                          Reason: <span className="text-black font-normal">{b.reason}</span>
+                          Reason:{" "}
+                          <span className="text-black font-normal">
+                            {b.reason}
+                          </span>
                         </p>
                       </div>
                       <div className="flex flex-col justify-center gap-2">
@@ -389,7 +400,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
                       {...register(`reason-${b.bidder_id}`)}
                       placeholder="Lý do từ chối"
                       className="w-full bg-white p-2 rounded-lg border-2 focus:border-2 focus:border-blue-500 focus:outline-none border-blue-200"
-                    />                                                      
+                    />
                   </div>
                 ))}
             </div>
@@ -399,7 +410,8 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
               Participants
             </h2>
             <div className="max-h-[80vh] overflow-auto">
-              {participants && participants.length > 0 && 
+              {participants &&
+                participants.length > 0 &&
                 participants.map((b) => (
                   <div
                     key={b.bidder_id}
@@ -429,7 +441,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
                           Reason: <span className="text-black font-normal">{b.reason}</span>
                         </p> */}
                       </div>
-                      <div className="flex flex-row justify-center gap-2">                        
+                      <div className="flex flex-row justify-center gap-2">
                         <button
                           onClick={() => handleRejectParticipant(b.bidder_id)}
                           className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 hover:scale-102 active:scale-98 border border-gray-300 bg-red-50 text-red-600 text-sm font-medium rounded-md transition-colors w-full sm:w-32"
@@ -443,7 +455,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
                       {...register(`reason-${b.bidder_id}`)}
                       placeholder="Lý do từ chối"
                       className="w-full bg-white p-2 rounded-lg border-2 focus:border-2 focus:border-purple-500 focus:outline-none border-purple-200"
-                    />                                                      
+                    />
                   </div>
                 ))}
             </div>
@@ -500,7 +512,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
             </div>
           </div>
         </div>
-      </div>    
+      </div>
     </>
   );
 };

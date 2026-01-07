@@ -363,8 +363,10 @@ const AuctionManagement = () => {
   };
   const handleReject = (bidder_id) => {
     handleAuctionAction(bidder_id, sellerApi.rejectBidder);
-    const rejectedBidder = searchList.find((item) => item.user_id === bidder_id);
-    setSearchList((prev) => prev.filter((item) => item.user_id !== bidder_id));  
+    const rejectedBidder = searchList.find(
+      (item) => item.user_id === bidder_id
+    );
+    setSearchList((prev) => prev.filter((item) => item.user_id !== bidder_id));
     if (rejectedBidder) setBannedList((prev) => [...prev, rejectedBidder]);
   };
   const handleUnban = (bidder_id) => {
