@@ -36,6 +36,7 @@ import {
   countHistoryByProductId,
   upsertAutoBid,
   isBidsOnProductRepo,
+  getAllBiddersByProductId
 } from "../repo/bidderRepo.js";
 
 import {
@@ -476,8 +477,37 @@ export const updateDescription = async (productId, newDescription) => {
   if (!updatedProductDescription) {
     throw new Error("Failed to update product description");
   }
+
+  const bidders = await getAllBiddersByProductId(productId);
+  for (let bidder of bidders) {
+    const bidderProfile = await getUserProfile(bidder.user_id);
+    await sendProductDescriptionUpdateEmail(
+      bidderProfile.email,
+      bidderProfile.username,
+      updatedProductDescription.name
+    );
+  }
   return updatedProductDescription;
 };
+
+export const sendProductDescriptionUpdateEmail = async (
+  bidderEmail,
+  bidderName,
+  productName
+) => {
+  const subject = "Cập nhật mô tả sản phẩm đấu giá";
+  const message = `Kính gửi ${bidderName},\n\nMô tả của sản phẩm đấu giá "${productName}" mà bạn đã ra giá đã được cập nhật. Vui lòng kiểm tra lại mô tả mới nhất trên trang web của chúng tôi.\n\nTrân trọng,\nĐội ngũ đấu giá`;
+  try {
+    await sendNotificationEmail(bidderEmail, subject, message);
+  } catch (err) {
+    console.error(
+      "❌ Lỗi khi gửi email thông báo cập nhật mô tả sản phẩm:",
+      err
+    );
+    throw err;
+  } 
+};
+
 export const getProductBySellerIdService = async (sellerId) => {
   const result = await getProductBySellerIdRepo(sellerId);
   return result;
