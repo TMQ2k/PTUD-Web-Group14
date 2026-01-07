@@ -552,7 +552,6 @@ export const getProductsListofBidder = async (
   bidderId,
   limit,
   page,
-  sortBy,
   is_active
 ) => {
   try {
@@ -560,7 +559,6 @@ export const getProductsListofBidder = async (
       bidderId,
       limit,
       page,
-      sortBy,
       is_active
     );
     for (let product of bidderProducts) {
