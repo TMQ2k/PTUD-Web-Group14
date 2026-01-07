@@ -71,12 +71,9 @@ const EditInformation = () => {
 
       try {
         setLoading(true);
-        console.log("🔄 Đang lấy thông tin user...");
 
         const response = await userApi.getProfile();
         const apiUserData = response.data;
-
-        console.log("✅ Lấy thông tin thành công:", apiUserData);
 
         // ✅ Cập nhật formData với dữ liệu từ API
         setFormData({
@@ -190,14 +187,6 @@ const EditInformation = () => {
 
       // Mật khẩu xác nhận phải khớp
       if (formData.newPassword !== formData.confirmPassword) {
-        console.log("🔍 Debug password mismatch:");
-        console.log("  - newPassword:", JSON.stringify(formData.newPassword));
-        console.log(
-          "  - confirmPassword:",
-          JSON.stringify(formData.confirmPassword)
-        );
-        console.log("  - Length new:", formData.newPassword.length);
-        console.log("  - Length confirm:", formData.confirmPassword.length);
         setError(
           `Mật khẩu xác nhận không khớp (${formData.newPassword.length} ≠ ${formData.confirmPassword.length} ký tự)`
         );
@@ -221,18 +210,14 @@ const EditInformation = () => {
     setLoading(true);
 
     try {
-      console.log("🔄 Đang cập nhật thông tin...");
-
       // ✅ Nếu có avatar mới, upload trước
       let avatarResponse = null;
       if (avatarFile) {
-        console.log("📸 Đang upload avatar...");
         const formData = new FormData();
         formData.append("avatar", avatarFile);
 
         try {
           avatarResponse = await userApi.updateAvatar(formData);
-          console.log("✅ Upload avatar thành công:", avatarResponse);
           setSuccess("Cập nhật avatar thành công!");
         } catch (avatarError) {
           console.error("❌ Lỗi khi upload avatar:", avatarError);
@@ -255,30 +240,22 @@ const EditInformation = () => {
         address: formData.address || null,
       };
 
-      console.log("📤 Dữ liệu gửi đi:", updateData);
-
       // ✅ Gọi API cập nhật
       const response = await userApi.updateProfile(updateData);
-
-      console.log("✅ Cập nhật thành công:", response);
 
       // ✅ Fetch lại profile để có dữ liệu mới nhất (bao gồm avatar URL từ Cloudinary)
       const updatedProfile = await userApi.getProfile();
       const updatedUserData = updatedProfile.data;
 
-      console.log("✅ Profile mới nhất:", updatedUserData);
-
       // ✅ Nếu user nhập mật khẩu mới, gọi API đổi mật khẩu
       let passwordChanged = false;
       if (formData.newPassword && formData.oldPassword) {
         try {
-          console.log("🔄 Đang đổi mật khẩu...");
           await userApi.changePassword({
             oldPassword: formData.oldPassword,
             newPassword: formData.newPassword,
             confirmPassword: formData.confirmPassword,
           });
-          console.log("✅ Đổi mật khẩu thành công");
           passwordChanged = true;
         } catch (passwordError) {
           console.error("❌ Lỗi khi đổi mật khẩu:", passwordError);

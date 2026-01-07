@@ -10,12 +10,12 @@ const ProductBaseInformation = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <ProductBaseInformationCard
         title="Người bán"
-        value={product?.seller?.username || "None"}
+        value={product?.seller?.username || null}
         points={product?.seller?.points || null}
       />
       <ProductBaseInformationCard
         title="Người đấu giá cao nhất"
-        value={product?.top_bidder?.username || "None"}
+        value={product?.top_bidder?.username || null}
         points={product?.top_bidder?.points || null}
       />
       <ProductBaseInformationCard

@@ -91,7 +91,7 @@ const CategoryProducts = () => {
             image: product.image_cover_url || electronicsImg,
             name: product.name,
             currentPrice: formattedPrice,
-            highestBidder: "Đang cập nhật",
+            highestBidder: product?.top_bidder?.username || null,
             buyNowPrice: product.buy_now_price
               ? new Intl.NumberFormat("vi-VN").format(product.buy_now_price)
               : null,

@@ -83,9 +83,13 @@ const ProductCheckoutCard = React.memo(
               >
                 {productName}
               </h3>
-              <div className="h-0.5 w-12 bg-blue-200 rounded-full mb-3"></div>
+              <div className="h-0.5 w-12 bg-blue-200 rounded-full mb-2"></div>
             </div>
-
+            <div className="w-full">
+              <span className="font-bold text-blue-500">
+                Người bán: <span className="font-normal text-black">{sellerName}</span>
+              </span>
+            </div>
             <div className="mt-auto">
               <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-0.5">
                 Giá mua hàng

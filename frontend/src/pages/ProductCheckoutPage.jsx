@@ -11,14 +11,14 @@ const ProductCheckoutPage = () => {
       <div className="w-full flex justify-end items-center mb-6 pr-4 pt-4">
         {/* Container */}
         <div className="bg-gray-100 p-1.5 rounded-xl inline-flex shadow-inner">
-          
           {/* Buyer Button */}
           <button
             onClick={() => setShowSellerCheckout(false)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ease-out
-              ${!showSellerCheckout 
-                ? "bg-white text-blue-600 shadow-sm shadow-gray-200" 
-                : "text-gray-500 hover:text-gray-700"
+              ${
+                !showSellerCheckout
+                  ? "bg-white text-blue-600 shadow-sm shadow-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
           >
             <ShoppingBag size={18} />
@@ -29,9 +29,10 @@ const ProductCheckoutPage = () => {
           <button
             onClick={() => setShowSellerCheckout(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ease-out
-              ${showSellerCheckout 
-                ? "bg-white text-rose-600 shadow-sm shadow-gray-200" 
-                : "text-gray-500 hover:text-gray-700"
+              ${
+                showSellerCheckout
+                  ? "bg-white text-rose-600 shadow-sm shadow-gray-200"
+                  : "text-gray-500 hover:text-gray-700"
               }`}
           >
             <Store size={18} />

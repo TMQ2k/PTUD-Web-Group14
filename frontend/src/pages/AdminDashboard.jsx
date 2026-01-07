@@ -6,6 +6,7 @@ import CategoryManagement from "../components/admin/CategoryManagement";
 import ProductManagement from "../components/admin/ProductManagement";
 import RequestManagement from "../components/admin/RequestManagement";
 import { adminApi } from "../api/admin.api";
+import AdminOnlyGuard from "../components/guards/AdminOnlyGuard";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("users");
@@ -59,23 +60,25 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <AdminHeader />
+    <AdminOnlyGuard>
+      <div className="min-h-screen bg-gray-100">
+        {/* Header */}
+        <AdminHeader />
 
-      {/* Main Layout */}
-      <div className="flex">
-        {/* Sidebar */}
-        <AdminSidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          pendingRequestsCount={pendingRequestsCount}
-        />
+        {/* Main Layout */}
+        <div className="flex">
+          {/* Sidebar */}
+          <AdminSidebar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            pendingRequestsCount={pendingRequestsCount}
+          />
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden">{renderContent()}</main>
+          {/* Main Content */}
+          <main className="flex-1 overflow-x-hidden">{renderContent()}</main>
+        </div>
       </div>
-    </div>
+    </AdminOnlyGuard>
   );
 };
 

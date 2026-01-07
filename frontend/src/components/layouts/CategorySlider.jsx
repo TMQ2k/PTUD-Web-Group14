@@ -124,16 +124,13 @@ const CategorySlider = ({
     const fetchCategories = async () => {
       // Nếu đã có categories trong store, không fetch lại
       if (categories.length > 0) {
-        console.log("✅ Categories đã có trong store:", categories);
         return;
       }
 
       try {
         dispatch(setCategoriesLoading());
-        console.log("🔄 Đang fetch categories từ API...");
 
         const response = await categoryApi.getAllCategories();
-        console.log("📦 Response từ API:", response);
 
         // Backend trả về: { code: 200, message: "...", data: [...] }
         const apiCategories = response.data;
@@ -148,7 +145,6 @@ const CategorySlider = ({
           })),
         }));
 
-        console.log("✅ Categories đã map:", mappedCategories);
         dispatch(setCategories(mappedCategories));
       } catch (error) {
         console.error("❌ Lỗi khi fetch categories:", error);

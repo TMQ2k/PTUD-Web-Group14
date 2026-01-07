@@ -44,7 +44,6 @@ const App = () => {
     const deactivateExpired = async () => {
       try {
         await productApi.deactivateExpiredProducts();
-        console.log("Đã cập nhật trạng thái sản phẩm hết hạn");
       } catch (error) {
         console.error("Lỗi khi deactivate expired products:", error.message);
       }
@@ -65,18 +64,13 @@ const App = () => {
 
       // Không có token → Skip
       if (!token) {
-        console.log("ℹ️ Không có token, user chưa đăng nhập");
         return;
       }
-
-      console.log("🔄 Đang khôi phục thông tin user từ token...");
 
       try {
         // Gọi API /profile với token
         const response = await userApi.getProfile();
         const userData = response.data;
-    
-        console.log("✅ Khôi phục thành công:", userData);
 
         const fullName = `${userData.first_name || ""} ${
           userData.last_name || ""
@@ -100,6 +94,14 @@ const App = () => {
             rating_percent: userData.rating_percent,
           })
         );
+
+        // ⚠️ Nếu là admin và đang ở trang khác → redirect về /admin
+        if (
+          userData.role === "admin" &&
+          !window.location.pathname.startsWith("/admin")
+        ) {
+          window.location.replace("/admin");
+        }
       } catch (error) {
         console.error("❌ Token không hợp lệ:", error);
 
@@ -113,7 +115,6 @@ const App = () => {
 
     // Lắng nghe event logout từ http interceptor khi token hết hạn
     const handleAuthLogout = () => {
-      console.log("🚪 Token hết hạn - Đăng xuất Redux state");
       dispatch(logout());
     };
 
@@ -149,8 +150,14 @@ const App = () => {
           <Route path="/watchlist" element={<WatchList />} />
           <Route path="search" element={<SearchPage />} />
           <Route path="/productposting" element={<ProductPostingPage />} />
-          <Route path="/productupdating/:id" element={<ProductUpdatingPage />} />    
-          <Route path="/auctionmanagement/:id" element={<AuctionManegementPage />} />
+          <Route
+            path="/productupdating/:id"
+            element={<ProductUpdatingPage />}
+          />
+          <Route
+            path="/auctionmanagement/:id"
+            element={<AuctionManegementPage />}
+          />
           <Route path="/productcheckout" element={<ProductCheckoutPage />} />
         </Route>
 
@@ -159,6 +166,7 @@ const App = () => {
       </>
     )
   );
+
   return (
     <>
       {/* Render nội dung chính NGAY LẬP TỨC để khi overlay fade thì UI đã sẵn sàng */}

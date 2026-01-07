@@ -211,16 +211,17 @@ export const getProductsList = async (
   if (sortBy === "highest_price") {
     baseQuery += ` ORDER BY p.current_price DESC`;
   } else if (sortBy === "most_bidded") {
-    baseQuery = `SELECT DISTINCT p.*, COUNT(ab.product_id) AS bid_count
+    baseQuery = `SELECT DISTINCT p.*, COUNT(ph.product_id) AS bid_count
         FROM products p
-        JOIN auto_bids ab ON p.product_id = ab.product_id
-        LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+        JOIN product_history ph ON p.product_id = ph.product_id
         WHERE 1=1`;
     //Reset queryParams for this new query
     queryParams = [];
     if (categoryId) {
       queryParams.push(categoryId);
-      baseQuery += ` AND pc.category_id = $${queryParams.length}`;
+      baseQuery += ` AND p.product_id IN (
+            SELECT pc.product_id FROM product_categories pc WHERE pc.category_id = $${queryParams.length}
+        )`;
     }
     if (is_active !== undefined) {
       if (is_active == "true") {
@@ -476,21 +477,20 @@ export const getProdudctsListByBidderId = async (
     WHERE ab.user_id = $1`;
   const queryParams = [bidderId];
   if (is_active !== undefined) {
-    if (is_active == "true") {
+    if (String(is_active) == "true") {
       queryParams.push(true);
     } else {
       queryParams.push(false);
     }
     baseQuery += ` AND p.is_active = $${queryParams.length}`;
   }
+  baseQuery += ` ORDER BY p.end_time ASC`;
   if (limit) {
     queryParams.push(limit, offset);
     baseQuery += ` LIMIT $${queryParams.length - 1} OFFSET $${
       queryParams.length
     }`;
   }
-  //Sort by end time ascending
-  baseQuery += ` ORDER BY p.end_time ASC`;
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 };
@@ -502,7 +502,7 @@ export const countProductsByBidderId = async (bidderId, is_active) => {
     WHERE ab.user_id = $1`;
   const queryParams = [bidderId];
   if (is_active !== undefined) {
-    if (is_active == "true") {
+    if (String(is_active) == "true") {
       queryParams.push(true);
     } else {
       queryParams.push(false);
@@ -511,4 +511,11 @@ export const countProductsByBidderId = async (bidderId, is_active) => {
   }
   const result = await pool.query(baseQuery, queryParams);
   return parseInt(result.rows[0].total, 10);
+};
+
+export const deleteProductByIdRepo = async (productId) => {
+  const result = await pool.query(`select * from fnc_delete_product( $1 )`, [
+    productId,
+  ]);
+  return result.rows[0];
 };

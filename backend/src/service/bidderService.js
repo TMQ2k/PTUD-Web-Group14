@@ -71,9 +71,8 @@ export const getUserWatchlistService = async (userId) => {
   }
 };
 
-export const upsertAutoBidService = async (userId, productId, maxBidAmount) => {
+export const upsertAutoBidService = async (userId, productId, maxBidAmount, linkProduct) => {
   try {
-    const autoBidEntry = await upsertAutoBid(userId, productId, maxBidAmount);
 
     //Send notification email to bidder, seller, top bidder
     const bidderProfile = await getUserProfile(userId);
@@ -96,11 +95,13 @@ export const upsertAutoBidService = async (userId, productId, maxBidAmount) => {
       if (topBidderProfile) {
         await sendBidNotificationEmailForTopBidder(
           topBidderProfile.email,
-          productProfile.name
+          productProfile.name,
+          linkProduct
         );
       }
     }
-    
+
+    const autoBidEntry = await upsertAutoBid(userId, productId, maxBidAmount);
     return autoBidEntry;
   } catch (err) {
     console.error("❌ [Service] Lỗi khi thêm/cập nhật auto bid:", err);
@@ -201,9 +202,9 @@ export const sendBidNotificationEmailForBidders = async (bidderEmail, productNam
 };
 
 
-export const sendBidNotificationEmailForTopBidder = async (topBidderEmail, productName) => {
+export const sendBidNotificationEmailForTopBidder = async (topBidderEmail, productName, linkProduct) => {
   const subject = "THÔNG BÁO VỀ ĐẤU GIÁ SẢN PHẨM BẠN ĐÃ ĐẤU GIÁ";
-  const message = `Hiện tại đã có người đấu giá cao hơn bạn cho sản phẩm "${productName}". Vui lòng đăng nhập để kiểm tra và đặt lại giá thầu nếu muốn.`;
+  const message = `Bạn đã bị vượt qua trong đấu giá sản phẩm "${productName}". Vui lòng đăng nhập để kiểm tra và đặt giá cao hơn nếu bạn muốn tiếp tục tham gia đấu giá. Xem chi tiết tại: ${linkProduct}`;
   try {
     await sendNotificationEmail(topBidderEmail, subject, message);
   } catch (err) {

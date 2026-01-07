@@ -10,6 +10,7 @@ import { productApi } from "../../api/product.api";
 import CheckoutFilterBar from "./CheckoutFilterBar";
 import { filterWonProductStatus } from "../../utils/arrayhandler";
 import Spinner from "./Spinner";
+import ErrorModal from "./ErrorModal";
 
 const SellerProductCheckout = () => {
   // const mockCheckoutData = [
@@ -101,7 +102,6 @@ const SellerProductCheckout = () => {
         if (isMounted) {
           setUserWonProducts(respone.data);
           setFilteredProducts(respone.data);
-          console.log(respone.data)
         }
       } catch (err) {
         if (isMounted) setError(err);
@@ -126,11 +126,13 @@ const SellerProductCheckout = () => {
     return respone;
   };
 
-  const onFilter = (target_status) => {    
+  const onFilter = (target_status) => {
     if (target_status === null) setFilteredProducts(userWonProducts);
-    else setFilteredProducts(filterWonProductStatus(userWonProducts, target_status));
-    console.log(userWonProducts)
-  }
+    else
+      setFilteredProducts(
+        filterWonProductStatus(userWonProducts, target_status)
+      );
+  };
 
   return (
     <>
@@ -139,7 +141,12 @@ const SellerProductCheckout = () => {
           <Spinner />
         </div>
       )}
-      {error && <div>{error?.message}</div>}
+      {error && (
+        <ErrorModal
+          defaultMessage={"Hệ thống không thể tải trang này"}
+          error={error}
+        />
+      )}
       {!loading && !error && (
         <>
           <div className="flex items-center justify-center w-full">
@@ -206,7 +213,9 @@ const SellerProductCheckout = () => {
                   key={item.wonId}
                   {...item} // Spread all data properties
                   onChangeStatus={onChangeStatus}
-                  onPaid={() => console.log("Paid clicked")}
+                  onPaid={() => {
+                    // Handle paid action
+                  }}
                 />
               ))}
             </div> */}

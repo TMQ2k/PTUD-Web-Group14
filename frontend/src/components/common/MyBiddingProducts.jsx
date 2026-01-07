@@ -18,71 +18,69 @@ const MyBiddingProducts = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4; // 4 sản phẩm mỗi trang
   const user = useSelector((state) => state.user);
-  const userId = (user.isLoggedIn ? user.userData.id : null);
+  const userId = user.isLoggedIn ? user.userData.id : null;
   useEffect(() => {
     const fetchBiddedProducts = async () => {
-    try {
-      setLoading(true);
-      const response = await bidderApi.getBidderProducts();
-      console.log(response.data);
-      const biddedProducts = response.data || [];
+      try {
+        setLoading(true);
+        const response = await bidderApi.getBidderProducts();
 
-      // Transform data from backend
-      const transformedProducts = biddedProducts.map((item) => {
-        const now = new Date();
-        const endTime = new Date(item.end_time);
-        const isActive = endTime > now;
+        // Transform data from backend
+        const transformedProducts = biddedProducts.map((item) => {
+          const now = new Date();
+          const endTime = new Date(item.end_time);
+          const isActive = endTime > now;
 
-        // Calculate remaining time
-        const diffMs = endTime - now;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffMinutes = Math.floor(
-          (diffMs % (1000 * 60 * 60)) / (1000 * 60)
-        );
-        const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-        const remainingTime = `${String(Math.max(0, diffHours)).padStart(
-          2,
-          "0"
-        )}:${String(Math.max(0, diffMinutes)).padStart(2, "0")}:${String(
-          Math.max(0, diffSeconds)
-        ).padStart(2, "0")}`;
+          // Calculate remaining time
+          const diffMs = endTime - now;
+          const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+          const diffMinutes = Math.floor(
+            (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+          );
+          const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+          const remainingTime = `${String(Math.max(0, diffHours)).padStart(
+            2,
+            "0"
+          )}:${String(Math.max(0, diffMinutes)).padStart(2, "0")}:${String(
+            Math.max(0, diffSeconds)
+          ).padStart(2, "0")}`;
 
-        // Format prices
-        const formattedCurrentPrice = new Intl.NumberFormat("vi-VN").format(
-          item.current_price
-        );
-        // const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
-        //   item.max_bid_amount
-        // );
+          // Format prices
+          const formattedCurrentPrice = new Intl.NumberFormat("vi-VN").format(
+            item.current_price
+          );
+          // const formattedMyBidPrice = new Intl.NumberFormat("vi-VN").format(
+          //   item.max_bid_amount
+          // );
 
-        return {
-          id: item.product_id,
-          name: item.name,
-          currentPrice: formattedCurrentPrice,
-          //myBidPrice: formattedMyBidPrice,
-          highestBidder: item.top_bidder?.username || null,
-          image: item.image_cover_url,
-          postedDate: new Date(item.end_time).toLocaleDateString("vi-VN"),
-          remainingTime: remainingTime,
-          bidCount: 0,
-          endTime: item.end_time,
-          status: isActive ? "active" : "expired",
-          //isWinning: item.is_winner,
-          isLeadingBidder: isActive && userId === item.product_id, // Đang dẫn đầu nếu đang active và là winner
-          //finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
-          sellerId: item.seller_id,
-          is_active: isActive,
-        };
-      });
+          return {
+            id: item.product_id,
+            name: item.name,
+            currentPrice: formattedCurrentPrice,
+            //myBidPrice: formattedMyBidPrice,
+            highestBidder: item.top_bidder?.username || null,
+            image: item.image_cover_url,
+            postedDate: new Date(item.end_time).toLocaleDateString("vi-VN"),
+            remainingTime: remainingTime,
+            bidCount: item.history_count || 0,
+            endTime: item.end_time,
+            status: isActive ? "active" : "expired",
+            //isWinning: item.is_winner,
+            isLeadingBidder: isActive && item.is_highest_bidder === true, // ✅ Đang dẫn đầu nếu còn hạn và là người đấu giá cao nhất
+            //finalResult: !isActive ? (item.is_winner ? "won" : "lost") : null,
+            sellerId: item.seller_id,
+            is_active: isActive,
+          };
+        });
 
-      setProducts(transformedProducts);
-    } catch (error) {
-      console.error("Lỗi khi lấy sản phẩm đã đấu giá:", error);
-      toast.error("Không thể tải danh sách sản phẩm đã đấu giá");
-    } finally {
-      setLoading(false);
-    }
-  };
+        setProducts(transformedProducts);
+      } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm đã đấu giá:", error);
+        toast.error("Không thể tải danh sách sản phẩm đã đấu giá");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchBiddedProducts();
   }, [userId]);
 

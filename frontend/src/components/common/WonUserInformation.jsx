@@ -21,7 +21,6 @@ const WonUserInformation = ({ isOpen, onClose, wonId, productId, onPaid }) => {
         // Assuming onPaid returns the data object directly
         const respone = await onPaid(wonId, productId);
         if (isMounted) setBidderInfo(respone?.winningBidderId || {});
-        console.log(respone);
       } catch (err) {
         if (isMounted) setError(err);
       } finally {

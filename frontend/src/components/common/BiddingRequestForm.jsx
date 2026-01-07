@@ -4,11 +4,10 @@ import { AlertCircle, Send } from "lucide-react";
 
 const BiddingRequestForm = React.memo(({ productId, state }) => {
   const [reason, setReason] = useState("");
-  const [sent, setSent] = useState(state);  
+  const [sent, setSent] = useState(state);
 
   const handleSubmit = async () => {
     const respone = await bidderApi.requestProduct(productId, reason);
-    console.log(respone);
     if (respone.code === 200) setSent(true);
   };
 
@@ -24,8 +23,8 @@ const BiddingRequestForm = React.memo(({ productId, state }) => {
             {/* Icon placeholder if you don't use lucide-react */}
             <span className="text-xl">⚠️</span>
             <p className="text-sm text-red-600 font-medium leading-tight">
-              Bạn chưa đủ điểm để tham gia đấu giá hoặc đã bị người bán cấm đấu giá. Hãy gửi yêu cầu cho người
-              bán.
+              Bạn chưa đủ điểm để tham gia đấu giá hoặc đã bị người bán cấm đấu
+              giá. Hãy gửi yêu cầu cho người bán.
             </p>
           </div>
 

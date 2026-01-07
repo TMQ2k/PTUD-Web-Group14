@@ -11,10 +11,11 @@ const bidderEndpoint = {
 };
 
 export const bidderApi = {
-  autobid: async (productId, maxBidAmount) => {    
+  autobid: async (productId, maxBidAmount, linkProduct) => {    
     const autobidData = {
       productId: productId,
       maxBidAmount: maxBidAmount,
+      linkProduct: linkProduct,
     };    
 
     const respone = await http.put(bidderEndpoint.autobid, autobidData, {

@@ -43,8 +43,6 @@ export default function Header() {
       if (!token) return;
 
       try {
-        console.log("🔄 Restoring session from token...");
-
         // Fetch user profile từ API
         const response = await userApi.getProfile();
         const userProfile = response.data;
@@ -295,7 +293,7 @@ export default function Header() {
                           {userData?.email || "user@example.com"}
                         </p>
                         {userData?.role && (
-                          <p className="text-xs text-indigo-600 font-bold mt-1 capitalize">
+                          <div className="text-xs text-indigo-600 font-bold mt-1 capitalize">
                             {userData.role === "seller" ? (
                               <div className="flex flex-row gap-1">
                                 <HandCoins className="inline-block w-4 h-4 mb-0.5" />
@@ -307,7 +305,7 @@ export default function Header() {
                                 Bidder
                               </div>
                             )}
-                          </p>
+                          </div>
                         )}
                       </div>
 
@@ -366,7 +364,7 @@ export default function Header() {
               <CategorySlider
                 title="Categories"
                 onSelectCategory={(lv1, lv2) => {
-                  console.log("Selected:", lv1, lv2);
+                  // Category selected
                 }}
                 onClose={() => setShowCats(false)}
               />

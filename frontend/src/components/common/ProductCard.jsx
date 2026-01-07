@@ -1,3 +1,4 @@
+import { twMerge } from "tailwind-merge";
 import React, { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Clock, Tag, User, Heart } from "lucide-react";
@@ -16,7 +17,7 @@ const ProductCard = ({
   postedDate,
   remainingTime,
   bidCount,
-  onBuyNow,  
+  onBuyNow,
   isInWatchlist = false,
   onRemoveFromWatchlist,
   is_active = true,
@@ -159,12 +160,15 @@ const ProductCard = ({
         </div>
 
         {/* Badge "Mua ngay" nếu có */}
-        {buyNowPrice && (
-          <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
-            <FaFire className="inline w-4 h-4 mr-1 mb-1 text-orange-500" />
-            Mua ngay: {buyNowPrice}₫
-          </div>
-        )}
+        {buyNowPrice &&
+          buyNowPrice !== -1 &&
+          buyNowPrice !== "0" &&
+          buyNowPrice !== "" && (
+            <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
+              <FaFire className="inline w-4 h-4 mr-1 mb-1 text-orange-500" />
+              Mua ngay: {buyNowPrice}₫
+            </div>
+          )}
       </div>
 
       {/* Nội dung */}
@@ -194,9 +198,19 @@ const ProductCard = ({
                 Cao nhất
               </span>
             </div>
-            <p className="text-sm font-bold text-gray-900 truncate">
+            <p
+              className={twMerge(
+                "text-sm font-bold truncate",
+                highestBidder ? "text-gray-900 " : "text-red-500"
+              )}
+            >
               {highestBidder !== null
-                ? `***${highestBidder.trim().split(" ").slice(-1)[0]}`
+                ? `***${highestBidder
+                    .trim()
+                    .slice(
+                      (highestBidder.length * 3) / 4,
+                      highestBidder.length
+                    )}`
                 : "Chưa có"}
             </p>
           </div>

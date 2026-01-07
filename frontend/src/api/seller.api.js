@@ -7,7 +7,7 @@ const sellerEndpoints = {
   bidsPendingList: "/seller/all-requests",
   rejectBidder: "/seller/seller-reject-bidder",
   deleteBannedBidder: "/seller/seller-delete-banned-bidder",
-  allowBidder: "/seller/seller-allow-bidder",  
+  allowBidder: "/seller/seller-allow-bidder",
   enableAuctionExtension: "/seller/enable-auction-extension",
 };
 
@@ -59,21 +59,17 @@ export const sellerApi = {
   },
 
   deleteBannedBidder: async (product_id, bidder_id) => {
-    console.log(product_id);
-    const respone = await http.delete(
-      sellerEndpoints.deleteBannedBidder,
-      {
-        // 1. Put the body inside the "data" key
-        data: {
-          productId: product_id,
-          bidderId: bidder_id,
-        },
-        // 2. Headers go in the same config object
-        headers: {
-          Authorization: `Bearer ${authStorage.getToken()}`,
-        },
-      }
-    );
+    const respone = await http.delete(sellerEndpoints.deleteBannedBidder, {
+      // 1. Put the body inside the "data" key
+      data: {
+        productId: product_id,
+        bidderId: bidder_id,
+      },
+      // 2. Headers go in the same config object
+      headers: {
+        Authorization: `Bearer ${authStorage.getToken()}`,
+      },
+    });
 
     return respone.data;
   },
@@ -83,7 +79,7 @@ export const sellerApi = {
       `${sellerEndpoints.allowBidder}`,
       {
         productId: product_id,
-        bidderId: bidder_id,        
+        bidderId: bidder_id,
       },
       {
         headers: {
@@ -96,10 +92,14 @@ export const sellerApi = {
   },
 
   enableAuctionExtension: async (productId) => {
-    const respone = await http.post(sellerEndpoints.enableAuctionExtension, {
-      productId: productId,
-    }, {});
+    const respone = await http.post(
+      sellerEndpoints.enableAuctionExtension,
+      {
+        productId: productId,
+      },
+      {}
+    );
 
     return respone.data;
-  }
+  },
 };

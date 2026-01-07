@@ -19,13 +19,14 @@ import {
   updateDescription as updateDescriptionRepo,
   getRecentlyEndedProducts as getRecentlyEndedProductsRepo,
   getWinningBidderByProductId as getWinningBidderByProductIdRepo,
-  getProductProfile,  
+  getProductProfile,
   deactiveProductById as deactiveProductByIdRepo,
   updateCurrentPrice,
   countProductsByQuery,
   countProductsList,
   getProdudctsListByBidderId as getProdudctsListByBidderIdRepo,
   countProductsByBidderId,
+  deleteProductByIdRepo,
 } from "../repo/productRepo.js";
 
 import {
@@ -35,6 +36,7 @@ import {
   countHistoryByProductId,
   upsertAutoBid,
   isBidsOnProductRepo,
+  getAllBiddersByProductId
 } from "../repo/bidderRepo.js";
 
 import {
@@ -189,11 +191,11 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
     const top_bidder_id = await getTopBidderIdByProductId(prod.product_id);
     if (top_bidder_id) {
       const top_bidder_info = await getUserInfoById(top_bidder_id);
-      prod.top_bidder = { 
+      prod.top_bidder = {
         id: top_bidder_info.id,
         name: top_bidder_info.username,
         avatar_url: top_bidder_info.avatar_url,
-        points: top_bidder_info.points
+        points: top_bidder_info.points,
       };
     } else {
       prod.top_bidder = null;
@@ -230,14 +232,12 @@ export const getProductDetailsById = async (productId, user, limit = 5) => {
     const username = topBidderInfo.username;
     const len = username.length;
     const maskLength = Math.floor(len * 0.75);
-    const maskedUsername =  username
+    const maskedUsername = username
       .split("")
-      .map((char, index) =>
-        index < maskLength ? "*" : char
-      ).join("");
+      .map((char, index) => (index < maskLength ? "*" : char))
+      .join("");
     topBidderInfo.username = maskedUsername;
   }
-  
 
   return {
     product_id: productInfo.product_id,
@@ -477,11 +477,63 @@ export const updateDescription = async (productId, newDescription) => {
   if (!updatedProductDescription) {
     throw new Error("Failed to update product description");
   }
+
+  const bidders = await getAllBiddersByProductId(productId);
+  const productProfile = await getProductProfile(productId);
+  for (let bidder of bidders) {
+    const bidderProfile = await getUserProfile(bidder.user_id);
+    await sendProductDescriptionUpdateEmail(
+      bidderProfile.email,
+      bidderProfile.username,
+      productProfile.name
+    );
+  }
   return updatedProductDescription;
 };
+
+export const sendProductDescriptionUpdateEmail = async (
+  bidderEmail,
+  bidderName,
+  productName
+) => {
+  const subject = "Cập nhật mô tả sản phẩm đấu giá";
+  const message = `Kính gửi ${bidderName},\n\nMô tả của sản phẩm đấu giá "${productName}" mà bạn đã ra giá đã được cập nhật. Vui lòng kiểm tra lại mô tả mới nhất trên trang web của chúng tôi.\n\nTrân trọng,\nĐội ngũ đấu giá`;
+  try {
+    await sendNotificationEmail(bidderEmail, subject, message);
+  } catch (err) {
+    console.error(
+      "❌ Lỗi khi gửi email thông báo cập nhật mô tả sản phẩm:",
+      err
+    );
+    throw err;
+  } 
+};
+
 export const getProductBySellerIdService = async (sellerId) => {
-  const result = await getProductBySellerIdRepo(sellerId);
-  return result;
+  try {
+    const products = await getProductBySellerIdRepo(sellerId);
+
+    // Thêm thông tin top_bidder và history_count cho mỗi sản phẩm
+    for (let product of products) {
+      const topBidderId = await getTopBidderIdByProductId(product.product_id);
+      if (topBidderId) {
+        product.top_bidder = await getUserInfoById(topBidderId);
+      } else {
+        product.top_bidder = null;
+      }
+
+      const historyCount = await countHistoryByProductId(product.product_id);
+      product.history_count = historyCount;
+    }
+
+    return products;
+  } catch (err) {
+    console.error(
+      "❌ [Service] Lỗi khi lấy danh sách sản phẩm của seller:",
+      err
+    );
+    throw err;
+  }
 };
 
 export const enableExtentionForProductService = async (sellerId, productId) => {
@@ -552,7 +604,6 @@ export const getProductsListofBidder = async (
   bidderId,
   limit,
   page,
-  sortBy,
   is_active
 ) => {
   try {
@@ -560,7 +611,6 @@ export const getProductsListofBidder = async (
       bidderId,
       limit,
       page,
-      sortBy,
       is_active
     );
     for (let product of bidderProducts) {
