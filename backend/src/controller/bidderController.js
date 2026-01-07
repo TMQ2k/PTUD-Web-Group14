@@ -253,8 +253,7 @@ router.get("/bidders/:productId", async (req, res) => {
 
 router.get(
   "/is-bids-on-product/:productId",
-  authenticate,
-  authorize("bidder"),
+  authenticate,  
   async (req, res) => {
     try {
       const bidderId = req.user.id;
