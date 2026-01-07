@@ -211,16 +211,17 @@ export const getProductsList = async (
   if (sortBy === "highest_price") {
     baseQuery += ` ORDER BY p.current_price DESC`;
   } else if (sortBy === "most_bidded") {
-    baseQuery = `SELECT DISTINCT p.*, COUNT(ab.product_id) AS bid_count
+    baseQuery = `SELECT DISTINCT p.*, COUNT(ph.product_id) AS bid_count
         FROM products p
-        JOIN auto_bids ab ON p.product_id = ab.product_id
-        LEFT JOIN product_categories pc ON p.product_id = pc.product_id
+        JOIN product_history ph ON p.product_id = ph.product_id
         WHERE 1=1`;
     //Reset queryParams for this new query
     queryParams = [];
     if (categoryId) {
       queryParams.push(categoryId);
-      baseQuery += ` AND pc.category_id = $${queryParams.length}`;
+      baseQuery += ` AND p.product_id IN (
+            SELECT pc.product_id FROM product_categories pc WHERE pc.category_id = $${queryParams.length}
+        )`;
     }
     if (is_active !== undefined) {
       if (is_active == "true") {
