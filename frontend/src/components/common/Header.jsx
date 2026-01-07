@@ -43,8 +43,6 @@ export default function Header() {
       if (!token) return;
 
       try {
-        console.log("🔄 Restoring session from token...");
-
         // Fetch user profile từ API
         const response = await userApi.getProfile();
         const userProfile = response.data;
@@ -366,7 +364,7 @@ export default function Header() {
               <CategorySlider
                 title="Categories"
                 onSelectCategory={(lv1, lv2) => {
-                  console.log("Selected:", lv1, lv2);
+                  // Category selected
                 }}
                 onClose={() => setShowCats(false)}
               />

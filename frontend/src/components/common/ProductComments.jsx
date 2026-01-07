@@ -34,7 +34,6 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
           setComments(respone.data);
         }
       } catch (err) {
-        console.log(err);
         if (isMounted) {
           setError(err);
         }
@@ -69,7 +68,7 @@ const ProductComments = React.memo(({ productId, isTopBidder }) => {
         } else return [...prev];
       });
     } catch (err) {
-      console.log("Post comment error: ", err.message);
+      // Error handled silently
     }
   };
 

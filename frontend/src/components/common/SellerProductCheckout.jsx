@@ -213,7 +213,9 @@ const SellerProductCheckout = () => {
                   key={item.wonId}
                   {...item} // Spread all data properties
                   onChangeStatus={onChangeStatus}
-                  onPaid={() => console.log("Paid clicked")}
+                  onPaid={() => {
+                    // Handle paid action
+                  }}
                 />
               ))}
             </div> */}

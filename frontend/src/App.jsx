@@ -44,7 +44,6 @@ const App = () => {
     const deactivateExpired = async () => {
       try {
         await productApi.deactivateExpiredProducts();
-        console.log("Đã cập nhật trạng thái sản phẩm hết hạn");
       } catch (error) {
         console.error("Lỗi khi deactivate expired products:", error.message);
       }
@@ -65,18 +64,13 @@ const App = () => {
 
       // Không có token → Skip
       if (!token) {
-        console.log("ℹ️ Không có token, user chưa đăng nhập");
         return;
       }
-
-      console.log("🔄 Đang khôi phục thông tin user từ token...");
 
       try {
         // Gọi API /profile với token
         const response = await userApi.getProfile();
         const userData = response.data;
-
-        console.log("✅ Khôi phục thành công:", userData);
 
         const fullName = `${userData.first_name || ""} ${
           userData.last_name || ""
@@ -106,9 +100,6 @@ const App = () => {
           userData.role === "admin" &&
           !window.location.pathname.startsWith("/admin")
         ) {
-          console.log(
-            "🔒 Admin detected on non-admin page, redirecting to /admin..."
-          );
           window.location.replace("/admin");
         }
       } catch (error) {
@@ -124,7 +115,6 @@ const App = () => {
 
     // Lắng nghe event logout từ http interceptor khi token hết hạn
     const handleAuthLogout = () => {
-      console.log("🚪 Token hết hạn - Đăng xuất Redux state");
       dispatch(logout());
     };
 

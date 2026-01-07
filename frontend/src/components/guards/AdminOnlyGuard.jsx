@@ -15,22 +15,15 @@ const AdminOnlyGuard = ({ children }) => {
   useEffect(() => {
     // Chưa login → redirect về trang chủ
     if (!isLoggedIn) {
-      console.log("🔒 Chưa đăng nhập. Redirecting to /...");
       navigate("/", { replace: true });
       return;
     }
 
     // Đã login nhưng không phải admin → redirect về home
     if (userData?.role !== "admin") {
-      console.log(
-        "🔒 Không có quyền truy cập trang admin. Redirecting to /..."
-      );
       navigate("/", { replace: true });
       return;
     }
-
-    // Là admin → cho phép truy cập
-    console.log("✅ Admin access granted");
   }, [isLoggedIn, userData, navigate]);
 
   // Nếu chưa login hoặc không phải admin → không render children

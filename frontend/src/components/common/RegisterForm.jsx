@@ -76,12 +76,8 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
     }
 
     try {
-      console.log("🔄 Đang đăng ký user...");
-
       // ✅ BƯỚC 1: Gọi API đăng ký
       await userApi.register({ username, email, password, address });
-
-      console.log("✅ Đăng ký thành công! OTP đã được gửi tới email.");
 
       // ✅ BƯỚC 2: Lưu thông tin user để dùng khi verify OTP
       user.current = { username, email, password };
@@ -125,8 +121,6 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
     const formData = new FormData(e.currentTarget);
     const otp = formData.get("otp");
 
-    console.log("🔄 Đang verify OTP:", otp);
-
     if (!otp || String(otp).length !== 6) {
       setError("OTP phải gồm 6 chữ số.");
       setLoading(false);
@@ -140,16 +134,12 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
         otp,
       });
 
-      console.log("📦 Response verify OTP:", verifyResponse);
-
       // ✅ BƯỚC 2: Lấy token từ response
       const token = verifyResponse.data?.token;
 
       if (!token) {
         throw new Error("Backend không trả về token sau khi verify");
       }
-
-      console.log("✅ Xác thực OTP thành công! Token:", token);
 
       // ✅ BƯỚC 3: Lưu token vào localStorage
       authStorage.setToken(token);
@@ -160,18 +150,12 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
       if (verifyResponse.data?.user) {
         // Backend trả user luôn trong verify response
         userData = verifyResponse.data.user;
-        console.log("✅ User data từ verify response:", userData);
       } else {
         // Gọi API getProfile để lấy user
         try {
           const profileResponse = await userApi.getProfile();
           userData = profileResponse.data;
-          console.log("✅ User data từ /profile:", userData);
         } catch (profileError) {
-          console.warn(
-            "⚠️ Không lấy được profile, dùng data tạm:",
-            profileError
-          );
           // Fallback: Dùng data từ form
           userData = {
             name: user.current.username,

@@ -24,18 +24,14 @@ const EditAddress = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       if (!isLoggedIn) {
-        console.warn("⚠️ User chưa đăng nhập");
         return;
       }
 
       try {
         setLoading(true);
-        console.log("🔄 Đang lấy địa chỉ...");
 
         const response = await userApi.getProfile();
         const apiUserData = response.data;
-
-        console.log("✅ Lấy địa chỉ thành công:", apiUserData);
 
         setFormData({
           firstName: apiUserData.first_name || "",
@@ -117,8 +113,6 @@ const EditAddress = () => {
     setLoading(true);
 
     try {
-      console.log("🔄 Đang cập nhật địa chỉ...");
-
       // ✅ Chuẩn bị dữ liệu gửi đi
       const updateData = {
         first_name: formData.firstName.trim(),
@@ -127,12 +121,9 @@ const EditAddress = () => {
         address: formData.address.trim(),
       };
 
-      console.log("📤 Dữ liệu gửi đi:", updateData);
 
       // ✅ Gọi API cập nhật
       const response = await userApi.updateProfile(updateData);
-
-      console.log("✅ Cập nhật địa chỉ thành công:", response);
 
       // ✅ Cập nhật Redux store
       if (response.data) {

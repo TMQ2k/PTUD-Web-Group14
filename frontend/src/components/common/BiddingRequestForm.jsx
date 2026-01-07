@@ -8,7 +8,6 @@ const BiddingRequestForm = React.memo(({ productId, state }) => {
 
   const handleSubmit = async () => {
     const respone = await bidderApi.requestProduct(productId, reason);
-    console.log(respone);
     if (respone.code === 200) setSent(true);
   };
 

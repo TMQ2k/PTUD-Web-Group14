@@ -105,7 +105,7 @@ const ProductOverview = () => {
         );
         if (respone.code === 200) viewQuill.setContents(combinedContent);
       } catch (err) {
-        console.log(err.message);
+        // Error handled silently
       }
     }
   };

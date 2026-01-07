@@ -59,7 +59,6 @@ export const sellerApi = {
   },
 
   deleteBannedBidder: async (product_id, bidder_id) => {
-    console.log(product_id);
     const respone = await http.delete(
       sellerEndpoints.deleteBannedBidder,
       {

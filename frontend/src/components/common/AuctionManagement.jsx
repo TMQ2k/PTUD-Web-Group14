@@ -314,8 +314,6 @@ const AuctionManagement = () => {
           if (pendingResponse?.data?.requests && bannedResponse?.data) {
             const pending = pendingResponse.data.requests;
             const banned = bannedResponse.data;
-            console.log(pending);
-            console.log(banned);
             setPendingList(
               pending.filter(
                 (p) => !banned.some((b) => b.user_id == p.bidder_id)

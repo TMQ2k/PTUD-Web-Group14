@@ -261,7 +261,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
       await sellerApi.acceptBidder(params.id, bidder_id);
       setPendingList((prev) => prev.filter((b) => b.bidder_id !== bidder_id));
     } catch (err) {
-      console.log(err);
+      // Error handled silently
     }
   };
 
@@ -275,7 +275,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
         setPendingList((prev) => prev.filter((b) => b.bidder_id !== bidder_id));
       }
     } catch (err) {
-      console.log(err);
+      // Error handled silently
     }
   };
 
@@ -289,7 +289,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
         setParticipants((prev) => prev.filter((b) => b.bidder_id !== bidder_id));
       }
     } catch (err) {
-      console.log(err);
+      // Error handled silently
     }
   }
 
@@ -298,7 +298,7 @@ const PendingBidsList = ({requests, bidderList, bannedBidders, productName}) => 
       //await sellerApi.deleteBannedBidder(params.id, bidder_id);
       setBannedList((prev) => prev.filter((b) => b.bidder_id !== bidder_id));
     } catch (err) {
-      console.log(err);
+      // Error handled silently
     }
   };
 

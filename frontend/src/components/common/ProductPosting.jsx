@@ -33,7 +33,7 @@ const ProductPosting = () => {
       }
       return respone;
     } catch (error) {
-      console.log(error.message);
+      // Error handled silently
     }    
   };
 

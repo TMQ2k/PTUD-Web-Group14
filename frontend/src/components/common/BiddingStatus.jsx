@@ -69,9 +69,9 @@ const BiddingStatus = ({ className = "" }) => {
     const loadIsBidOnProduct = async () => {
       try {
         const respone = await bidderApi.isBidOnProduct(product.product_id);
-        if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);        
+        if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);
       } catch (err) {
-        console.log(err.message);
+        // Error handled silently
       }
     };
 

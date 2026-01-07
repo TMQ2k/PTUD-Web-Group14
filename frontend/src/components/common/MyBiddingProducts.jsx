@@ -24,8 +24,6 @@ const MyBiddingProducts = () => {
       try {
         setLoading(true);
         const response = await bidderApi.getBidderProducts();
-        console.log(response.data);
-        const biddedProducts = response.data || [];
 
         // Transform data from backend
         const transformedProducts = biddedProducts.map((item) => {

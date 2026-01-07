@@ -17,9 +17,6 @@ const AdminRedirectGuard = ({ children }) => {
     if (isLoggedIn && userData?.role === "admin") {
       // Nếu đang ở trang không phải /admin/* → redirect
       if (!location.pathname.startsWith("/admin")) {
-        console.log(
-          "🔒 Admin không được truy cập trang này. Redirecting to /admin..."
-        );
         navigate("/admin", { replace: true });
       }
     }

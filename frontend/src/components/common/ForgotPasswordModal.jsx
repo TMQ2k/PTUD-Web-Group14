@@ -50,9 +50,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      console.log("🔄 Đang gửi OTP cho:", identifier);
       const response = await userApi.sendOtpResetPassword(identifier);
-      console.log("✅ Gửi OTP thành công:", response);
 
       setMessage("OTP đã được gửi! Vui lòng kiểm tra email của bạn.");
       setTimeout(() => {
@@ -84,12 +82,10 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      console.log("🔄 Đang xác thực OTP:", { identifier, otp });
       const response = await userApi.verifyOtpResetPassword({
         identifier,
         otp,
       });
-      console.log("✅ Xác thực OTP thành công:", response);
 
       setMessage("Xác thực OTP thành công!");
       setTimeout(() => {
@@ -126,13 +122,11 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      console.log("🔄 Đang đặt lại mật khẩu cho:", identifier);
       const response = await userApi.resetPassword({
         identifier,
         newPassword,
         confirmPassword,
       });
-      console.log("✅ Đặt lại mật khẩu thành công:", response);
 
       setMessage("Đặt lại mật khẩu thành công! Đang chuyển về đăng nhập...");
       setTimeout(() => {

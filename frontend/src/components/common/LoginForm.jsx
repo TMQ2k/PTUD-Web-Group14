@@ -36,15 +36,11 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
     }
 
     try {
-      console.log("🔄 Đang verify OTP cho email:", userEmail);
-
       // ✅ Gọi API verify OTP
       const verifyResponse = await userApi.verifyOtp({
         email: userEmail,
         otp,
       });
-
-      console.log("📦 Response verify OTP:", verifyResponse);
 
       // ✅ Lấy token từ response
       const token = verifyResponse.data?.token;
@@ -52,8 +48,6 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
       if (!token) {
         throw new Error("Backend không trả về token sau khi verify");
       }
-
-      console.log("✅ Xác thực OTP thành công! Token:", token);
 
       // ✅ Lưu token vào localStorage
       authStorage.setToken(token);
@@ -63,14 +57,11 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
 
       if (verifyResponse.data?.user) {
         userData = verifyResponse.data.user;
-        console.log("✅ User data từ verify response:", userData);
       } else {
         try {
           const profileResponse = await userApi.getProfile();
           userData = profileResponse.data;
-          console.log("✅ User data từ /profile:", userData);
         } catch (profileError) {
-          console.warn("⚠️ Không lấy được profile:", profileError);
           userData = {
             email: userEmail,
             role: "buyer",
@@ -133,17 +124,11 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
     }
 
     try {
-      console.log("🔄 Đang gọi API login...");
-
       // ✅ BƯỚC 1: Gọi API login
       const loginResponse = await userApi.login({ username, password });
 
-      console.log("📦 Response từ backend:", loginResponse);
-
       // ✅ BƯỚC 2: Kiểm tra có cần verify OTP không
       if (loginResponse.data?.needVerification) {
-        console.log("⚠️ User chưa verify email, cần nhập OTP");
-
         // Lưu email để dùng khi verify OTP
         setUserEmail(loginResponse.data.email);
 
@@ -165,23 +150,13 @@ const LoginForm = ({ isOpen, onClose, onSwitchToRegister }) => {
         throw new Error("Backend không trả về token");
       }
 
-      console.log("✅ Đăng nhập thành công, token:", token);
-
       // ✅ BƯỚC 4: Lưu token vào localStorage
       authStorage.setToken(token);
-
-      console.log("💾 Đã lưu token vào localStorage");
-      console.log(
-        "🔍 Kiểm tra: localStorage.getItem('auth_token') =",
-        localStorage.getItem("auth_token")
-      );
 
       // ✅ BƯỚC 5: Gọi API getProfile (tạm thời skip nếu backend chưa sẵn sàng)
       try {
         const profileResponse = await userApi.getProfile();
         const userData = profileResponse.data;
-
-        console.log("✅ Lấy thông tin user thành công:", userData);
 
         const fullName = `${userData.first_name || ""} ${
           userData.last_name || ""
