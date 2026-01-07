@@ -73,7 +73,7 @@ const PostedProducts = () => {
                   image={p.image_cover_url}
                   currentPrice={formatNumberToCurrency(p.current_price) || -1}
                   highestBidder={p?.top_bidder?.name || null}
-                  buyNowPrice={formatNumberToCurrency(p.buy_now_price) || -1}
+                  buyNowPrice={p.buy_now_price ? formatNumberToCurrency(p.buy_now_price) : null}
                   postedDate={`${String(
                     new Date(p.created_at).getDate()
                   ).padStart(2, "0")}/${String(

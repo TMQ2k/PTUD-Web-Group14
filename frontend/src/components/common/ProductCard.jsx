@@ -160,7 +160,7 @@ const ProductCard = ({
         </div>
 
         {/* Badge "Mua ngay" nếu có */}
-        {buyNowPrice && (
+        {buyNowPrice && buyNowPrice !== -1 && buyNowPrice !== "0" && buyNowPrice !== "" && (
           <div className="absolute bottom-3 left-3 bg-linear-to-r from-red-600 to-amber-400 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg">
             <FaFire className="inline w-4 h-4 mr-1 mb-1 text-orange-500" />
             Mua ngay: {buyNowPrice}₫

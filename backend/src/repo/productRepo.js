@@ -511,3 +511,10 @@ export const countProductsByBidderId = async (bidderId, is_active) => {
   const result = await pool.query(baseQuery, queryParams);
   return parseInt(result.rows[0].total, 10);
 };
+
+export const deleteProductByIdRepo = async (productId) => {
+  const result = await pool.query(`select * from fnc_delete_product( $1 )`, [
+    productId,
+  ]);
+  return result.rows[0];
+};
