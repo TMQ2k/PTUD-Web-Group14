@@ -87,11 +87,12 @@ router.get("/watchlist", authenticate, async (req, res) => {
 router.put("/auto-bid", authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
-    const { productId, maxBidAmount } = req.body;
+    const { productId, maxBidAmount, linkProduct } = req.body;
     const autoBidEntry = await upsertAutoBidService(
       userId,
       productId,
-      maxBidAmount
+      maxBidAmount,
+      linkProduct
     );
     res.status(200).json({
       code: 200,
@@ -252,8 +253,7 @@ router.get("/bidders/:productId", async (req, res) => {
 
 router.get(
   "/is-bids-on-product/:productId",
-  authenticate,
-  authorize("bidder"),
+  authenticate,  
   async (req, res) => {
     try {
       const bidderId = req.user.id;
