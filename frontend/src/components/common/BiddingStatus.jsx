@@ -23,6 +23,7 @@ import AutoBidDialog from "./AutoBidDialog";
 import { Zap } from "lucide-react";
 import { Lock } from "lucide-react";
 import { Sparkles } from "lucide-react";
+import { useLocation, } from "react-router-dom";
 
 const BiddingStatus = ({ className = "" }) => {
   const navigate = useNavigate();
@@ -68,8 +69,7 @@ const BiddingStatus = ({ className = "" }) => {
     const loadIsBidOnProduct = async () => {
       try {
         const respone = await bidderApi.isBidOnProduct(product.product_id);
-        if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);
-        console.log(respone);
+        if (isMounted) setBidOnProduct(respone.data.fnc_is_bids);        
       } catch (err) {
         console.log(err.message);
       }
@@ -94,9 +94,11 @@ const BiddingStatus = ({ className = "" }) => {
   //     console.log(err.message);
   //   }
   // };
-
+  const productWebsiteLink = import.meta.env.WEBSITE_PRODUCT_URL || "http://localhost:3000";
+  const location = useLocation();  
+  const productLink = `${productWebsiteLink}${location.pathname}`;  
   const onAutoBid = async (productId, formattedPrice) => {
-    const respone = await bidderApi.autobid(productId, formattedPrice);
+    const respone = await bidderApi.autobid(productId, formattedPrice, productLink);
     if (respone.code === 200) {
       const updateRespone = await bidderApi.autobidUpdate(product?.product_id);
       dispatch({
