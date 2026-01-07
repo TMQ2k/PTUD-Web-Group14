@@ -34,7 +34,7 @@ const ProductGalleryCard = () => {
   useEffect(() => {
     const checkWatchlistStatus = async () => {
       if (!user.isLoggedIn || !product.product_id) return;
-      
+
       try {
         const response = await watchlistApi.getWatchlist();
         const isInWatchlist = response.data?.some(
@@ -99,14 +99,14 @@ const ProductGalleryCard = () => {
             )}
             <h1 className="text-4xl font-bold">{product.name}</h1>
           </div>
-          
+
           {/* Nút yêu thích */}
           <button
             onClick={handleToggleFavorite}
             disabled={isToggling}
             className={`flex-shrink-0 p-3 bg-white rounded-full shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-200 border-2 ${
-              isFavorite 
-                ? "border-red-500 bg-red-50" 
+              isFavorite
+                ? "border-red-500 bg-red-50"
                 : "border-gray-200 hover:border-red-300"
             } ${isToggling ? "opacity-50 cursor-not-allowed" : ""}`}
             aria-label="Thêm vào yêu thích"
