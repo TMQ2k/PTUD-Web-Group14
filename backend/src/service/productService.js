@@ -479,12 +479,13 @@ export const updateDescription = async (productId, newDescription) => {
   }
 
   const bidders = await getAllBiddersByProductId(productId);
+  const productProfile = await getProductProfile(productId);
   for (let bidder of bidders) {
     const bidderProfile = await getUserProfile(bidder.user_id);
     await sendProductDescriptionUpdateEmail(
       bidderProfile.email,
       bidderProfile.username,
-      updatedProductDescription.name
+      productProfile.name
     );
   }
   return updatedProductDescription;
