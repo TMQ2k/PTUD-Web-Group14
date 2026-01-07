@@ -55,13 +55,13 @@ const WatchList = () => {
           image: item.image_cover_url || "/placeholder.jpg",
           name: item.product_name,
           currentPrice: formattedPrice,
-          highestBidder: item.highest_bidder_name || "Đang cập nhật",
+          highestBidder: item.top_bidder?.username || "Chưa có",
           buyNowPrice: item.buy_now_price
             ? new Intl.NumberFormat("vi-VN").format(item.buy_now_price)
             : null,
           postedDate: postedDate,
           remainingTime: remainingTime,
-          bidCount: item.bid_count || 0,
+          bidCount: item.history_count || 0,
           isInWatchlist: true, // Đã biết chắc là trong watchlist
           is_active: item.is_active,
         };

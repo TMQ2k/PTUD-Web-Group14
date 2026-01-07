@@ -13,17 +13,11 @@ import {
   getTopBidderIdByProductId,
 } from "../repo/bidderRepo.js";
 
-import {
-  getUserInfoById,
-  getUserProfile,
-}
-from "../repo/userRepo.js";
+import { getUserInfoById, getUserProfile } from "../repo/userRepo.js";
 
-import {
-  sendNotificationEmail
-} from "./emailService.js";
+import { sendNotificationEmail } from "./emailService.js";
 
-import { getProductProfile} from "../repo/productRepo.js";
+import { getProductProfile } from "../repo/productRepo.js";
 
 export const addProductToWatchlist = async (userId, productId) => {
   try {
@@ -37,7 +31,7 @@ export const addProductToWatchlist = async (userId, productId) => {
 
 export const getAllBidderInfosByProductId = async (productId) => {
   try {
-    const bidders = await getAllBiddersByProductId(productId); 
+    const bidders = await getAllBiddersByProductId(productId);
     for (let bidder of bidders) {
       const userInfo = await getUserInfoById(bidder.user_id);
       bidder.username = userInfo.username;
@@ -46,7 +40,10 @@ export const getAllBidderInfosByProductId = async (productId) => {
     }
     return bidders;
   } catch (err) {
-    console.error("❌ [Service] Lỗi khi lấy tất cả bidder theo productId:", err);
+    console.error(
+      "❌ [Service] Lỗi khi lấy tất cả bidder theo productId:",
+      err
+    );
     throw err;
   }
 };
@@ -64,16 +61,43 @@ export const removeProductFromWatchlist = async (userId, productId) => {
 export const getUserWatchlistService = async (userId) => {
   try {
     const watchlist = await getUserWatchlist(userId);
-    return watchlist;
+
+    return watchlist.map((item) => ({
+      watch_id: item.watch_id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_description: item.product_description,
+      image_cover_url: item.image_cover_url,
+      current_price: parseFloat(item.current_price),
+      buy_now_price: parseFloat(item.buy_now_price),
+      is_active: item.is_active,
+      product_end_time: item.product_end_time,
+      watch_created_at: item.watch_created_at,
+      product_created_at: item.product_created_at,
+      history_count: parseInt(item.history_count, 10),
+
+      top_bidder: item.winner_id
+        ? {
+            id: item.winner_id,
+            username: item.winner_username,
+            avatar_url: item.winner_avatar_url,
+            points: parseFloat(item.winner_points),
+          }
+        : null,
+    }));
   } catch (err) {
     console.error("❌ [Service] Lỗi khi lấy watchlist của user:", err);
     throw err;
   }
 };
 
-export const upsertAutoBidService = async (userId, productId, maxBidAmount, linkProduct) => {
+export const upsertAutoBidService = async (
+  userId,
+  productId,
+  maxBidAmount,
+  linkProduct
+) => {
   try {
-
     //Send notification email to bidder, seller, top bidder
     const bidderProfile = await getUserProfile(userId);
     const productProfile = await getProductProfile(productId);
@@ -177,8 +201,10 @@ export const isBidsOnProductService = async (productId, bidderId) => {
   }
 };
 
-
-export const sendBidNotificationEmailForSellers = async (sellerEmail, productName) => {
+export const sendBidNotificationEmailForSellers = async (
+  sellerEmail,
+  productName
+) => {
   const subject = "THÔNG BÁO VỀ ĐẤU GIÁ SẢN PHẨM CỦA BẠN";
   const message = `Sản phẩm "${productName}" của bạn đã có thêm người đấu giá. Vui lòng đăng nhập để kiểm tra.`;
   try {
@@ -187,22 +213,27 @@ export const sendBidNotificationEmailForSellers = async (sellerEmail, productNam
     console.error("❌ [Service] Lỗi khi gửi email thông báo đấu giá:", err);
     throw err;
   }
-}
+};
 
-export const sendBidNotificationEmailForBidders = async (bidderEmail, productName) => {
+export const sendBidNotificationEmailForBidders = async (
+  bidderEmail,
+  productName
+) => {
   const subject = "THÔNG BÁO VỀ ĐẤU GIÁ SẢN PHẨM BẠN ĐÃ ĐẤU GIÁ";
   const message = `Bạn đã tham gia đấu giá sản phẩm "${productName}" thành công. Vui lòng đăng nhập để kiểm tra.`;
   try {
     await sendNotificationEmail(bidderEmail, subject, message);
-  }
-  catch (err) {
+  } catch (err) {
     console.error("❌ [Service] Lỗi khi gửi email thông báo đấu giá:", err);
     throw err;
   }
 };
 
-
-export const sendBidNotificationEmailForTopBidder = async (topBidderEmail, productName, linkProduct) => {
+export const sendBidNotificationEmailForTopBidder = async (
+  topBidderEmail,
+  productName,
+  linkProduct
+) => {
   const subject = "THÔNG BÁO VỀ ĐẤU GIÁ SẢN PHẨM BẠN ĐÃ ĐẤU GIÁ";
   const message = `Bạn đã bị vượt qua trong đấu giá sản phẩm "${productName}". Vui lòng đăng nhập để kiểm tra và đặt giá cao hơn nếu bạn muốn tiếp tục tham gia đấu giá. Xem chi tiết tại: ${linkProduct}`;
   try {
@@ -212,4 +243,3 @@ export const sendBidNotificationEmailForTopBidder = async (topBidderEmail, produ
     throw err;
   }
 };
-
