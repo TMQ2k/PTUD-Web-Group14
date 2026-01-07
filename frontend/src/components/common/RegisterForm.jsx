@@ -296,9 +296,9 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showPassword ? (
-                      <FaEyeSlash className="w-4 h-4" />
-                    ) : (
                       <FaEye className="w-4 h-4" />
+                    ) : (
+                      <FaEyeSlash className="w-4 h-4" />
                     )}
                   </button>
                 </div>
@@ -321,9 +321,9 @@ const RegisterForm = ({ isOpen, onClose, onSwitchToLogin }) => {
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   >
                     {showConfirmPassword ? (
-                      <FaEyeSlash className="w-4 h-4" />
-                    ) : (
                       <FaEye className="w-4 h-4" />
+                    ) : (
+                      <FaEyeSlash className="w-4 h-4" />
                     )}
                   </button>
                 </div>
