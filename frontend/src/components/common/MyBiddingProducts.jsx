@@ -26,7 +26,7 @@ const MyBiddingProducts = () => {
         const response = await bidderApi.getBidderProducts();
 
         // Transform data from backend
-        const transformedProducts = biddedProducts.map((item) => {
+        const transformedProducts = response.data.map((item) => {
           const now = new Date();
           const endTime = new Date(item.end_time);
           const isActive = endTime > now;
