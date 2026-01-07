@@ -502,7 +502,7 @@ export const countProductsByBidderId = async (bidderId, is_active) => {
     WHERE ab.user_id = $1`;
   const queryParams = [bidderId];
   if (is_active !== undefined) {
-    if (is_active == "true") {
+    if (String(is_active) == "true") {
       queryParams.push(true);
     } else {
       queryParams.push(false);
