@@ -1,4 +1,5 @@
-import React, { useState } from 'react'; // 1. Import useState
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom'; // 1. Import createPortal
 import PropTypes from 'prop-types'; 
 import { formatNumberToCurrency } from '../../utils/NumberHandler';
 
@@ -9,45 +10,41 @@ const BuyNowDialog = ({
   buyNowPrice,
   productId
 }) => {
-  // 2. Local state to track loading status
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
 
-  // 1. Don't render anything if the dialog isn't open
+  // Don't render anything if the dialog isn't open
   if (!isOpen) return null;
 
   const handleConfirmClick = async () => {
-    // Prevent double clicks
     if (isProcessing) return;
 
     try {
-      setIsProcessing(true); // Start loading
+      setIsProcessing(true); 
       setError(null);
-      // Trigger the purchase action with the ID
       await onConfirm(productId);
       onClose();
     } catch (error) {
       setError(error);
-      //console.error("Error during buy now:", error);
     } finally {
-      setIsProcessing(false); // Reset state
+      setIsProcessing(false); 
     }
   };
 
-  // Helper to handle backdrop click (prevent closing while processing)
   const handleBackdropClick = (e) => {
     if (!isProcessing) {
       onClose();
     }
   };
 
-  return (
+  // 2. Wrap the entire dialog JSX in a variable
+  const modalContent = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 backdrop-blur-sm p-4 transition-opacity"
-      onClick={handleBackdropClick} // Use safe handler
+      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black/50 backdrop-blur-sm p-4 transition-opacity"
+      onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
-    >     
+    >      
       <div
         className="relative w-full max-w-md transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all"
         onClick={(e) => e.stopPropagation()}
@@ -59,7 +56,7 @@ const BuyNowDialog = ({
           
           <button
             type="button"
-            disabled={isProcessing} // 3. Disable Close Button
+            disabled={isProcessing}
             className="rounded-md p-1 hover:bg-white/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
             aria-label="Close"
@@ -70,14 +67,12 @@ const BuyNowDialog = ({
           </button>
         </div>
 
-        {/* CONTENT BODY */}
         <div className="p-6">
           <div className="mt-2">
             <p className="text-sm text-gray-600">
               Bạn chắc chắn mua ngay sản phẩm?
             </p>
 
-            {/* Price Display */}
             <div className="mt-5 flex flex-col items-center justify-center rounded-lg bg-gray-50 p-4 border border-gray-100">
               <span className="text-xs font-semibold uppercase text-gray-500 tracking-wider">Giá mua ngay</span>
               <span className="text-3xl font-extrabold text-gray-900 mt-1">
@@ -93,11 +88,10 @@ const BuyNowDialog = ({
           </div>
         }
 
-        {/* FOOTER ACTIONS */}
         <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2">
           <button
             type="button"
-            disabled={isProcessing} // 4. Disable Confirm Button
+            disabled={isProcessing}
             className={`inline-flex w-full justify-center rounded-md border border-transparent 
                         px-4 py-2 text-base font-medium text-white shadow-sm 
                         focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
@@ -108,7 +102,6 @@ const BuyNowDialog = ({
                         }`}
             onClick={handleConfirmClick}
           >
-            {/* 5. Conditional Text and Spinner */}
             {isProcessing ? (
                <span className="flex items-center gap-2">
                  <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -118,31 +111,33 @@ const BuyNowDialog = ({
                  Đang xử lý...
                </span>
             ) : (
-              "Buy Now"
+              "Xác nhận"
             )}
           </button>
           
           <button
             type="button"
-            disabled={isProcessing} // 6. Disable Cancel Button
+            disabled={isProcessing}
             className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={onClose}
           >
-            Cancel
+            Hủy bỏ
           </button>
         </div>
       </div>
     </div>
   );
+
+  // 3. Return the Portal rendering to document.body
+  return createPortal(modalContent, document.body);
 };
 
-// Adding prop types for better development experience
 BuyNowDialog.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,
   buyNowPrice: PropTypes.number.isRequired,
-  //productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  productId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 
 export default BuyNowDialog;
