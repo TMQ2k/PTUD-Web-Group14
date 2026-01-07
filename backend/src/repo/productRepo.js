@@ -232,7 +232,7 @@ export const getProductsList = async (
     }
     baseQuery += ` GROUP BY p.product_id ORDER BY bid_count DESC`;
   } else if (sortBy === "ending_soon") {
-    baseQuery += ` ORDER BY p.end_time ASC`;
+    baseQuery += ` ORDER BY p.end_time DESC`;
   }
   if (limit) {
     queryParams.push(limit, offset);
@@ -476,7 +476,7 @@ export const getProdudctsListByBidderId = async (
     WHERE ab.user_id = $1`;
   const queryParams = [bidderId];
   if (is_active !== undefined) {
-    if (is_active == "true") {
+    if (String(is_active) == "true") {
       queryParams.push(true);
     } else {
       queryParams.push(false);
@@ -502,7 +502,7 @@ export const countProductsByBidderId = async (bidderId, is_active) => {
     WHERE ab.user_id = $1`;
   const queryParams = [bidderId];
   if (is_active !== undefined) {
-    if (is_active == "true") {
+    if (String(is_active) == "true") {
       queryParams.push(true);
     } else {
       queryParams.push(false);
