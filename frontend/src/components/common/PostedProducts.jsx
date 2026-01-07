@@ -67,13 +67,17 @@ const PostedProducts = () => {
               ).padStart(2, "0")}`;
               return (
                 <ProductCard
-                  key={p.product_id}                  
+                  key={p.product_id}
                   id={p.product_id}
                   name={p.name}
                   image={p.image_cover_url}
                   currentPrice={formatNumberToCurrency(p.current_price) || -1}
                   highestBidder={p?.top_bidder?.name || null}
-                  buyNowPrice={p.buy_now_price ? formatNumberToCurrency(p.buy_now_price) : null}
+                  buyNowPrice={
+                    p.buy_now_price
+                      ? formatNumberToCurrency(p.buy_now_price)
+                      : null
+                  }
                   postedDate={`${String(
                     new Date(p.created_at).getDate()
                   ).padStart(2, "0")}/${String(
