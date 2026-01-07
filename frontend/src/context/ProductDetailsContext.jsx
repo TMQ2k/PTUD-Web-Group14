@@ -26,13 +26,14 @@ export const productReducer = (product, action) => {
       }
     }
     case "autobid-update": {
+      const username = action.payload?.username || null;
       return {
         ...product,
         current_price: action.payload.current_price,
         top_bidder: {
           ...product.top_bidder,
           points: action.payload.rating,
-          username: action.payload.username,
+          username: username ? "***" + username.trim().slice(username.length * 3/4, username.length) : "",
           avatar_url: action.payload.avatar_url || default_avatar,
         }
       }
