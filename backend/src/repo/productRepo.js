@@ -483,14 +483,13 @@ export const getProdudctsListByBidderId = async (
     }
     baseQuery += ` AND p.is_active = $${queryParams.length}`;
   }
+  baseQuery += ` ORDER BY p.end_time ASC`;
   if (limit) {
     queryParams.push(limit, offset);
     baseQuery += ` LIMIT $${queryParams.length - 1} OFFSET $${
       queryParams.length
     }`;
   }
-  //Sort by end time ascending
-  baseQuery += ` ORDER BY p.end_time ASC`;
   const result = await pool.query(baseQuery, queryParams);
   return result.rows;
 };
