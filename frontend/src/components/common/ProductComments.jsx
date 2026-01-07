@@ -6,7 +6,6 @@ import CommentItem from "./CommentItem";
 import { commentApi } from "../../api/comment.api";
 import Spinner from "./Spinner";
 import { AlertCircle } from "lucide-react";
-import { handleReload } from "../../utils/WindowsHandler";
 import ErrorModal from "./ErrorModal";
 
 const ProductComments = React.memo(({ productId, isTopBidder }) => {

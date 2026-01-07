@@ -39,7 +39,6 @@ const ProductDetails = () => {
         setError(null);
 
         const respone = await productApi.getProductById(params.id);
-        //console.log(respone.data);
         if (isMounted) {
           dispatch({
             type: "load",
