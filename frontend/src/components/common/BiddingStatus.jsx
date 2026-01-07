@@ -248,8 +248,15 @@ const BiddingStatus = ({ className = "" }) => {
                                         hover:bg-orange-500 hover:text-white hover:border-orange-500 hover:shadow-orange-200 hover:shadow-md
                                         active:scale-95 transition-all duration-300"
                               onClick={() => {
-                                setBidPrice(suggest_price);
-                                openAutoBidDialog();
+                                if (
+                                  product?.buy_now_price &&
+                                  suggest_price >= product?.buy_now_price
+                                ) {
+                                  openBuyDialog();
+                                } else {
+                                  setBidPrice(suggest_price);
+                                  openAutoBidDialog();
+                                }
                               }}
                             >
                               {formatNumberToCurrency(suggest_price)} đ
